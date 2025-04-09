@@ -473,7 +473,7 @@ export default function ResumePage() {
                     </CardHeader>
                     <CardContent>
                       <p className="text-muted-foreground">
-                        Étudiant en troisième année de Génie Informatique à l'Université d'Abomey-Calavi (UAC), je
+                        Étudiant en troisième année de Génie Informatique à l'Université Aventist Cosendai (UAC), je
                         souhaite mettre en pratique mes compétences dans un environnement stimulant et rigoureux. Je me
                         distingue par mon esprit de synthèse, ainsi que par mes solides compétences dans le
                         développement logiciel. Curieux et ouvert, j'apprécie travailler sur des problématiques variées
@@ -519,6 +519,32 @@ export default function ResumePage() {
                           <li>Supervision de l'infrastructure technique et du développement logiciel</li>
                           <li>Gestion et optimisation des systèmes informatiques internes</li>
                           <li>Encadrement des équipes techniques et suivi des projets digitaux</li>
+                          <li>
+                            Mise en place de solutions innovantes pour améliorer l'efficacité des processus internes
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div>
+                    <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-medium">Developper Stagiaire Pro</h3>
+                            <p className="text-muted-foreground">SyndaTech - Douala, CAMEROUN</p>
+                          </div>
+                          <Badge
+                            className="animate-pulse neo-brutalism-badge"
+                            style={{
+                              backgroundColor: `hsl(${primaryHue}, 70%, 50%, 0.2)`,
+                              color: `hsl(${primaryHue}, 70%, 50%)`,
+                            }}
+                          >
+                            <Calendar className="h-3 w-3 mr-1" />
+                            Oct 2024 - Mars 2025
+                          </Badge>
+                        </div>
+                        <ul className="mt-2 text-sm text-muted-foreground list-disc pl-5 space-y-1">
+                          <li>Developpement d'un module WebRTC base sur Odoo</li>
+                          <li>Amelioration du site web SyndaTech (syndatech.com)</li>
                           <li>
                             Mise en place de solutions innovantes pour améliorer l'efficacité des processus internes
                           </li>
