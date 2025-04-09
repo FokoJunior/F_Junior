@@ -87,4 +87,5 @@ Adapté pour :
 
 - Portfolio : [Link-portfolio](https://f-junior.vercel.app/)
 - LinkedIn : [Link-linkedin](https://linkedin.com/in/fokojunior)
+- WhatsApp : [Link-whatsapp](https://wa.me/690713130)
 - Email : benitojunior2022@gmail.com
