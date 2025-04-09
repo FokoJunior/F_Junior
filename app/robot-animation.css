@@ -1,0 +1,77 @@
+/* Styles pour l'animation du robot */
+.robot-container {
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+}
+
+.grid-bg {
+  background-size: 30px 30px;
+  animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 30px 30px;
+  }
+}
+
+/* Effet de lueur pour les éléments */
+.glow-effect {
+  position: relative;
+}
+
+.glow-effect::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  filter: blur(15px);
+}
+
+.glow-effect:hover::after {
+  opacity: 0.7;
+}
+
+/* Animation de pulsation */
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.pulse-animation {
+  animation: pulse 3s infinite ease-in-out;
+}
+
+/* Animation de flottement */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float-animation {
+  animation: float 5s infinite ease-in-out;
+}
+
+/* Effet de texte brillant */
+.text-glow {
+  text-shadow: 0 0 5px currentColor, 0 0 10px currentColor;
+}
