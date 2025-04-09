@@ -435,22 +435,22 @@ export default function ResumePage() {
                     <div className="flex flex-wrap gap-2">
                       <motion.div whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.95 }}>
                         <Badge variant="outline" className="neo-brutalism-badge">
-                          Musique
+                         Jeux Vidéos
+                        </Badge>
+                      </motion.div>
+                      <motion.div whileHover={{ scale: 1.1, rotate: -5 }} whileTap={{ scale: 0.95 }}>
+                        <Badge variant="outline" className="neo-brutalism-badge">
+                         Programmation
+                        </Badge>
+                      </motion.div>
+                      <motion.div whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.95 }}>
+                        <Badge variant="outline" className="neo-brutalism-badge">
+                         Musique 
                         </Badge>
                       </motion.div>
                       <motion.div whileHover={{ scale: 1.1, rotate: -5 }} whileTap={{ scale: 0.95 }}>
                         <Badge variant="outline" className="neo-brutalism-badge">
                           Sport
-                        </Badge>
-                      </motion.div>
-                      <motion.div whileHover={{ scale: 1.1, rotate: 5 }} whileTap={{ scale: 0.95 }}>
-                        <Badge variant="outline" className="neo-brutalism-badge">
-                          Jeux Vidéos
-                        </Badge>
-                      </motion.div>
-                      <motion.div whileHover={{ scale: 1.1, rotate: -5 }} whileTap={{ scale: 0.95 }}>
-                        <Badge variant="outline" className="neo-brutalism-badge">
-                          Programmation
                         </Badge>
                       </motion.div>
                     </div>
