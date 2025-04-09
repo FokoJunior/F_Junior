@@ -680,6 +680,47 @@ export default function ResumePage() {
                           </Badge>
                         </div>
                       </div>
+
+
+                      <div>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-medium">PROBATOIRE TI</h3>
+                            <p className="text-muted-foreground">LYCLAF, Foumban, Cameroun</p>
+                          </div>
+                          <Badge
+                            className="neo-brutalism-badge"
+                            style={{
+                              backgroundColor: `hsl(${primaryHue}, 70%, 50%, 0.2)`,
+                              color: `hsl(${primaryHue}, 70%, 50%)`,
+                            }}
+                          >
+                            <Calendar className="h-3 w-3 mr-1" />
+                            2020 - 2021
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-medium">BEPC</h3>
+                            <p className="text-muted-foreground">COLAPAIX, Foumban, Cameroun</p>
+                          </div>
+                          <Badge
+                            className="neo-brutalism-badge"
+                            style={{
+                              backgroundColor: `hsl(${primaryHue}, 70%, 50%, 0.2)`,
+                              color: `hsl(${primaryHue}, 70%, 50%)`,
+                            }}
+                          >
+                            <Calendar className="h-3 w-3 mr-1" />
+                            2018 - 2019
+                          </Badge>
+                        </div>
+                      </div>
+
+
                     </CardContent>
                   </Card>
                 </motion.div>
