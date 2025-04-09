@@ -85,6 +85,6 @@ Adapté pour :
 
 ## 📫 Contact
 
-- Portfolio : [Link-portfolio](https://votre-portfolio.fr)
-- LinkedIn : [Link-linkedin](https://linkedin.com/in/votre-profil)
+- Portfolio : [Link-portfolio](https://f-junior.vercel.app/)
+- LinkedIn : [Link-linkedin](https://linkedin.com/in/fokojunior)
 - Email : benitojunior2022@gmail.com
