@@ -3,7 +3,8 @@
 import OpenAI from "openai"
 
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.DEEPSEEK_API_KEY,
+    baseURL: "https://api.deepseek.com",
 })
 
 const SYSTEM_PROMPT = `
@@ -50,12 +51,12 @@ export async function chatWithOpenAI(messages: { role: "user" | "assistant", con
 
         const completion = await openai.chat.completions.create({
             messages: formattedMessages,
-            model: "gpt-4o-mini", // Utilisation d'un modèle rapide et performant
+            model: "deepseek-chat",
         })
 
         return { text: completion.choices[0].message.content || "" }
     } catch (error) {
-        console.error("Erreur OpenAI API:", error)
+        console.error("Erreur DeepSeek API:", error)
         return { error: "Désolé, une erreur s'est produite lors de la communication avec l'assistant." }
     }
 }

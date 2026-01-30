@@ -252,21 +252,7 @@ export default function Home() {
                 primaryHue={primaryHue}
               />
             </motion.div>
-            <motion.div
-              className="absolute bottom-10 left-1/2 transform -translate-x-1/2"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: showScrollIndicator ? 1 : 0, y: showScrollIndicator ? 0 : 20 }}
-              transition={{ delay: 1, duration: 0.5 }}
-            >
-              <motion.div
-                animate={{ y: [0, 10, 0] }}
-                transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1.5 }}
-                className="flex flex-col items-center"
-              >
-                <p className="text-sm text-muted-foreground mb-2">Défilez</p>
-                <ChevronDown className="h-6 w-6" style={{ color: `hsl(${primaryHue}, 70%, 50%)` }} />
-              </motion.div>
-            </motion.div>
+
           </motion.div>
         </section>
 
