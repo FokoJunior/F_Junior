@@ -32,6 +32,9 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { toast } = useToast()
 
+  /* eslint-disable react-hooks/exhaustive-deps */
+  const [activeSection, setActiveSection] = useState("")
+
   useEffect(() => {
     setIsMounted(true)
 
@@ -62,6 +65,37 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  // Observer pour les sections actives
+  useEffect(() => {
+    if (!isMounted) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id)
+          }
+        })
+      },
+      { threshold: 0.5 } // Déclenche quand 50% de la section est visible
+    )
+
+    // Observer toutes les sections correspondant aux liens
+    navLinks.forEach((link) => {
+      if (link.href.startsWith("/#")) {
+        const id = link.href.substring(2)
+        const element = document.getElementById(id)
+        if (element) observer.observe(element)
+      } else if (link.href === "/") {
+        // Pour la home, on peut observer une section "hero" ou "home"
+        const element = document.getElementById("home")
+        if (element) observer.observe(element)
+      }
+    })
+
+    return () => observer.disconnect()
+  }, [isMounted])
 
   const toggleDarkMode = () => {
     const newDarkMode = !darkMode
@@ -100,10 +134,11 @@ export default function Navbar() {
 
   const isActive = (href: string) => {
     if (href === "/") {
-      return pathname === "/"
+      return pathname === "/" && (activeSection === "home" || activeSection === "")
     }
     if (href.startsWith("/#")) {
-      return pathname === "/" && href.includes(window.location.hash)
+      const sectionId = href.substring(2)
+      return pathname === "/" && activeSection === sectionId
     }
     return pathname.startsWith(href)
   }
@@ -127,9 +162,8 @@ export default function Navbar() {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full border-b backdrop-blur supports-[backdrop-filter]:bg-background/60 ${
-        scrolled ? "bg-background/95 shadow-sm" : "bg-background/50"
-      } transition-all duration-200`}
+      className={`sticky top-0 z-50 w-full border-b backdrop-blur supports-[backdrop-filter]:bg-background/60 ${scrolled ? "bg-background/95 shadow-sm" : "bg-background/50"
+        } transition-all duration-200`}
     >
       <div className="container flex h-16 items-center justify-between">
         <div className="font-bold">
@@ -148,9 +182,8 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive(link.href) ? "text-primary" : ""
-              }`}
+              className={`text-sm font-medium transition-colors hover:text-primary ${isActive(link.href) ? "text-primary" : ""
+                }`}
               onClick={() => handleNavLinkClick(link.href)}
             >
               {t(link.label)}
@@ -229,9 +262,8 @@ export default function Navbar() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`text-lg font-medium transition-colors hover:text-primary ${
-                      isActive(link.href) ? "text-primary" : ""
-                    }`}
+                    className={`text-lg font-medium transition-colors hover:text-primary ${isActive(link.href) ? "text-primary" : ""
+                      }`}
                     onClick={() => handleNavLinkClick(link.href)}
                   >
                     {t(link.label)}
