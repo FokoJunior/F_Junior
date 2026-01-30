@@ -46,6 +46,10 @@ const ChatButton = dynamic(() => import("@/components/chat-button"), {
   ssr: false,
 })
 
+const SplashScreen = dynamic(() => import("@/components/splash-screen"), {
+  ssr: false,
+})
+
 export default function Home() {
   const { toast } = useToast()
   const { t } = useLanguage()
@@ -160,17 +164,55 @@ export default function Home() {
     show: { opacity: 1, y: 0 },
   }
 
-  // Afficher un contenu minimal pendant le chargement côté client
-  if (!isMounted) {
+  const [showSplash, setShowSplash] = useState(true)
+
+  // Gérer la fin du chargement
+  const handleSplashComplete = () => {
+    setShowSplash(false)
+  }
+
+  // Afficher le Splash Screen tant que nécessaire
+  if (showSplash) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center">
-        <div className="animate-pulse">Chargement...</div>
-      </div>
+      <SplashScreen onComplete={handleSplashComplete} />
     )
+  }
+
+  // Afficher un contenu minimal pendant le chargement côté client si le splash est fini mais pas monté (peu probable avec la logique ci-dessus)
+  if (!isMounted) return null
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "mainEntity": {
+      "@type": "Person",
+      "name": "FOKO TADJUIGE B. JUNIOR",
+      "alternateName": "F_Junior",
+      "jobTitle": "Développeur Full Stack & Ingénieur IA",
+      "url": "https://fokojunior.com",
+      "sameAs": [
+        "https://github.com/FokoJunior",
+        "https://linkedin.com/in/fokojunior",
+        "https://twitter.com/FokoJunior"
+      ],
+      "knowsAbout": [
+        "Développement Web",
+        "React",
+        "Next.js",
+        "Intelligence Artificielle",
+        "Machine Learning",
+        "Python",
+        "Génie Logiciel"
+      ]
+    }
   }
 
   return (
     <div className="flex min-h-screen flex-col relative bg-dot-pattern" ref={mainRef}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Barre de progression */}
       <motion.div
         className="fixed top-0 left-0 h-1 z-50"

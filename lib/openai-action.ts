@@ -41,37 +41,48 @@ CONSIGNES DE RÉPONSE :
 
 export async function chatWithOpenAI(messages: { role: "user" | "assistant", content: string }[]) {
     try {
+        // Use gemini-flash-latest as found in the available models list
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
-            systemInstruction: SYSTEM_PROMPT,
+            model: "gemini-flash-latest",
         })
 
-        // Convert OpenAI format to Gemini format
-        // Filter out system messages if any (Gemini handles system instruction separately)
-        // Also ensure history starts with user (though here we might just send the last message or construct history carefully)
+        // Prepare history by injecting system prompt as the first part of the conversation context
+        // Gemini handles history as pairs of user/model messages. 
+        // We will cheat a bit by prepending the system prompt to the first user message if possible, 
+        // or just relying on the context.
 
-        // Simplification: We will just construct the history properly
-        // Gemini history: Array of { role: "user" | "model", parts: [{ text: string }] }
+        // Better strategy: Prepend the system prompt to the very last message sent by the user, 
+        // or include it in the history structure as a user message if needed.
+        // However, the cleanest way without systemInstruction is to add it to the first message.
 
-        const history = messages
+        let history = messages
             .filter(msg => msg.role !== "system")
             .map(msg => ({
                 role: msg.role === "user" ? "user" : "model",
                 parts: [{ text: msg.content }]
             }))
 
-        // Get the last message to send
+        // Ensure history starts with user
+        while (history.length > 0 && history[0].role === "model") {
+            history.shift()
+        }
+
+        // Capture the last message
         const lastMessage = history.pop()
 
         if (!lastMessage || !lastMessage.parts[0].text) {
             return { text: "Bonjour ! Comment puis-je vous aider ?" }
         }
 
+        // Creating a session with the history
         const chat = model.startChat({
             history: history,
         })
 
-        const result = await chat.sendMessage(lastMessage.parts[0].text)
+        // Prepend system prompt to the user's message to enforce persona
+        const fullPrompt = `${SYSTEM_PROMPT}\n\nQuestion de l'utilisateur: ${lastMessage.parts[0].text}`
+
+        const result = await chat.sendMessage(fullPrompt)
         const response = result.response
         const text = response.text()
 
