@@ -90,9 +90,9 @@ const codeExamples = {
   js: `// Animation interactive
 function greet() {
   const messages = [
-    "Bienvenue! 🚀",
-    "Explorez mes projets 💡",
-    "Contactez-moi! 🤝"
+    "Bienvenue!",
+    "Explorez mes projets",
+    "Contactez-moi!"
   ];
   const idx = Math.floor(Math.random() * messages.length);
   alert(messages[idx]);
@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
       title.style.transform = 'translateY(0)';
     }, 200);
   }
-  console.log("✨ Portfolio prêt!");
+  console.log("Portfolio prêt!");
 });`
 }
 
@@ -202,11 +202,11 @@ export default function CodeDemo({ primaryHue = 0 }: CodeDemoProps) {
 
     // Messages console simulés
     const messages = [
-      "🚀 Compilation...",
-      "✅ HTML parsé",
-      "✅ CSS appliqué",
-      "✅ JS exécuté",
-      "🎉 Prêt!"
+      "Compilation...",
+      "HTML parsé",
+      "CSS appliqué",
+      "JS exécuté",
+      "Prêt!"
     ]
 
     messages.forEach((msg, i) => {
@@ -284,8 +284,8 @@ export default function CodeDemo({ primaryHue = 0 }: CodeDemoProps) {
             key={tab.id}
             onClick={() => setActiveTab(tab.id as "html" | "css" | "js")}
             className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all border-r border-gray-800 ${activeTab === tab.id
-                ? "bg-[#1e1e1e] text-white"
-                : "text-gray-500 hover:text-gray-300 hover:bg-[#2d2d2d]"
+              ? "bg-[#1e1e1e] text-white"
+              : "text-gray-500 hover:text-gray-300 hover:bg-[#2d2d2d]"
               }`}
           >
             <tab.icon className="w-4 h-4" style={{ color: tab.color }} />
@@ -295,9 +295,9 @@ export default function CodeDemo({ primaryHue = 0 }: CodeDemoProps) {
       </div>
 
       {/* Main Content - Split View */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
         {/* Left Panel - Editor */}
-        <div className="w-1/2 flex flex-col overflow-hidden border-r border-gray-800">
+        <div className="w-full lg:w-1/2 flex flex-col overflow-hidden border-b lg:border-b-0 lg:border-r border-gray-800 h-[300px] lg:h-auto">
           {/* Code Area */}
           <div className="flex-1 overflow-auto" style={{ backgroundColor: "#1e1e1e" }}>
             <div className="flex h-full">
@@ -374,7 +374,7 @@ export default function CodeDemo({ primaryHue = 0 }: CodeDemoProps) {
         </div>
 
         {/* Right Panel - Preview/Console */}
-        <div className="w-1/2 flex flex-col overflow-hidden">
+        <div className="w-full lg:w-1/2 flex flex-col overflow-hidden h-[300px] lg:h-auto">
           {/* Panel Tabs */}
           <div
             className="flex items-center border-b border-gray-800"
@@ -383,8 +383,8 @@ export default function CodeDemo({ primaryHue = 0 }: CodeDemoProps) {
             <button
               onClick={() => setRightPanel("preview")}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all ${rightPanel === "preview"
-                  ? "bg-[#1e1e1e] text-white"
-                  : "text-gray-500 hover:text-gray-300"
+                ? "bg-[#1e1e1e] text-white"
+                : "text-gray-500 hover:text-gray-300"
                 }`}
             >
               <Eye className="w-4 h-4" />
@@ -393,8 +393,8 @@ export default function CodeDemo({ primaryHue = 0 }: CodeDemoProps) {
             <button
               onClick={() => setRightPanel("console")}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all ${rightPanel === "console"
-                  ? "bg-[#1e1e1e] text-white"
-                  : "text-gray-500 hover:text-gray-300"
+                ? "bg-[#1e1e1e] text-white"
+                : "text-gray-500 hover:text-gray-300"
                 }`}
             >
               <Terminal className="w-4 h-4" />
