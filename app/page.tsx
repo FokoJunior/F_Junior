@@ -116,12 +116,32 @@ export default function Home() {
     }
   }, [controls, currentAnimation, animations])
 
-  const handleContactSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    toast({
-      title: t("messageSent"),
-      description: t("messageConfirmation"),
-    })
+  const handleContactSubmit = async (formData: { name: string; email: string; subject: string; message: string }) => {
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        toast({
+          title: t("messageSent"),
+          description: t("messageConfirmation"),
+        })
+      } else {
+        throw new Error(data.error || "Erreur lors de l'envoi")
+      }
+    } catch (error) {
+      console.error("Erreur:", error)
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer le message. Veuillez réessayer.",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleDownloadCV = () => {
@@ -1035,8 +1055,33 @@ function ProjectCard({
   )
 }
 
-function ContactForm({ onSubmit, primaryHue }: { onSubmit: (e: React.FormEvent) => void; primaryHue: number }) {
+function ContactForm({ onSubmit, primaryHue }: { onSubmit: (formData: { name: string; email: string; subject: string; message: string }) => void; primaryHue: number }) {
   const { t } = useLanguage()
+  const [isLoading, setIsLoading] = useState(false)
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: ""
+  })
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.id]: e.target.value
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    try {
+      await onSubmit(formData)
+      setFormData({ name: "", email: "", subject: "", message: "" })
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <Card
@@ -1048,7 +1093,7 @@ function ContactForm({ onSubmit, primaryHue }: { onSubmit: (e: React.FormEvent) 
         <CardDescription>{t("fillForm")}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="grid gap-4" onSubmit={onSubmit}>
+        <form className="grid gap-4" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="grid gap-2">
               <label htmlFor="name" className="text-sm font-medium">
@@ -1057,6 +1102,9 @@ function ContactForm({ onSubmit, primaryHue }: { onSubmit: (e: React.FormEvent) 
               <input
                 id="name"
                 required
+                disabled={isLoading}
+                value={formData.name}
+                onChange={handleChange}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors neo-brutalism-input"
                 placeholder={t("yourName")}
                 style={{ borderColor: `hsl(${primaryHue}, 70%, 50%, 0.3)` }}
@@ -1070,6 +1118,9 @@ function ContactForm({ onSubmit, primaryHue }: { onSubmit: (e: React.FormEvent) 
                 id="email"
                 type="email"
                 required
+                disabled={isLoading}
+                value={formData.email}
+                onChange={handleChange}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors neo-brutalism-input"
                 placeholder={t("yourEmail")}
                 style={{ borderColor: `hsl(${primaryHue}, 70%, 50%, 0.3)` }}
@@ -1083,6 +1134,9 @@ function ContactForm({ onSubmit, primaryHue }: { onSubmit: (e: React.FormEvent) 
             <input
               id="subject"
               required
+              disabled={isLoading}
+              value={formData.subject}
+              onChange={handleChange}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors neo-brutalism-input"
               placeholder={t("messageSubject")}
               style={{ borderColor: `hsl(${primaryHue}, 70%, 50%, 0.3)` }}
@@ -1095,6 +1149,9 @@ function ContactForm({ onSubmit, primaryHue }: { onSubmit: (e: React.FormEvent) 
             <textarea
               id="message"
               required
+              disabled={isLoading}
+              value={formData.message}
+              onChange={handleChange}
               className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors neo-brutalism-input"
               placeholder={t("yourMessage")}
               style={{ borderColor: `hsl(${primaryHue}, 70%, 50%, 0.3)` }}
@@ -1102,6 +1159,7 @@ function ContactForm({ onSubmit, primaryHue }: { onSubmit: (e: React.FormEvent) 
           </div>
           <Button
             type="submit"
+            disabled={isLoading}
             className="w-full group neo-brutalism-button"
             style={
               {
@@ -1110,8 +1168,17 @@ function ContactForm({ onSubmit, primaryHue }: { onSubmit: (e: React.FormEvent) 
               } as React.CSSProperties
             }
           >
-            {t("sendMessage")}
-            <ArrowRight className="ml-2 h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+            {isLoading ? (
+              <>
+                <span className="animate-spin mr-2">⏳</span>
+                Envoi en cours...
+              </>
+            ) : (
+              <>
+                {t("sendMessage")}
+                <ArrowRight className="ml-2 h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+              </>
+            )}
           </Button>
         </form>
       </CardContent>
