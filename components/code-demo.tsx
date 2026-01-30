@@ -26,6 +26,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
+import SyntaxHighlighter from "@/components/syntax-highlighter"
 
 interface CodeDemoProps {
   primaryHue?: number
@@ -547,9 +548,8 @@ console.log("Animation de particules initialisée !");`,
   return (
     <div
       ref={containerRef}
-      className={`flex flex-col h-full rounded-lg overflow-hidden border code-editor-gradient transition-all duration-300 ${
-        isFullscreen ? "fixed inset-0 z-50 rounded-none" : ""
-      }`}
+      className={`flex flex-col h-full rounded-lg overflow-hidden border code-editor-gradient transition-all duration-300 ${isFullscreen ? "fixed inset-0 z-50 rounded-none" : ""
+        }`}
       style={{
         borderColor: `hsl(${primaryHue}, 70%, 50%, 0.3)`,
       }}
@@ -583,31 +583,7 @@ console.log("Animation de particules initialisée !");`,
           </Button>
         </div>
         {/* Particules d'arrière-plan */}
-        <div className="absolute top-0 left-0 right-0 h-12 overflow-hidden pointer-events-none">
-          {Array.from({ length: 15 }).map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute rounded-full"
-              style={{
-                width: Math.random() * 4 + 1,
-                height: Math.random() * 4 + 1,
-                backgroundColor: `hsl(${(primaryHue + i * 20) % 360}, 70%, 50%, ${Math.random() * 0.5 + 0.2})`,
-                top: Math.random() * 12,
-                left: `${Math.random() * 100}%`,
-              }}
-              animate={{
-                x: [0, Math.random() * 100 - 50],
-                y: [0, Math.random() * 10 - 5],
-                opacity: [0.7, 0],
-              }}
-              transition={{
-                duration: Math.random() * 3 + 2,
-                repeat: Number.POSITIVE_INFINITY,
-                repeatType: "loop",
-              }}
-            />
-          ))}
-        </div>
+
       </div>
 
       <div className="flex flex-col md:flex-row flex-grow">
@@ -673,50 +649,68 @@ console.log("Animation de particules initialisée !");`,
               </div>
             </div>
 
-            <div className="flex-grow relative">
-              <TabsContent value="html" className="m-0 h-full">
+            <div className="flex-grow relative overflow-hidden bg-[#1e1e1e]">
+              {/* Line Numbers Helper Function */}
+              {isEditing ? null : (
+                <div className="absolute left-0 top-0 bottom-0 w-10 bg-[#1e1e1e] border-r border-gray-800 text-gray-600 font-mono text-sm p-4 text-right select-none z-10 flex flex-col items-end gap-[0.05rem] leading-relaxed pt-[1.1rem]">
+                  {(displayedCode[activeTab] || editableCode[activeTab]).split('\n').map((_, i) => (
+                    <span key={i} className="h-6">{i + 1}</span>
+                  ))}
+                </div>
+              )}
+
+              <TabsContent value="html" className="m-0 h-full overflow-auto custom-scrollbar">
                 {isEditing ? (
                   <textarea
                     ref={editorRef}
                     value={editableCode.html}
                     onChange={handleCodeChange}
-                    className="w-full h-full bg-gray-950 text-gray-200 font-mono text-sm p-4 resize-none focus:outline-none"
+                    className="w-full h-full bg-[#1e1e1e] text-gray-200 font-mono text-sm p-4 pl-12 resize-none focus:outline-none leading-relaxed"
                     spellCheck="false"
                   />
                 ) : (
-                  <pre className="w-full h-full bg-gray-950 text-blue-400 font-mono text-sm p-4 overflow-auto">
-                    {displayedCode.html || editableCode.html || "// Cliquez sur 'Taper' pour voir le code HTML"}
-                  </pre>
+                  <div className="p-4 pl-12 min-h-full">
+                    <SyntaxHighlighter
+                      code={displayedCode.html || (isTyping ? "" : editableCode.html) || "// Cliquez sur 'Taper' pour voir le code HTML"}
+                      language="html"
+                    />
+                  </div>
                 )}
               </TabsContent>
-              <TabsContent value="css" className="m-0 h-full">
+              <TabsContent value="css" className="m-0 h-full overflow-auto custom-scrollbar">
                 {isEditing ? (
                   <textarea
                     ref={editorRef}
                     value={editableCode.css}
                     onChange={handleCodeChange}
-                    className="w-full h-full bg-gray-950 text-gray-200 font-mono text-sm p-4 resize-none focus:outline-none"
+                    className="w-full h-full bg-[#1e1e1e] text-gray-200 font-mono text-sm p-4 pl-12 resize-none focus:outline-none leading-relaxed"
                     spellCheck="false"
                   />
                 ) : (
-                  <pre className="w-full h-full bg-gray-950 text-purple-400 font-mono text-sm p-4 overflow-auto">
-                    {displayedCode.css || editableCode.css || "// Cliquez sur 'Taper' pour voir le code CSS"}
-                  </pre>
+                  <div className="p-4 pl-12 min-h-full">
+                    <SyntaxHighlighter
+                      code={displayedCode.css || (isTyping ? "" : editableCode.css) || "// Cliquez sur 'Taper' pour voir le code CSS"}
+                      language="css"
+                    />
+                  </div>
                 )}
               </TabsContent>
-              <TabsContent value="js" className="m-0 h-full">
+              <TabsContent value="js" className="m-0 h-full overflow-auto custom-scrollbar">
                 {isEditing ? (
                   <textarea
                     ref={editorRef}
                     value={editableCode.js}
                     onChange={handleCodeChange}
-                    className="w-full h-full bg-gray-950 text-gray-200 font-mono text-sm p-4 resize-none focus:outline-none"
+                    className="w-full h-full bg-[#1e1e1e] text-gray-200 font-mono text-sm p-4 pl-12 resize-none focus:outline-none leading-relaxed"
                     spellCheck="false"
                   />
                 ) : (
-                  <pre className="w-full h-full bg-gray-950 text-green-400 font-mono text-sm p-4 overflow-auto">
-                    {displayedCode.js || editableCode.js || "// Cliquez sur 'Taper' pour voir le code JavaScript"}
-                  </pre>
+                  <div className="p-4 pl-12 min-h-full">
+                    <SyntaxHighlighter
+                      code={displayedCode.js || (isTyping ? "" : editableCode.js) || "// Cliquez sur 'Taper' pour voir le code JS"}
+                      language="js"
+                    />
+                  </div>
                 )}
               </TabsContent>
             </div>

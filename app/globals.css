@@ -53,6 +53,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -112,21 +113,20 @@
 }
 
 .neon-text:hover {
-  text-shadow: 0 0 10px rgba(var(--primary), 0.8), 0 0 20px rgba(var(--primary), 0.5), 0 0 30px
-    rgba(var(--primary), 0.3);
+  text-shadow: 0 0 10px rgba(var(--primary), 0.8), 0 0 20px rgba(var(--primary), 0.5), 0 0 30px rgba(var(--primary), 0.3);
 }
 
 /* Background Patterns */
 .bg-tech-grid {
   background-color: var(--background);
-  background-image: 
+  background-image:
     linear-gradient(to right, rgba(128, 128, 128, 0.05) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(128, 128, 128, 0.05) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
 .dark .bg-tech-grid {
-  background-image: 
+  background-image:
     linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
 }
@@ -140,10 +140,12 @@
 
 /* Animation de pulsation */
 @keyframes pulse {
+
   0%,
   100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
@@ -155,10 +157,12 @@
 
 /* Animation de flottement */
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -170,11 +174,13 @@
 
 /* Animation de pulsation pour les éléments */
 @keyframes subtle-pulse {
+
   0%,
   100% {
     transform: scale(1);
     opacity: 0.8;
   }
+
   50% {
     transform: scale(1.05);
     opacity: 1;
@@ -188,4 +194,24 @@
 /* Effet de glow pour le texte */
 .text-glow {
   text-shadow: 0 0 5px currentColor;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 5px;
+  border: 2px solid #1e1e1e;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #444;
 }

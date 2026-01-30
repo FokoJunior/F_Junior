@@ -377,7 +377,7 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
-            className="neo-brutalism-terminal"
+            className="neo-brutalism-terminal h-[400px] md:h-[500px]"
           >
             <CodeDemo primaryHue={primaryHue} />
           </motion.div>
