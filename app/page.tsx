@@ -24,6 +24,13 @@ import { Linkedin, Twitter, Heart, Coffee } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { useLanguage } from "@/components/language-provider"
@@ -31,6 +38,7 @@ import { useMobileDetector } from "@/components/mobile-detector"
 import AnimatedHeroSvg from "@/components/animated-hero-svg"
 import RobotAnimation from "@/components/robot-animation"
 import CodeDemo from "@/components/code-demo"
+import { CheckCircle2 } from "lucide-react"
 
 // Importer dynamiquement les composants qui utilisent des APIs browser
 
@@ -63,6 +71,7 @@ export default function Home() {
   })
   const progressBarWidth = useTransform(scrollYProgress, [0, 1], ["5%", "100%"])
   const isMobile = useMobileDetector()
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
 
   const animations = [
     {
@@ -127,6 +136,7 @@ export default function Home() {
       const data = await response.json()
 
       if (response.ok) {
+        setShowSuccessDialog(true)
         toast({
           title: t("messageSent"),
           description: t("messageConfirmation"),
@@ -230,19 +240,63 @@ export default function Home() {
 
       <main className="flex-1 relative z-10">
         {/* Hero Section */}
-        <section id="home" className="container py-16 md:py-24 lg:py-32">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center"
-          >
-            <div className="flex flex-col items-center md:items-start text-center md:text-left gap-4">
-              <Badge className="text-sm animate-pulse neo-brutalism-badge">{t("availableForWork")}</Badge>
-              <motion.h1 className="text-3xl md:text-5xl lg:text-6xl font-bold neon-text" animate={controls}>
-                {t("hi")}, <span className="text-primary text-glow">{t("nickname")}</span>
-              </motion.h1>
-              <div className="h-8 overflow-hidden">
+        <section id="home" className="container min-h-[90vh] flex items-center py-12 md:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.2,
+                  },
+                },
+              }}
+              className="flex flex-col items-center lg:items-start text-center lg:text-left gap-6"
+            >
+              <motion.div
+                variants={{
+                  hidden: { opacity: 0, x: -20 },
+                  visible: { opacity: 1, x: 0 },
+                }}
+              >
+                <Badge
+                  className="px-4 py-1.5 text-sm font-medium border-none shadow-lg animate-pulse"
+                  style={{
+                    backgroundColor: `hsl(${primaryHue}, 70%, 50%, 0.15)`,
+                    color: `hsl(${primaryHue}, 70%, 50%)`,
+                    boxShadow: `0 0 20px hsl(${primaryHue}, 70%, 50%, 0.2)`
+                  }}
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {t("availableForWork")}
+                </Badge>
+              </motion.div>
+
+              <motion.div
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+                className="space-y-2"
+              >
+                <h2 className="text-xl md:text-2xl font-medium text-muted-foreground">
+                  {t("hi")}, {t("name")}
+                </h2>
+                <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
+                  I am <span className="text-glow" style={{ color: `hsl(${primaryHue}, 70%, 50%)` }}>{t("nickname")}</span>
+                </h1>
+              </motion.div>
+
+              <motion.div
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+                className="h-10 overflow-hidden"
+              >
                 <AnimatePresence mode="wait">
                   <motion.p
                     key={currentAnimation}
@@ -250,55 +304,122 @@ export default function Home() {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -20, opacity: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="text-lg md:text-xl text-muted-foreground"
+                    className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-primary to-primary/50 bg-clip-text text-transparent"
+                    style={{ color: `hsl(${primaryHue}, 70%, 50%)` }}
                   >
                     {t("titles")[currentAnimation % t("titles").length]}
                   </motion.p>
                 </AnimatePresence>
-              </div>
-              <p className="text-base md:text-lg text-muted-foreground max-w-[600px] mt-2">{t("shortBio")}</p>
-              <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-4">
+              </motion.div>
+
+              <motion.p
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+                className="text-lg text-muted-foreground max-w-[550px] leading-relaxed"
+              >
+                {t("shortBio")}
+              </motion.p>
+
+              <motion.div
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+                className="flex flex-wrap justify-center lg:justify-start gap-4"
+              >
                 <Link href="#projects">
                   <Button
-                    className="group neo-brutalism-button"
-                    style={
-                      {
-                        backgroundColor: `hsl(${primaryHue}, 70%, 50%)`,
-                        "--glow-color": `hsl(${primaryHue}, 70%, 50%)`,
-                      } as React.CSSProperties
-                    }
+                    size="lg"
+                    className="px-8 font-bold transition-all duration-300 hover:scale-105 active:scale-95 shadow-xl"
+                    style={{
+                      backgroundColor: `hsl(${primaryHue}, 70%, 45%)`,
+                      boxShadow: `0 10px 30px -10px hsl(${primaryHue}, 70%, 50%, 0.5)`,
+                    }}
                   >
                     {t("viewMyWork")}
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
                 <Link href="#contact">
                   <Button
                     variant="outline"
-                    className="hover:bg-primary/10 transition-colors neo-brutalism-button-outline"
+                    size="lg"
+                    className="px-8 border-2 hover:bg-primary/5 transition-all duration-300"
+                    style={{ borderColor: `hsl(${primaryHue}, 70%, 50%, 0.3)` }}
                   >
                     {t("contactMe")}
                   </Button>
                 </Link>
-                <Button variant="secondary" className="group neo-brutalism-button-secondary" onClick={handleDownloadCV}>
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  className="px-6 hover:bg-primary/5 group"
+                  onClick={handleDownloadCV}
+                >
+                  <Download className="mr-2 h-5 w-5 group-hover:translate-y-1 transition-transform" />
                   {t("downloadCV")}
-                  <Download className="ml-2 h-4 w-4 group-hover:translate-y-1 transition-transform" />
                 </Button>
-              </div>
-            </div>
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="hidden md:block h-[500px] w-full"
-            >
-              <AnimatedHeroSvg
-                imageUrl="https://img.freepik.com/photos-gratuite/vue-3d-garcon-utilisation-ordinateur-portable_23-2150709886.jpg"
-                primaryHue={primaryHue}
-              />
+              </motion.div>
+
+              {/* Petit indicateur de tech stack */}
+              <motion.div
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: { opacity: 1 },
+                }}
+                className="pt-8 flex items-center gap-6"
+              >
+                <span className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Tech Stack</span>
+                <div className="flex gap-4 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+                  <Code className="w-6 h-6" />
+                  <Terminal className="w-6 h-6" />
+                  <Zap className="w-6 h-6" />
+                  <Sparkles className="w-6 h-6" />
+                </div>
+              </motion.div>
             </motion.div>
 
-          </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ duration: 1, delay: 0.5 }}
+              className="relative hidden lg:block"
+            >
+              <div className="relative z-10 w-full aspect-square max-w-[550px] mx-auto">
+                <AnimatedHeroSvg
+                  imageUrl="https://img.freepik.com/photos-gratuite/vue-3d-garcon-utilisation-ordinateur-portable_23-2150709886.jpg"
+                  primaryHue={primaryHue}
+                />
+              </div>
+
+              {/* Éléments de design flottants autour de l'image */}
+              <motion.div
+                animate={{ y: [0, -20, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-10 -right-4 p-4 rounded-2xl bg-background/80 backdrop-blur-md border shadow-2xl z-20"
+                style={{ borderColor: `hsl(${primaryHue}, 70%, 50%, 0.3)` }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full bg-green-500" />
+                  <span className="text-sm font-bold">Always Learning</span>
+                </div>
+              </motion.div>
+
+              <motion.div
+                animate={{ y: [0, 20, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="absolute bottom-20 -left-8 p-4 rounded-2xl bg-background/80 backdrop-blur-md border shadow-2xl z-20"
+                style={{ borderColor: `hsl(${primaryHue}, 70%, 50%, 0.3)` }}
+              >
+                <div className="flex items-center gap-3">
+                  <Zap className="w-5 h-5" style={{ color: `hsl(${primaryHue}, 70%, 50%)` }} />
+                  <span className="text-sm font-bold">Fast Performance</span>
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
         </section>
 
         {/* About Section */}
@@ -927,6 +1048,52 @@ export default function Home() {
         </div>
       </footer>
       {isMounted && <ChatButton />}
+
+      {/* Pop-up de succès magnifique & itech */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent className="sm:max-w-md border-none bg-background/80 backdrop-blur-xl shadow-2xl z-[100]">
+          <div className="flex flex-col items-center justify-center py-6 gap-4">
+            <motion.div
+              initial={{ scale: 0, rotate: -45 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", damping: 12, stiffness: 200 }}
+              className="w-20 h-20 rounded-full flex items-center justify-center bg-primary/10 text-primary shadow-lg"
+              style={{
+                color: `hsl(${primaryHue}, 70%, 50%)`,
+                backgroundColor: `hsl(${primaryHue}, 70%, 50%, 0.1)`,
+                boxShadow: `0 0 30px hsl(${primaryHue}, 70%, 50%, 0.3)`
+              }}
+            >
+              <CheckCircle2 className="w-12 h-12" />
+            </motion.div>
+            <div className="text-center space-y-2">
+              <DialogTitle className="text-2xl font-bold tracking-tight">
+                {t("messageSent")}
+              </DialogTitle>
+              <DialogDescription className="text-muted-foreground text-sm">
+                {t("messageConfirmation")}
+              </DialogDescription>
+            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mt-4"
+            >
+              <Button
+                onClick={() => setShowSuccessDialog(false)}
+                className="px-8 font-semibold transition-all hover:scale-105 active:scale-95"
+                style={{
+                  backgroundColor: `hsl(${primaryHue}, 70%, 45%)`,
+                  boxShadow: `0 10px 20px -5px hsl(${primaryHue}, 70%, 50%, 0.4)`
+                }}
+              >
+                Continuer
+              </Button>
+            </motion.div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

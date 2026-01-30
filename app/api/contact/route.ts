@@ -65,324 +65,139 @@ export async function POST(request: NextRequest) {
       minute: "2-digit"
     })
 
-    // Email principal vers vous - Design professionnel F_Junior
+    // Email principal vers vous - Design Minimaliste Tech (Black & White)
     const mainMailOptions = {
       from: {
-        name: "Portfolio F_Junior",
+        name: "Portfolio Notification",
         address: process.env.SMTP_USER as string
       },
       to: process.env.SMTP_USER,
       replyTo: email,
-      subject: `📬 ${cleanSubject}`,
-      // Headers anti-spam
+      subject: `[Portfolio] ${cleanSubject}`,
       headers: {
-        "X-Priority": "3",
+        "X-Priority": "1",
         "X-Mailer": "Portfolio F_Junior",
-        "List-Unsubscribe": `<mailto:${process.env.SMTP_USER}?subject=unsubscribe>`,
       },
       html: `
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f4f4f5; color: #18181b; margin: 0; padding: 0; line-height: 1.6; }
+  .container { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); overflow: hidden; }
+  .header { background: #18181b; color: #ffffff; padding: 24px 32px; border-bottom: 1px solid #27272a; }
+  .badge { display: inline-block; background: #27272a; color: #e4e4e7; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 4px 8px; border-radius: 4px; margin-bottom: 8px; }
+  .content { padding: 32px; }
+  .field-label { font-size: 12px; font-weight: 600; color: #71717a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .field-value { font-size: 16px; color: #18181b; margin-bottom: 24px; font-weight: 500; }
+  .message-box { background: #f4f4f5; border-left: 3px solid #18181b; padding: 20px; border-radius: 4px; color: #3f3f46; font-size: 15px; margin-top: 8px; }
+  .btn { display: inline-block; background: #18181b; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 500; font-size: 14px; margin-top: 8px; }
+  .footer { background: #f4f4f5; padding: 20px 32px; text-align: center; font-size: 12px; color: #a1a1aa; border-top: 1px solid #e4e4e7; }
+</style>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f0f23;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0f0f23; padding: 40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px;">
-          
-          <!-- Header avec logo -->
-          <tr>
-            <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 15px 15px 0 0; text-align: center;">
-              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">
-                📧 Nouveau Message
-              </h1>
-              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0; font-size: 14px;">
-                Reçu via votre portfolio fokojunior.com
-              </p>
-            </td>
-          </tr>
-          
-          <!-- Contenu principal -->
-          <tr>
-            <td style="background-color: #1a1a3e; padding: 35px;">
-              
-              <!-- Info expéditeur -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 25px;">
-                <tr>
-                  <td style="background: rgba(102, 126, 234, 0.15); border-radius: 12px; padding: 20px; border-left: 4px solid #667eea;">
-                    <table width="100%">
-                      <tr>
-                        <td width="50" valign="top">
-                          <div style="width: 45px; height: 45px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; line-height: 45px; text-align: center;">
-                            👤
-                          </div>
-                        </td>
-                        <td style="padding-left: 15px;">
-                          <p style="margin: 0; color: #ffffff; font-size: 18px; font-weight: 600;">${cleanName}</p>
-                          <a href="mailto:${email}" style="color: #667eea; text-decoration: none; font-size: 14px;">${email}</a>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Sujet -->
-              <div style="margin-bottom: 20px;">
-                <p style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px;">Sujet</p>
-                <p style="color: #ffffff; font-size: 16px; margin: 0; font-weight: 500;">${cleanSubject}</p>
-              </div>
-              
-              <!-- Message -->
-              <div style="background: #0f0f23; border-radius: 12px; padding: 25px; border: 1px solid rgba(102, 126, 234, 0.3);">
-                <p style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 15px;">Message</p>
-                <p style="color: #e0e0e0; font-size: 15px; line-height: 1.7; margin: 0; white-space: pre-wrap;">${cleanMessage}</p>
-              </div>
-              
-              <!-- Bouton répondre -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 30px;">
-                <tr>
-                  <td align="center">
-                    <a href="mailto:${email}?subject=Re: ${cleanSubject}" style="display: inline-block; background: linear-gradient(135deg, #667eea, #764ba2); color: #ffffff; text-decoration: none; padding: 14px 35px; border-radius: 8px; font-weight: 600; font-size: 14px;">
-                      ✉️ Répondre à ${cleanName}
-                    </a>
-                  </td>
-                </tr>
-              </table>
-              
-            </td>
-          </tr>
-          
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #0f0f23; padding: 20px; border-radius: 0 0 15px 15px; border-top: 1px solid rgba(102, 126, 234, 0.2);">
-              <table width="100%">
-                <tr>
-                  <td style="color: #666; font-size: 12px;">
-                    📅 ${currentDate}
-                  </td>
-                  <td align="right" style="color: #666; font-size: 12px;">
-                    🌐 fokojunior.com
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          
-        </table>
-      </td>
-    </tr>
-  </table>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="badge">Nouveau contact</div>
+      <h1 style="margin: 0; font-size: 20px; font-weight: 600;">Message reçu</h1>
+    </div>
+    <div class="content">
+      <div class="field-label">Expéditeur</div>
+      <div class="field-value">${cleanName} <span style="color: #a1a1aa; font-weight: normal;">&lt;${email}&gt;</span></div>
+      
+      <div class="field-label">Sujet</div>
+      <div class="field-value">${cleanSubject}</div>
+      
+      <div class="field-label">Message</div>
+      <div class="message-box">
+        ${cleanMessage.replace(/\n/g, "<br>")}
+      </div>
+      
+      <div style="margin-top: 32px;">
+        <a href="mailto:${email}?subject=Re: ${cleanSubject}" class="btn">Répondre par email</a>
+      </div>
+    </div>
+    <div class="footer">
+      Reçu le ${currentDate} via fokojunior.com
+    </div>
+  </div>
 </body>
 </html>
       `,
-      text: `
-════════════════════════════════════════
-📧 NOUVEAU MESSAGE - Portfolio F_Junior
-════════════════════════════════════════
-
-👤 De: ${cleanName}
-📧 Email: ${email}
-📋 Sujet: ${cleanSubject}
-
-────────────────────────────────────────
-MESSAGE:
-────────────────────────────────────────
-
-${message}
-
-────────────────────────────────────────
-📅 Reçu le: ${currentDate}
-🌐 Source: fokojunior.com
-════════════════════════════════════════
-      `,
+      text: `Nouveau message de ${cleanName} (${email})\n\nSujet: ${cleanSubject}\n\n${message}\n\nEnvoyé le ${currentDate}`
     }
 
-    // Email de confirmation - Design moderne pour l'expéditeur
+    // Email de confirmation - Design Minimaliste Clean (White & Grey)
     const confirmationMail = {
       from: {
-        name: "F_Junior - Portfolio",
+        name: "F_Junior",
         address: process.env.SMTP_USER as string
       },
       to: email,
-      subject: `✅ Message bien reçu, ${cleanName} !`,
+      subject: "Message bien reçu",
       headers: {
         "X-Priority": "3",
         "X-Mailer": "Portfolio F_Junior",
       },
       html: `
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc; color: #334155; margin: 0; padding: 0; line-height: 1.6; }
+  .container { max-width: 550px; margin: 40px auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
+  .header { padding: 40px 32px 20px; text-align: center; }
+  .icon { font-size: 32px; margin-bottom: 16px; display: inline-block; }
+  .title { font-size: 20px; font-weight: 700; color: #0f172a; margin: 0 0 8px; letter-spacing: -0.5px; }
+  .subtitle { font-size: 15px; color: #64748b; margin: 0; }
+  .content { padding: 20px 32px 40px; }
+  .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 24px 0; }
+  .card-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .card-text { font-size: 14px; color: #475569; font-style: italic; }
+  .signature { border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 24px; }
+  .name { font-weight: 600; color: #0f172a; font-size: 15px; }
+  .role { font-size: 13px; color: #64748b; margin-top: 2px; }
+  .links { margin-top: 12px; font-size: 13px; }
+  .links a { color: #0f172a; text-decoration: none; margin-right: 12px; font-weight: 500; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
+  .links a:hover { border-bottom-color: #0f172a; }
+  
+  @media (prefers-color-scheme: dark) {
+     /* Support simple du dark mode pour les clients qui le gèrent */
+    .container { border-color: #333; }
+  }
+</style>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f0f23;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0f0f23; padding: 40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px;">
-          
-          <!-- Header -->
-          <tr>
-            <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 35px; border-radius: 15px 15px 0 0; text-align: center;">
-              <div style="font-size: 50px; margin-bottom: 10px;">✅</div>
-              <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 700;">
-                Message Envoyé !
-              </h1>
-              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0; font-size: 15px;">
-                Merci de m'avoir contacté, ${cleanName}
-              </p>
-            </td>
-          </tr>
-          
-          <!-- Contenu -->
-          <tr>
-            <td style="background-color: #1a1a3e; padding: 35px;">
-              
-              <p style="color: #e0e0e0; font-size: 16px; line-height: 1.7; margin: 0 0 25px;">
-                Bonjour <strong style="color: #10b981;">${cleanName}</strong>,
-              </p>
-              
-              <p style="color: #e0e0e0; font-size: 16px; line-height: 1.7; margin: 0 0 25px;">
-                J'ai bien reçu votre message et je vous en remercie ! 🙏
-              </p>
-              
-              <p style="color: #e0e0e0; font-size: 16px; line-height: 1.7; margin: 0 0 30px;">
-                Je m'efforce de répondre à tous les messages dans un délai de <strong style="color: #10b981;">24 à 48 heures</strong>. Votre message est important pour moi !
-              </p>
-              
-              <!-- Récapitulatif -->
-              <div style="background: #0f0f23; border-radius: 12px; padding: 25px; border: 1px solid rgba(16, 185, 129, 0.3); margin-bottom: 30px;">
-                <p style="color: #10b981; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 15px; font-weight: 600;">
-                  📋 Récapitulatif de votre message
-                </p>
-                <table width="100%" style="color: #e0e0e0; font-size: 14px;">
-                  <tr>
-                    <td style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                      <strong>Sujet:</strong>
-                    </td>
-                    <td style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                      ${cleanSubject}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0;" valign="top">
-                      <strong>Message:</strong>
-                    </td>
-                    <td style="padding: 8px 0; color: #aaa;">
-                      ${cleanMessage.length > 150 ? cleanMessage.substring(0, 150) + "..." : cleanMessage}
-                    </td>
-                  </tr>
-                </table>
-              </div>
-              
-              <!-- Call to action -->
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td align="center">
-                    <a href="https://fokojunior.com" style="display: inline-block; background: linear-gradient(135deg, #667eea, #764ba2); color: #ffffff; text-decoration: none; padding: 14px 35px; border-radius: 8px; font-weight: 600; font-size: 14px;">
-                      🌐 Visiter mon Portfolio
-                    </a>
-                  </td>
-                </tr>
-              </table>
-              
-            </td>
-          </tr>
-          
-          <!-- À propos -->
-          <tr>
-            <td style="background: rgba(102, 126, 234, 0.1); padding: 25px;">
-              <table width="100%">
-                <tr>
-                  <td width="60" valign="top">
-                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 50%; text-align: center; line-height: 50px; font-size: 24px;">
-                      👨‍💻
-                    </div>
-                  </td>
-                  <td style="padding-left: 15px;">
-                    <p style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 5px;">FOKO TADJUIGE B. Junior</p>
-                    <p style="color: #888; font-size: 13px; margin: 0 0 8px;">Développeur Full Stack & IA</p>
-                    <p style="color: #888; font-size: 13px; margin: 0;">Master 1 Génie Logiciel et Systèmes d'Information</p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          
-          <!-- Réseaux sociaux -->
-          <tr>
-            <td style="background-color: #1a1a3e; padding: 25px; text-align: center;">
-              <p style="color: #888; font-size: 13px; margin: 0 0 15px;">Restons connectés !</p>
-              <table cellpadding="0" cellspacing="0" style="margin: 0 auto;">
-                <tr>
-                  <td style="padding: 0 10px;">
-                    <a href="https://github.com/FokoJunior" style="color: #667eea; text-decoration: none; font-size: 13px;">GitHub</a>
-                  </td>
-                  <td style="color: #444;">|</td>
-                  <td style="padding: 0 10px;">
-                    <a href="https://linkedin.com/in/fokojunior" style="color: #667eea; text-decoration: none; font-size: 13px;">LinkedIn</a>
-                  </td>
-                  <td style="color: #444;">|</td>
-                  <td style="padding: 0 10px;">
-                    <a href="https://fokojunior.com" style="color: #667eea; text-decoration: none; font-size: 13px;">Portfolio</a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #0f0f23; padding: 20px; border-radius: 0 0 15px 15px; text-align: center; border-top: 1px solid rgba(102, 126, 234, 0.2);">
-              <p style="color: #555; font-size: 11px; margin: 0;">
-                Cet email a été envoyé automatiquement depuis fokojunior.com<br>
-                © ${new Date().getFullYear()} F_Junior. Tous droits réservés.
-              </p>
-            </td>
-          </tr>
-          
-        </table>
-      </td>
-    </tr>
-  </table>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="icon">✨</div>
+      <h1 class="title">Merci pour votre message</h1>
+      <p class="subtitle">Je vous répondrai très prochainement.</p>
+    </div>
+    <div class="content">
+      <p>Bonjour ${cleanName},</p>
+      <p>J'ai bien reçu votre demande. Je m'engage généralement à répondre sous 24h.</p>
+      
+      <div class="card">
+        <div class="card-label">Votre message</div>
+        <div class="card-text">"${cleanMessage.length > 120 ? cleanMessage.substring(0, 120) + '...' : cleanMessage}"</div>
+      </div>
+      
+      <div class="signature">
+        <div class="name">FOKO TADJUIGE B. Junior</div>
+        <div class="role">Développeur Full Stack & IA</div>
+        <div class="links">
+          <a href="https://fokojunior.com">Portfolio</a>
+          <a href="https://github.com/FokoJunior">GitHub</a>
+          <a href="https://linkedin.com/in/fokojunior">LinkedIn</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
       `,
-      text: `
-════════════════════════════════════════
-✅ MESSAGE BIEN REÇU !
-════════════════════════════════════════
-
-Bonjour ${cleanName},
-
-J'ai bien reçu votre message et je vous en remercie !
-
-Je m'efforce de répondre à tous les messages dans un délai de 24 à 48 heures.
-
-────────────────────────────────────────
-📋 RÉCAPITULATIF:
-────────────────────────────────────────
-Sujet: ${cleanSubject}
-Message: ${cleanMessage}
-
-────────────────────────────────────────
-
-À très bientôt !
-
-FOKO TADJUIGE B. Junior
-Développeur Full Stack & IA
-Master 1 Génie Logiciel et Systèmes d'Information
-
-🌐 fokojunior.com
-📧 info@fokojunior.com
-
-════════════════════════════════════════
-      `,
+      text: `Merci pour votre message, ${cleanName}.\n\nJe vous répondrai sous 24h.\n\nCordialement,\nF_Junior`
     }
 
     // Envoi des emails
