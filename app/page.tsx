@@ -192,7 +192,10 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col relative bg-dot-pattern" ref={mainRef}>
+    <div className="flex min-h-screen flex-col relative bg-tech-grid" ref={mainRef}>
+      {/* Overlay dégradé pour adoucir la grille */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-background/50 to-background pointer-events-none" />
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
