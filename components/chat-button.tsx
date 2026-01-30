@@ -13,6 +13,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { useLanguage } from "@/components/language-provider"
 
+import { chatWithOpenAI } from "@/lib/openai-action"
+
 type Message = {
   id: number
   text: string
@@ -24,6 +26,7 @@ export default function ChatButton() {
   const [isOpen, setIsOpen] = useState(false)
   const [message, setMessage] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
+  const [isLoading, setIsLoading] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const { toast } = useToast()
   const { t } = useLanguage()
@@ -36,7 +39,7 @@ export default function ChatButton() {
     setMessages([
       {
         id: 1,
-        text: "Bonjour ! 👋 Comment puis-je vous aider aujourd'hui ?",
+        text: "Bonjour ! 👋 Je suis l'assistant de F_Junior. Comment puis-je vous aider à découvrir son parcours ou ses projets aujourd'hui ?",
         sender: "assistant",
         timestamp: new Date(),
       },
@@ -50,38 +53,65 @@ export default function ChatButton() {
     setIsOpen(!isOpen)
   }
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!message.trim()) return
+    if (!message.trim() || isLoading) return
+
+    const userMessageText = message.trim()
 
     // Add user message
     const userMessage: Message = {
-      id: messages.length + 1,
-      text: message,
+      id: Date.now(),
+      text: userMessageText,
       sender: "user",
       timestamp: new Date(),
     }
 
-    setMessages([...messages, userMessage])
+    setMessages((prev) => [...prev, userMessage])
     setMessage("")
+    setIsLoading(true)
 
-    // Simulate assistant response after a short delay
-    setTimeout(() => {
-      const assistantMessage: Message = {
-        id: messages.length + 2,
-        text: "Merci pour votre message ! Je vous répondrai bientôt.",
-        sender: "assistant",
-        timestamp: new Date(),
-      }
+    try {
+      // Préparer l'historique pour OpenAI
+      const apiMessages = messages.map(msg => ({
+        role: msg.sender === "user" ? "user" as const : "assistant" as const,
+        content: msg.text
+      }))
 
-      setMessages((prev) => [...prev, assistantMessage])
-
-      toast({
-        title: t("messageSent"),
-        description: t("messageConfirmation"),
+      // Ajouter le nouveau message à l'historique pour l'envoi
+      apiMessages.push({
+        role: "user",
+        content: userMessageText
       })
-    }, 1000)
+
+      const response = await chatWithOpenAI(apiMessages)
+
+      if (response.error) {
+        toast({
+          title: "Erreur",
+          description: response.error,
+          variant: "destructive"
+        })
+      } else if (response.text) {
+        const assistantMessage: Message = {
+          id: Date.now() + 1,
+          text: response.text,
+          sender: "assistant",
+          timestamp: new Date(),
+        }
+        setMessages((prev) => [...prev, assistantMessage])
+      }
+    } catch (error) {
+      console.error("Error sending message:", error)
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -116,9 +146,8 @@ export default function ChatButton() {
                   {messages.map((msg) => (
                     <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
                       <div
-                        className={`max-w-[80%] rounded-lg p-3 ${
-                          msg.sender === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
-                        }`}
+                        className={`max-w-[80%] rounded-lg p-3 ${msg.sender === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+                          }`}
                       >
                         <p className="text-sm">{msg.text}</p>
                         <p className="text-xs opacity-70 mt-1">
@@ -127,6 +156,17 @@ export default function ChatButton() {
                       </div>
                     </div>
                   ))}
+                  {isLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-muted max-w-[80%] rounded-lg p-3">
+                        <div className="flex gap-1">
+                          <span className="w-1.5 h-1.5 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                          <span className="w-1.5 h-1.5 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                          <span className="w-1.5 h-1.5 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
               <CardFooter className="p-3 border-t">
