@@ -1,11 +1,8 @@
 "use server"
 
-import OpenAI from "openai"
+import { GoogleGenerativeAI } from "@google/generative-ai"
 
-const openai = new OpenAI({
-    apiKey: process.env.DEEPSEEK_API_KEY,
-    baseURL: "https://api.deepseek.com",
-})
+const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "")
 
 const SYSTEM_PROMPT = `
 Tu es l'assistant personnel IA de FOKO TADJUIGE B. JUNIOR (connu sous le pseudo F_Junior).
@@ -44,19 +41,43 @@ CONSIGNES DE RÉPONSE :
 
 export async function chatWithOpenAI(messages: { role: "user" | "assistant", content: string }[]) {
     try {
-        const formattedMessages = [
-            { role: "system" as const, content: SYSTEM_PROMPT },
-            ...messages.map(msg => ({ role: msg.role, content: msg.content }))
-        ]
-
-        const completion = await openai.chat.completions.create({
-            messages: formattedMessages,
-            model: "deepseek-chat",
+        const model = genAI.getGenerativeModel({
+            model: "gemini-1.5-flash",
+            systemInstruction: SYSTEM_PROMPT,
         })
 
-        return { text: completion.choices[0].message.content || "" }
+        // Convert OpenAI format to Gemini format
+        // Filter out system messages if any (Gemini handles system instruction separately)
+        // Also ensure history starts with user (though here we might just send the last message or construct history carefully)
+
+        // Simplification: We will just construct the history properly
+        // Gemini history: Array of { role: "user" | "model", parts: [{ text: string }] }
+
+        const history = messages
+            .filter(msg => msg.role !== "system")
+            .map(msg => ({
+                role: msg.role === "user" ? "user" : "model",
+                parts: [{ text: msg.content }]
+            }))
+
+        // Get the last message to send
+        const lastMessage = history.pop()
+
+        if (!lastMessage || !lastMessage.parts[0].text) {
+            return { text: "Bonjour ! Comment puis-je vous aider ?" }
+        }
+
+        const chat = model.startChat({
+            history: history,
+        })
+
+        const result = await chat.sendMessage(lastMessage.parts[0].text)
+        const response = result.response
+        const text = response.text()
+
+        return { text }
     } catch (error) {
-        console.error("Erreur DeepSeek API:", error)
-        return { error: "Désolé, une erreur s'est produite lors de la communication avec l'assistant." }
+        console.error("Erreur Gemini API:", error)
+        return { error: "Désolé, je ne suis pas disponible pour le moment. Réessayez plus tard." }
     }
 }

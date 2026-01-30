@@ -199,7 +199,7 @@ const projects = [
     category: "Python",
     image: "https://hans-associes.fr/wp-content/uploads/2025/01/k4_14741506.jpg",
     demoLink: "#",
-    codeLink: "#", 
+    codeLink: "#",
     slug: "reconnaissance-faciale",
   },
   {
@@ -253,7 +253,7 @@ export default function ProjectsPage() {
     offset: ["start start", "end end"],
   })
   const progressBarWidth = useTransform(scrollYProgress, [0, 1], ["5%", "100%"])
-  const [showScrollIndicator, setShowScrollIndicator] = useState(true)
+
   const isMobile = useMobileDetector()
 
   useEffect(() => {
@@ -262,20 +262,8 @@ export default function ProjectsPage() {
       setPrimaryHue((prev) => (prev + 1) % 360)
     }, 50)
 
-    // Masquer l'indicateur de défilement après un certain défilement
-    const handleScroll = () => {
-      if (window.scrollY > 300) {
-        setShowScrollIndicator(false)
-      } else {
-        setShowScrollIndicator(true)
-      }
-    }
-
-    window.addEventListener("scroll", handleScroll)
-
     return () => {
       clearInterval(colorInterval)
-      window.removeEventListener("scroll", handleScroll)
     }
   }, [])
 
@@ -304,21 +292,7 @@ export default function ProjectsPage() {
           opacity: isMobile ? 1 : 0.8, // Plus visible sur mobile
         }}
       />
-      <motion.div
-        className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: showScrollIndicator ? 1 : 0, y: showScrollIndicator ? 0 : 20 }}
-        transition={{ delay: 1, duration: 0.5 }}
-      >
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1.5 }}
-          className="flex flex-col items-center"
-        >
-          <p className="text-sm text-muted-foreground mb-2">Défilez pour découvrir</p>
-          <ChevronDown className="h-6 w-6" style={{ color: `hsl(${primaryHue}, 70%, 50%)` }} />
-        </motion.div>
-      </motion.div>
+
 
       <div className="container px-4 sm:px-6 py-8 md:py-12">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 md:mb-8 gap-4">
@@ -338,6 +312,7 @@ export default function ProjectsPage() {
             Mes Projets
           </motion.h1>
         </div>
+
 
         <Tabs defaultValue="all" className="mb-6 md:mb-8">
           <TabsList className="grid grid-cols-2 sm:grid-cols-5 max-w-3xl mx-auto">
