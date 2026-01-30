@@ -163,13 +163,7 @@ export default function Home() {
   }
 
   // Afficher un contenu minimal pendant le chargement côté client
-  if (!isMounted) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center">
-        <div className="animate-pulse">Chargement...</div>
-      </div>
-    )
-  }
+  if (!isMounted) return null
 
   const jsonLd = {
     "@context": "https://schema.org",
