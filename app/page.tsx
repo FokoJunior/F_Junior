@@ -20,6 +20,7 @@ import {
 } from "lucide-react"
 import { motion, useAnimation, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import dynamic from "next/dynamic"
+import { Linkedin, Twitter, Heart, Coffee } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -54,6 +55,7 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false)
   const [primaryHue, setPrimaryHue] = useState(0)
   const [showScrollIndicator, setShowScrollIndicator] = useState(true)
+  const [projectFilter, setProjectFilter] = useState<"all" | "web" | "mobile" | "ai">("all")
   const mainRef = useRef(null)
   const { scrollYProgress } = useScroll({
     target: mainRef,
@@ -371,7 +373,7 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
-            className="neo-brutalism-terminal h-[400px] md:h-[500px]"
+            className="neo-brutalism-terminal h-[600px] md:h-[700px]"
           >
             <CodeDemo primaryHue={primaryHue} />
           </motion.div>
@@ -486,19 +488,35 @@ export default function Home() {
             <div className="flex justify-center mb-8 md:mb-12">
               <div className="flex flex-wrap gap-2 justify-center">
                 <Button
-                  variant="outline"
-                  className="hover:bg-primary/10 transition-colors neo-brutalism-button-outline"
-                  style={{ borderColor: `hsl(${primaryHue}, 70%, 50%, 0.5)` }}
+                  variant={projectFilter === "all" ? "default" : "outline"}
+                  className="transition-colors"
+                  style={projectFilter === "all" ? { backgroundColor: `hsl(${primaryHue}, 70%, 50%)` } : { borderColor: `hsl(${primaryHue}, 70%, 50%, 0.5)` }}
+                  onClick={() => setProjectFilter("all")}
                 >
                   {t("all")}
                 </Button>
-                <Button variant="ghost" className="neo-brutalism-button-ghost">
+                <Button
+                  variant={projectFilter === "web" ? "default" : "ghost"}
+                  className="transition-colors"
+                  style={projectFilter === "web" ? { backgroundColor: `hsl(${primaryHue}, 70%, 50%)` } : {}}
+                  onClick={() => setProjectFilter("web")}
+                >
                   {t("webApps")}
                 </Button>
-                <Button variant="ghost" className="neo-brutalism-button-ghost">
+                <Button
+                  variant={projectFilter === "mobile" ? "default" : "ghost"}
+                  className="transition-colors"
+                  style={projectFilter === "mobile" ? { backgroundColor: `hsl(${primaryHue}, 70%, 50%)` } : {}}
+                  onClick={() => setProjectFilter("mobile")}
+                >
                   {t("mobileApps")}
                 </Button>
-                <Button variant="ghost" className="neo-brutalism-button-ghost">
+                <Button
+                  variant={projectFilter === "ai" ? "default" : "ghost"}
+                  className="transition-colors"
+                  style={projectFilter === "ai" ? { backgroundColor: `hsl(${primaryHue}, 70%, 50%)` } : {}}
+                  onClick={() => setProjectFilter("ai")}
+                >
                   {t("aiProjects")}
                 </Button>
               </div>
@@ -510,78 +528,90 @@ export default function Home() {
               viewport={{ once: true }}
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
             >
-              <motion.div variants={item}>
-                <ProjectCard
-                  title={t("ecommerceTitle")}
-                  description={t("ecommerceDesc")}
-                  tags={["Next.js", "React", "Tailwind CSS", "API"]}
-                  image="https://github.com/FokoJunior/uniprice_website/blob/master/img/porfolio/ecommerce.png?raw=true"
-                  demoLink="#"
-                  codeLink="https://github.com/FokoJunior"
-                  detailsLink="/projects/ecommerce"
-                  primaryHue={primaryHue}
-                />
-              </motion.div>
-              <motion.div variants={item}>
-                <ProjectCard
-                  title={t("taskManagerTitle")}
-                  description={t("taskManagerDesc")}
-                  tags={["React", "Firebase", "CSS", "Auth"]}
-                  image="https://img.freepik.com/vecteurs-libre/application-gestion-taches_52683-44675.jpg"
-                  demoLink="#"
-                  codeLink="https://github.com/FokoJunior"
-                  detailsLink="/projects/task-manager"
-                  primaryHue={primaryHue}
-                />
-              </motion.div>
-              <motion.div variants={item}>
-                <ProjectCard
-                  title={t("weatherAppTitle")}
-                  description={t("weatherAppDesc")}
-                  tags={["JavaScript", "API", "CSS", "Responsive"]}
-                  image="https://static.vecteezy.com/ti/vecteur-libre/p1/3774267-meteo-verifier-cartoon-smartphone-interface-vector-templates-set-winter-overcast-mobile-app-screen-page-day-and-dark-mode-design-forecast-ui-for-application-phone-display-avec-caractere-plat-vectoriel.jpg"
-                  demoLink="#"
-                  codeLink="https://github.com/FokoJunior"
-                  detailsLink="/projects/weather"
-                  primaryHue={primaryHue}
-                />
-              </motion.div>
-              <motion.div variants={item} className="hidden md:block">
-                <ProjectCard
-                  title={t("portfolioTitle")}
-                  description={t("portfolioDesc")}
-                  tags={["Next.js", "Tailwind CSS", "Responsive"]}
-                  image="https://github.com/FokoJunior/uniprice_website/blob/master/img/porfolio/porfolio.png?raw=true"
-                  demoLink="#"
-                  codeLink="https://github.com/FokoJunior"
-                  detailsLink="/projects/portfolio"
-                  primaryHue={primaryHue}
-                />
-              </motion.div>
-              <motion.div variants={item} className="hidden md:block">
-                <ProjectCard
-                  title={t("mobileAppTitle")}
-                  description={t("mobileAppDesc")}
-                  tags={["React Native", "Firebase", "Redux"]}
-                  image="https://media.istockphoto.com/id/1471383309/vector/laptop-silver-mockup-with-tablet-blank-screens.jpg?s=612x612&w=0&k=20&c=pgNCZDAV63qeCAq2HgjEKEEkOvabkFkl63qd_hZ9CoY="
-                  demoLink="#"
-                  codeLink="https://github.com/FokoJunior"
-                  detailsLink="/projects/mobile-app"
-                  primaryHue={primaryHue}
-                />
-              </motion.div>
-              <motion.div variants={item} className="hidden md:block">
-                <ProjectCard
-                  title={t("aiProjectTitle")}
-                  description={t("aiProjectDesc")}
-                  tags={["Python", "TensorFlow", "NLP", "ML"]}
-                  image="https://media.istockphoto.com/id/1471383309/vector/laptop-silver-mockup-with-tablet-blank-screens.jpg?s=612x612&w=0&k=20&c=pgNCZDAV63qeCAq2HgjEKEEkOvabkFkl63qd_hZ9CoY="
-                  demoLink="#"
-                  codeLink="https://github.com/FokoJunior"
-                  detailsLink="/projects/ai-project"
-                  primaryHue={primaryHue}
-                />
-              </motion.div>
+              {(projectFilter === "all" || projectFilter === "web") && (
+                <motion.div variants={item}>
+                  <ProjectCard
+                    title={t("ecommerceTitle")}
+                    description={t("ecommerceDesc")}
+                    tags={["Next.js", "React", "Tailwind CSS", "API"]}
+                    image="https://github.com/FokoJunior/uniprice_website/blob/master/img/porfolio/ecommerce.png?raw=true"
+                    demoLink="#"
+                    codeLink="https://github.com/FokoJunior"
+                    detailsLink="/projects/ecommerce"
+                    primaryHue={primaryHue}
+                  />
+                </motion.div>
+              )}
+              {(projectFilter === "all" || projectFilter === "web") && (
+                <motion.div variants={item}>
+                  <ProjectCard
+                    title={t("taskManagerTitle")}
+                    description={t("taskManagerDesc")}
+                    tags={["React", "Firebase", "CSS", "Auth"]}
+                    image="https://img.freepik.com/vecteurs-libre/application-gestion-taches_52683-44675.jpg"
+                    demoLink="#"
+                    codeLink="https://github.com/FokoJunior"
+                    detailsLink="/projects/task-manager"
+                    primaryHue={primaryHue}
+                  />
+                </motion.div>
+              )}
+              {(projectFilter === "all" || projectFilter === "web") && (
+                <motion.div variants={item}>
+                  <ProjectCard
+                    title={t("weatherAppTitle")}
+                    description={t("weatherAppDesc")}
+                    tags={["JavaScript", "API", "CSS", "Responsive"]}
+                    image="https://static.vecteezy.com/ti/vecteur-libre/p1/3774267-meteo-verifier-cartoon-smartphone-interface-vector-templates-set-winter-overcast-mobile-app-screen-page-day-and-dark-mode-design-forecast-ui-for-application-phone-display-avec-caractere-plat-vectoriel.jpg"
+                    demoLink="#"
+                    codeLink="https://github.com/FokoJunior"
+                    detailsLink="/projects/weather"
+                    primaryHue={primaryHue}
+                  />
+                </motion.div>
+              )}
+              {(projectFilter === "all" || projectFilter === "web") && (
+                <motion.div variants={item}>
+                  <ProjectCard
+                    title={t("portfolioTitle")}
+                    description={t("portfolioDesc")}
+                    tags={["Next.js", "Tailwind CSS", "Responsive"]}
+                    image="https://github.com/FokoJunior/uniprice_website/blob/master/img/porfolio/porfolio.png?raw=true"
+                    demoLink="#"
+                    codeLink="https://github.com/FokoJunior"
+                    detailsLink="/projects/portfolio"
+                    primaryHue={primaryHue}
+                  />
+                </motion.div>
+              )}
+              {(projectFilter === "all" || projectFilter === "mobile") && (
+                <motion.div variants={item}>
+                  <ProjectCard
+                    title={t("mobileAppTitle")}
+                    description={t("mobileAppDesc")}
+                    tags={["React Native", "Firebase", "Redux"]}
+                    image="https://media.istockphoto.com/id/1471383309/vector/laptop-silver-mockup-with-tablet-blank-screens.jpg?s=612x612&w=0&k=20&c=pgNCZDAV63qeCAq2HgjEKEEkOvabkFkl63qd_hZ9CoY="
+                    demoLink="#"
+                    codeLink="https://github.com/FokoJunior"
+                    detailsLink="/projects/mobile-app"
+                    primaryHue={primaryHue}
+                  />
+                </motion.div>
+              )}
+              {(projectFilter === "all" || projectFilter === "ai") && (
+                <motion.div variants={item}>
+                  <ProjectCard
+                    title={t("aiProjectTitle")}
+                    description={t("aiProjectDesc")}
+                    tags={["Python", "TensorFlow", "NLP", "ML"]}
+                    image="https://media.istockphoto.com/id/1471383309/vector/laptop-silver-mockup-with-tablet-blank-screens.jpg?s=612x612&w=0&k=20&c=pgNCZDAV63qeCAq2HgjEKEEkOvabkFkl63qd_hZ9CoY="
+                    demoLink="#"
+                    codeLink="https://github.com/FokoJunior"
+                    detailsLink="/projects/ai-project"
+                    primaryHue={primaryHue}
+                  />
+                </motion.div>
+              )}
             </motion.div>
             <div className="flex justify-center mt-8 md:mt-12">
               <Link href="/projects">
@@ -758,34 +788,121 @@ export default function Home() {
           </motion.div>
         </section>
       </main>
-      <footer className="border-t py-6 relative z-10 bg-background/80 backdrop-blur-sm">
-        <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} {t("nickname")}. {t("allRightsReserved")}
-          </p>
-          <div className="flex items-center gap-4">
-            <Link href="https://github.com/FokoJunior" target="_blank" rel="noopener noreferrer">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hover:text-primary transition-colors neo-brutalism-button-ghost"
-                style={{ color: `hsl(${primaryHue}, 70%, 50%)` }}
-              >
-                <Github className="h-5 w-5" />
-                <span className="sr-only">GitHub</span>
-              </Button>
-            </Link>
-            <Link href="mailto:benitojunior2022@gmail.com">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hover:text-primary transition-colors neo-brutalism-button-ghost"
-                style={{ color: `hsl(${primaryHue}, 70%, 50%)` }}
-              >
-                <Mail className="h-5 w-5" />
-                <span className="sr-only">Email</span>
-              </Button>
-            </Link>
+      <footer className="border-t py-12 relative z-10 bg-background/90 backdrop-blur-sm">
+        <div className="container">
+          {/* Main Footer Content */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+            {/* About Section */}
+            <div className="space-y-4">
+              <h3 className="font-bold text-lg" style={{ color: `hsl(${primaryHue}, 70%, 50%)` }}>
+                F_Junior
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Étudiant en Master 1 Génie Logiciel et Systèmes d'Information, passionné par le développement web, mobile et l'intelligence artificielle.
+              </p>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="h-4 w-4" />
+                <span>Douala, Cameroun</span>
+              </div>
+            </div>
+
+            {/* Navigation Links */}
+            <div className="space-y-4">
+              <h3 className="font-bold text-lg">Navigation</h3>
+              <ul className="space-y-2 text-sm">
+                <li><Link href="#home" className="text-muted-foreground hover:text-primary transition-colors">{t("home")}</Link></li>
+                <li><Link href="#about" className="text-muted-foreground hover:text-primary transition-colors">{t("about")}</Link></li>
+                <li><Link href="#skills" className="text-muted-foreground hover:text-primary transition-colors">{t("skills")}</Link></li>
+                <li><Link href="#projects" className="text-muted-foreground hover:text-primary transition-colors">{t("projects")}</Link></li>
+                <li><Link href="/blog" className="text-muted-foreground hover:text-primary transition-colors">{t("blog")}</Link></li>
+              </ul>
+            </div>
+
+            {/* Contact Info */}
+            <div className="space-y-4">
+              <h3 className="font-bold text-lg">Contact</h3>
+              <ul className="space-y-3 text-sm">
+                <li className="flex items-center gap-2 text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  <a href="mailto:benitojunior2022@gmail.com" className="hover:text-primary transition-colors">
+                    benitojunior2022@gmail.com
+                  </a>
+                </li>
+                <li className="flex items-center gap-2 text-muted-foreground">
+                  <Phone className="h-4 w-4" />
+                  <span>+237 6XX XXX XXX</span>
+                </li>
+              </ul>
+              <Link href="/CV_FOKO_JUNIOR.pdf" target="_blank">
+                <Button
+                  size="sm"
+                  className="mt-2"
+                  style={{ backgroundColor: `hsl(${primaryHue}, 70%, 50%)` }}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Télécharger CV
+                </Button>
+              </Link>
+            </div>
+
+            {/* Social Links */}
+            <div className="space-y-4">
+              <h3 className="font-bold text-lg">Réseaux sociaux</h3>
+              <div className="flex gap-3">
+                <Link href="https://github.com/FokoJunior" target="_blank" rel="noopener noreferrer">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="hover:bg-primary/10 transition-colors"
+                    style={{ borderColor: `hsl(${primaryHue}, 70%, 50%, 0.5)` }}
+                  >
+                    <Github className="h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link href="https://linkedin.com/in/fokojunior" target="_blank" rel="noopener noreferrer">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="hover:bg-primary/10 transition-colors"
+                    style={{ borderColor: `hsl(${primaryHue}, 70%, 50%, 0.5)` }}
+                  >
+                    <Linkedin className="h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link href="https://twitter.com/FokoJunior" target="_blank" rel="noopener noreferrer">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="hover:bg-primary/10 transition-colors"
+                    style={{ borderColor: `hsl(${primaryHue}, 70%, 50%, 0.5)` }}
+                  >
+                    <Twitter className="h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link href="mailto:benitojunior2022@gmail.com">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="hover:bg-primary/10 transition-colors"
+                    style={{ borderColor: `hsl(${primaryHue}, 70%, 50%, 0.5)` }}
+                  >
+                    <Mail className="h-5 w-5" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t pt-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                © {new Date().getFullYear()} {t("nickname")}. {t("allRightsReserved")}
+              </p>
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                By F_Junior.
+              </p>
+            </div>
           </div>
         </div>
       </footer>

@@ -17,16 +17,16 @@ export const translations = {
     hi: "Bonjour, je suis",
     name: "FOKO TADJUIGE B. JUNIOR",
     nickname: "F_Junior",
-    titles: ["Développeur Web Full Stack", "Développeur Mobile", "Étudiant en Génie Logiciel", "Passionné d'IA et ML"],
+    titles: ["Développeur Web Full Stack", "Développeur Mobile", "Étudiant en Master 1 GLSI", "Passionné d'IA et ML"],
     shortBio:
-      "Connu sous le pseudo F_Junior, je suis présentement étudiant en 3ème Année en Génie logiciel avec une passion pour l'intelligence artificielle. J'aime développer des solutions innovantes qui mêlent technologie et créativité ! 🌐🤖",
+      "Connu sous le pseudo F_Junior, je suis présentement étudiant en Master 1 Génie Logiciel et Systèmes d'Information avec une passion pour l'intelligence artificielle. J'aime développer des solutions innovantes qui mêlent technologie et créativité ! 🌐🤖",
     viewMyWork: "Voir mes projets",
     contactMe: "Me contacter",
 
     // About section
     aboutMe: "À propos de moi",
     aboutMeP1:
-      "Je suis un développeur Full Stack passionné par la création d'applications web et mobiles innovantes. Actuellement en 3ème année de Génie Logiciel, je me spécialise dans le développement web avec React, Next.js et Node.js, ainsi que le développement mobile avec React Native et Flutter.",
+      "Je suis un développeur Full Stack passionné par la création d'applications web et mobiles innovantes. Actuellement en Master 1 Génie Logiciel et Systèmes d'Information, je me spécialise dans le développement web avec React, Next.js et Node.js, ainsi que le développement mobile avec React Native et Flutter.",
     aboutMeP2:
       "Mon parcours dans le développement a commencé pendant mes études, où j'ai découvert ma passion pour la création d'interfaces utilisateur intuitives et la résolution de problèmes complexes. Je m'intéresse particulièrement à l'intelligence artificielle et au machine learning, domaines dans lesquels j'aspire à me spécialiser.",
     aboutMeP3:
@@ -170,16 +170,16 @@ export const translations = {
     hi: "Hi, I'm",
     name: "FOKO TADJUIGE B. JUNIOR",
     nickname: "F_Junior",
-    titles: ["Full Stack Web Developer", "Mobile Developer", "Software Engineering Student", "AI & ML Enthusiast"],
+    titles: ["Full Stack Web Developer", "Mobile Developer", "Master 1 GLSI Student", "AI & ML Enthusiast"],
     shortBio:
-      "Known as F_Junior, I'm currently a 3rd year Software Engineering student with a passion for artificial intelligence. I love developing innovative solutions that blend technology and creativity! 🌐🤖",
+      "Known as F_Junior, I'm currently a Master 1 Software Engineering and Information Systems student with a passion for artificial intelligence. I love developing innovative solutions that blend technology and creativity! 🌐🤖",
     viewMyWork: "View my work",
     contactMe: "Contact me",
 
     // About section
     aboutMe: "About me",
     aboutMeP1:
-      "I'm a Full Stack developer passionate about creating innovative web and mobile applications. Currently in my 3rd year of Software Engineering, I specialize in web development with React, Next.js and Node.js, as well as mobile development with React Native and Flutter.",
+      "I'm a Full Stack developer passionate about creating innovative web and mobile applications. Currently in Master 1 Software Engineering and Information Systems, I specialize in web development with React, Next.js and Node.js, as well as mobile development with React Native and Flutter.",
     aboutMeP2:
       "My journey in development began during my studies, where I discovered my passion for creating intuitive user interfaces and solving complex problems. I'm particularly interested in artificial intelligence and machine learning, fields in which I aspire to specialize.",
     aboutMeP3:

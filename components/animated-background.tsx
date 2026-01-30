@@ -1,175 +1,164 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { motion } from "framer-motion"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { useTheme } from "next-themes"
 
-interface Particle {
+interface Molecule {
   x: number
   y: number
   vx: number
   vy: number
-  size: number
-  color: string
+  radius: number
 }
 
 export default function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
-  const mouseRef = useRef({ x: 0, y: 0, isActive: false })
-  const particlesRef = useRef<Particle[]>([])
+  const moleculesRef = useRef<Molecule[]>([])
+  const mouseRef = useRef({ x: -1000, y: -1000 })
   const animationRef = useRef<number>(0)
   const { theme } = useTheme()
   const [isMounted, setIsMounted] = useState(false)
 
-  // Configuration
-  const particleCount = 60 // Nombre de noeuds
-  const connectionDistance = 150 // Distance de connexion neuronale
-  const mouseRange = 250 // Rayon d'influence de la souris (IA qui "sent" l'utilisateur)
-  const particleSpeed = 0.5 // Vitesse de base
+  // Configuration simple et élégante
+  const moleculeCount = 50
+  const connectionDistance = 150
+  const mouseRadius = 200
 
-  // Couleurs dynamiques selon le thème
-  const getColors = () => {
-    const isDark = theme === "dark"
-    return {
-      particle: isDark ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.3)",
-      line: isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(0, 0, 0, 0.1)",
-      background: isDark ? "#020817" : "#ffffff", // Fond tech sombre ou blanc pur
-    }
-  }
-
-  const handleResize = () => {
-    if (canvasRef.current && typeof window !== "undefined") {
-      canvasRef.current.width = window.innerWidth
-      canvasRef.current.height = window.innerHeight
-      setDimensions({ width: window.innerWidth, height: window.innerHeight })
-      initParticles(window.innerWidth, window.innerHeight)
-    }
-  }
-
-  const handleMouseMove = (e: MouseEvent) => {
-    mouseRef.current = { x: e.clientX, y: e.clientY, isActive: true }
-  }
-
-  const handleMouseLeave = () => {
-    mouseRef.current.isActive = false
-  }
-
-  const initParticles = (width: number, height: number) => {
-    particlesRef.current = []
-    for (let i = 0; i < particleCount; i++) {
-      particlesRef.current.push({
+  const initMolecules = useCallback((width: number, height: number) => {
+    moleculesRef.current = []
+    for (let i = 0; i < moleculeCount; i++) {
+      moleculesRef.current.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        vx: (Math.random() - 0.5) * particleSpeed,
-        vy: (Math.random() - 0.5) * particleSpeed,
-        size: Math.random() * 2 + 1,
-        color: getColors().particle
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        radius: Math.random() * 2 + 1.5
       })
     }
-  }
+  }, [])
 
-  const animate = () => {
-    if (!canvasRef.current) return
-    const ctx = canvasRef.current.getContext("2d")
+  const animate = useCallback(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    // Nettoyage avec trainée légère pour effet fluide
-    ctx.clearRect(0, 0, dimensions.width, dimensions.height)
+    const width = canvas.width
+    const height = canvas.height
+    const isDark = theme === "dark"
+    const mouse = mouseRef.current
 
-    const colors = getColors()
-    const particles = particlesRef.current
+    // Couleurs selon le thème
+    const dotColor = isDark ? "rgba(148, 163, 184, 0.6)" : "rgba(100, 116, 139, 0.5)"
+    const lineColor = isDark ? "rgba(148, 163, 184, 0.15)" : "rgba(100, 116, 139, 0.1)"
+    const mouseLineColor = isDark ? "rgba(99, 102, 241, 0.3)" : "rgba(79, 70, 229, 0.2)"
 
-    particles.forEach((p, i) => {
-      // Mouvement de base
-      p.x += p.vx
-      p.y += p.vy
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height)
 
-      // Rebond bords
-      if (p.x < 0 || p.x > dimensions.width) p.vx *= -1
-      if (p.y < 0 || p.y > dimensions.height) p.vy *= -1
+    const molecules = moleculesRef.current
 
-      // Attraction/Répulsion Souris (Effet IA Magnetique)
-      if (mouseRef.current.isActive) {
-        const dx = mouseRef.current.x - p.x
-        const dy = mouseRef.current.y - p.y
-        const distance = Math.sqrt(dx * dx + dy * dy)
+    // Update et draw molecules
+    molecules.forEach((mol, i) => {
+      // Mouvement
+      mol.x += mol.vx
+      mol.y += mol.vy
 
-        if (distance < mouseRange) {
-          // Attraction douce vers la souris
-          const forceDirectionX = dx / distance
-          const forceDirectionY = dy / distance
-          const force = (mouseRange - distance) / mouseRange
+      // Rebond sur les bords
+      if (mol.x < 0 || mol.x > width) mol.vx *= -1
+      if (mol.y < 0 || mol.y > height) mol.vy *= -1
 
-          // Coefficient d'attraction (0.02 = subtil mais visible)
-          p.vx += forceDirectionX * force * 0.05
-          p.vy += forceDirectionY * force * 0.05
+      // Légère attraction vers la souris
+      const dx = mouse.x - mol.x
+      const dy = mouse.y - mol.y
+      const dist = Math.sqrt(dx * dx + dy * dy)
 
-          // Limite de vitesse pour éviter l'explosion
-          const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy)
-          if (speed > 2) {
-            p.vx = (p.vx / speed) * 2
-            p.vy = (p.vy / speed) * 2
-          }
+      if (dist < mouseRadius && dist > 0) {
+        mol.vx += (dx / dist) * 0.02
+        mol.vy += (dy / dist) * 0.02
+
+        // Limite vitesse
+        const speed = Math.sqrt(mol.vx * mol.vx + mol.vy * mol.vy)
+        if (speed > 1.5) {
+          mol.vx = (mol.vx / speed) * 1.5
+          mol.vy = (mol.vy / speed) * 1.5
         }
       }
 
-      // Dessin Particule (Noeud)
+      // Friction
+      mol.vx *= 0.99
+      mol.vy *= 0.99
+
+      // Dessiner le point (molécule)
       ctx.beginPath()
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-      ctx.fillStyle = colors.particle
+      ctx.arc(mol.x, mol.y, mol.radius, 0, Math.PI * 2)
+      ctx.fillStyle = dotColor
       ctx.fill()
 
-      // Connexions (Synapses)
-      for (let j = i + 1; j < particles.length; j++) {
-        const p2 = particles[j]
-        const dx = p.x - p2.x
-        const dy = p.y - p2.y
-        const distance = Math.sqrt(dx * dx + dy * dy)
+      // Connexions entre molécules
+      for (let j = i + 1; j < molecules.length; j++) {
+        const mol2 = molecules[j]
+        const dx2 = mol.x - mol2.x
+        const dy2 = mol.y - mol2.y
+        const distance = Math.sqrt(dx2 * dx2 + dy2 * dy2)
 
         if (distance < connectionDistance) {
+          const opacity = 1 - distance / connectionDistance
           ctx.beginPath()
-          ctx.strokeStyle = colors.line
-          ctx.lineWidth = 1 - distance / connectionDistance
-          ctx.moveTo(p.x, p.y)
-          ctx.lineTo(p2.x, p2.y)
+          ctx.moveTo(mol.x, mol.y)
+          ctx.lineTo(mol2.x, mol2.y)
+          ctx.strokeStyle = isDark
+            ? `rgba(148, 163, 184, ${opacity * 0.2})`
+            : `rgba(100, 116, 139, ${opacity * 0.15})`
+          ctx.lineWidth = opacity * 1.5
           ctx.stroke()
         }
       }
 
-      // Connexion à la souris (Interface Humain-Machine)
-      if (mouseRef.current.isActive) {
-        const dx = mouseRef.current.x - p.x
-        const dy = mouseRef.current.y - p.y
-        const distance = Math.sqrt(dx * dx + dy * dy)
-
-        if (distance < connectionDistance * 1.5) {
-          ctx.beginPath()
-          ctx.strokeStyle = colors.line
-          // Plus visible quand proche
-          ctx.globalAlpha = (1 - distance / (connectionDistance * 1.5)) * 0.8
-          ctx.lineWidth = 1
-          ctx.moveTo(p.x, p.y)
-          ctx.lineTo(mouseRef.current.x, mouseRef.current.y)
-          ctx.stroke()
-          ctx.globalAlpha = 1
-        }
+      // Connexion avec la souris
+      if (dist < mouseRadius) {
+        const opacity = 1 - dist / mouseRadius
+        ctx.beginPath()
+        ctx.moveTo(mol.x, mol.y)
+        ctx.lineTo(mouse.x, mouse.y)
+        ctx.strokeStyle = isDark
+          ? `rgba(99, 102, 241, ${opacity * 0.4})`
+          : `rgba(79, 70, 229, ${opacity * 0.3})`
+        ctx.lineWidth = opacity * 2
+        ctx.stroke()
       }
     })
 
     animationRef.current = requestAnimationFrame(animate)
-  }
+  }, [theme])
 
   useEffect(() => {
     if (typeof window === "undefined") return
     setIsMounted(true)
-    handleResize()
 
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const handleResize = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+      initMolecules(canvas.width, canvas.height)
+    }
+
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseRef.current = { x: e.clientX, y: e.clientY }
+    }
+
+    const handleMouseLeave = () => {
+      mouseRef.current = { x: -1000, y: -1000 }
+    }
+
+    handleResize()
     window.addEventListener("resize", handleResize)
     window.addEventListener("mousemove", handleMouseMove)
     window.addEventListener("mouseleave", handleMouseLeave)
 
-    animate()
+    animationRef.current = requestAnimationFrame(animate)
 
     return () => {
       window.removeEventListener("resize", handleResize)
@@ -177,15 +166,15 @@ export default function AnimatedBackground() {
       window.removeEventListener("mouseleave", handleMouseLeave)
       cancelAnimationFrame(animationRef.current)
     }
-  }, [theme, dimensions.width]) // Retrigger si le thème ou la taille change
+  }, [initMolecules, animate])
 
   if (!isMounted) return null
 
   return (
     <canvas
       ref={canvasRef}
-      className="fixed top-0 left-0 w-full h-full pointer-events-none -z-50 opacity-100 transition-opacity duration-1000"
+      className="fixed inset-0 pointer-events-none"
+      style={{ zIndex: -1 }}
     />
   )
 }
-
