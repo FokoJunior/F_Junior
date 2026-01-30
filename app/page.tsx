@@ -46,9 +46,7 @@ const ChatButton = dynamic(() => import("@/components/chat-button"), {
   ssr: false,
 })
 
-const SplashScreen = dynamic(() => import("@/components/splash-screen"), {
-  ssr: false,
-})
+
 
 export default function Home() {
   const { toast } = useToast()
@@ -164,22 +162,14 @@ export default function Home() {
     show: { opacity: 1, y: 0 },
   }
 
-  const [showSplash, setShowSplash] = useState(true)
-
-  // Gérer la fin du chargement
-  const handleSplashComplete = () => {
-    setShowSplash(false)
-  }
-
-  // Afficher le Splash Screen tant que nécessaire
-  if (showSplash) {
+  // Afficher un contenu minimal pendant le chargement côté client
+  if (!isMounted) {
     return (
-      <SplashScreen onComplete={handleSplashComplete} />
+      <div className="flex min-h-screen flex-col items-center justify-center">
+        <div className="animate-pulse">Chargement...</div>
+      </div>
     )
   }
-
-  // Afficher un contenu minimal pendant le chargement côté client si le splash est fini mais pas monté (peu probable avec la logique ci-dessus)
-  if (!isMounted) return null
 
   const jsonLd = {
     "@context": "https://schema.org",
