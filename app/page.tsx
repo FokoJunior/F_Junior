@@ -32,10 +32,7 @@ import RobotAnimation from "@/components/robot-animation"
 import CodeDemo from "@/components/code-demo"
 
 // Importer dynamiquement les composants qui utilisent des APIs browser
-const AnimatedBackground = dynamic(() => import("@/components/animated-background"), {
-  ssr: false,
-  loading: () => null,
-})
+
 
 const Map = dynamic(() => import("@/components/map"), {
   ssr: false,
@@ -192,10 +189,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col relative bg-tech-grid" ref={mainRef}>
-      {/* Overlay dégradé pour adoucir la grille */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-background/50 to-background pointer-events-none" />
-
+    <div className="flex min-h-screen flex-col relative" ref={mainRef}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -210,7 +204,7 @@ export default function Home() {
           boxShadow: `0 0 10px hsl(${primaryHue}, 70%, 50%)`,
         }}
       />
-      {isMounted && <AnimatedBackground />}
+
 
       <main className="flex-1 relative z-10">
         {/* Hero Section */}

@@ -8,6 +8,7 @@ import Navbar from "@/components/navbar"
 import CursorFollower from "@/components/cursor-follower"
 import { FloatingButtonsProvider } from "@/components/floating-buttons-provider"
 import GlobalSplash from "@/components/global-splash"
+import DynamicBackground from "@/components/dynamic-background"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -81,6 +82,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <LanguageProvider>
             <GlobalSplash />
+            <DynamicBackground />
             <FloatingButtonsProvider>
               <Navbar />
               <CursorFollower />
