@@ -9,6 +9,8 @@ interface Molecule {
   vx: number
   vy: number
   radius: number
+  blinkSpeed: number
+  blinkOffset: number
 }
 
 export default function AnimatedBackground() {
@@ -16,11 +18,12 @@ export default function AnimatedBackground() {
   const moleculesRef = useRef<Molecule[]>([])
   const mouseRef = useRef({ x: -1000, y: -1000 })
   const animationRef = useRef<number>(0)
+  const hueRef = useRef<number>(0)
   const { theme } = useTheme()
   const [isMounted, setIsMounted] = useState(false)
 
   // Configuration simple et élégante
-  const moleculeCount = 50
+  const moleculeCount = 60 // Un peu plus pour l'effet visuel
   const connectionDistance = 150
   const mouseRadius = 200
 
@@ -32,7 +35,9 @@ export default function AnimatedBackground() {
         y: Math.random() * height,
         vx: (Math.random() - 0.5) * 0.5,
         vy: (Math.random() - 0.5) * 0.5,
-        radius: Math.random() * 2 + 1.5
+        radius: Math.random() * 2 + 1.5,
+        blinkSpeed: 0.01 + Math.random() * 0.02,
+        blinkOffset: Math.random() * Math.PI * 2
       })
     }
   }, [])
@@ -48,10 +53,12 @@ export default function AnimatedBackground() {
     const isDark = theme === "dark"
     const mouse = mouseRef.current
 
-    // Couleurs selon le thème
-    const dotColor = isDark ? "rgba(148, 163, 184, 0.6)" : "rgba(100, 116, 139, 0.5)"
-    const lineColor = isDark ? "rgba(148, 163, 184, 0.15)" : "rgba(100, 116, 139, 0.1)"
-    const mouseLineColor = isDark ? "rgba(99, 102, 241, 0.3)" : "rgba(79, 70, 229, 0.2)"
+    // Cycle de couleur global
+    hueRef.current = (hueRef.current + 0.5) % 360
+    const currentHue = hueRef.current
+
+    // Couleurs de base
+    const lineColor = isDark ? "rgba(148, 163, 184, 0.1)" : "rgba(100, 116, 139, 0.08)"
 
     // Clear canvas
     ctx.clearRect(0, 0, width, height)
@@ -89,11 +96,28 @@ export default function AnimatedBackground() {
       mol.vx *= 0.99
       mol.vy *= 0.99
 
+      // Calcul de l'effet de clignotement (pulsation)
+      const blink = (Math.sin(Date.now() * mol.blinkSpeed + mol.blinkOffset) + 1) / 2
+
+      // La couleur du point est basée sur le cycle de couleur du site
+      const opacity = isDark ? 0.2 + blink * 0.6 : 0.1 + blink * 0.5
+      const color = `hsla(${currentHue}, 70%, ${isDark ? 60 : 50}%, ${opacity})`
+
       // Dessiner le point (molécule)
       ctx.beginPath()
-      ctx.arc(mol.x, mol.y, mol.radius, 0, Math.PI * 2)
-      ctx.fillStyle = dotColor
+      ctx.arc(mol.x, mol.y, mol.radius * (0.8 + blink * 0.4), 0, Math.PI * 2)
+      ctx.fillStyle = color
+
+      // Ajouter un petit glow
+      if (blink > 0.7) {
+        ctx.shadowBlur = 10 * blink
+        ctx.shadowColor = `hsla(${currentHue}, 70%, 60%, ${blink * 0.5})`
+      } else {
+        ctx.shadowBlur = 0
+      }
+
       ctx.fill()
+      ctx.shadowBlur = 0 // Reset shadow for lines
 
       // Connexions entre molécules
       for (let j = i + 1; j < molecules.length; j++) {
@@ -103,28 +127,26 @@ export default function AnimatedBackground() {
         const distance = Math.sqrt(dx2 * dx2 + dy2 * dy2)
 
         if (distance < connectionDistance) {
-          const opacity = 1 - distance / connectionDistance
+          const lineOpacity = (1 - distance / connectionDistance) * 0.15
           ctx.beginPath()
           ctx.moveTo(mol.x, mol.y)
           ctx.lineTo(mol2.x, mol2.y)
           ctx.strokeStyle = isDark
-            ? `rgba(148, 163, 184, ${opacity * 0.2})`
-            : `rgba(100, 116, 139, ${opacity * 0.15})`
-          ctx.lineWidth = opacity * 1.5
+            ? `hsla(${currentHue}, 30%, 70%, ${lineOpacity})`
+            : `hsla(${currentHue}, 30%, 40%, ${lineOpacity})`
+          ctx.lineWidth = 0.5 + lineOpacity * 1
           ctx.stroke()
         }
       }
 
       // Connexion avec la souris
       if (dist < mouseRadius) {
-        const opacity = 1 - dist / mouseRadius
+        const mouseOpacity = (1 - dist / mouseRadius) * 0.3
         ctx.beginPath()
         ctx.moveTo(mol.x, mol.y)
         ctx.lineTo(mouse.x, mouse.y)
-        ctx.strokeStyle = isDark
-          ? `rgba(99, 102, 241, ${opacity * 0.4})`
-          : `rgba(79, 70, 229, ${opacity * 0.3})`
-        ctx.lineWidth = opacity * 2
+        ctx.strokeStyle = `hsla(${currentHue}, 70%, 60%, ${mouseOpacity})`
+        ctx.lineWidth = mouseOpacity * 2
         ctx.stroke()
       }
     })
