@@ -830,7 +830,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-center gap-2 text-muted-foreground">
                   <Phone className="h-4 w-4" />
-                  <span>+237 6XX XXX XXX</span>
+                  <span>+237 690 713 130</span>
                 </li>
               </ul>
               <Link href="/CV_FOKO_JUNIOR.pdf" target="_blank">
