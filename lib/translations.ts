@@ -14,12 +14,12 @@ export const translations = {
 
     // Hero section
     availableForWork: "Disponible pour travailler",
-    hi: "Bonjour, je suis",
-    name: "FOKO TADJUIGE B. JUNIOR",
+    hi: "Bonjour, je suis FOKO TADJUIGE B. JUNIOR",
+    fullName: "FOKO TADJUIGE B. JUNIOR",
     nickname: "F_Junior",
     titles: ["Développeur Web Full Stack", "Développeur Mobile", "Étudiant en Master 1 GLSI", "Passionné d'IA et ML"],
     shortBio:
-      "Connu sous le pseudo F_Junior, je suis présentement étudiant en Master 1 Génie Logiciel et Systèmes d'Information avec une passion pour l'intelligence artificielle. J'aime développer des solutions innovantes qui mêlent technologie et créativité ! 🌐🤖",
+      "Connu sous le pseudo F_Junior, je suis présentement étudiant en Master 1 Génie Logiciel et Systèmes d'Information avec une passion pour l'intelligence artificielle. J'aime développer des solutions innovantes qui mêlent technologie et créativité !",
     viewMyWork: "Voir mes projets",
     contactMe: "Me contacter",
 
@@ -100,7 +100,7 @@ export const translations = {
     // Chat
     chatWithMe: "Discuter avec moi",
     typingMessage: "Écrivez votre message...",
-    messageSent: "Message envoyé !",
+    messageSent: "Message envoyé",
     messageConfirmation: "Merci pour votre message. Je vous répondrai bientôt.",
 
     // Resume/CV
@@ -112,13 +112,13 @@ export const translations = {
     hardSkills: "Compétences techniques",
     technicalSkills: "Compétences techniques",
     interests: "Centres d'intérêt",
-    contact: "Contact",
+    resume_contact: "Contact",
     personalInfo: "Informations personnelles",
-    age: "Âge",
-    years: "ans",
+    resume_age: "Âge",
+    resume_years: "ans",
     downloadResume: "Télécharger mon CV",
-    skills: "Compétences",
-    languages: "Langues",
+    resume_skills: "Compétences",
+    resume_languages: "Langues",
     french: "Français",
     english: "Anglais",
     fluent: "Courant",
@@ -167,12 +167,12 @@ export const translations = {
 
     // Hero section
     availableForWork: "Available for work",
-    hi: "Hi, I'm",
-    name: "FOKO TADJUIGE B. JUNIOR",
+    hi: "Hi, I'm FOKO TADJUIGE B. JUNIOR",
+    fullName: "FOKO TADJUIGE B. JUNIOR",
     nickname: "F_Junior",
     titles: ["Full Stack Web Developer", "Mobile Developer", "Master 1 GLSI Student", "AI & ML Enthusiast"],
     shortBio:
-      "Known as F_Junior, I'm currently a Master 1 Software Engineering and Information Systems student with a passion for artificial intelligence. I love developing innovative solutions that blend technology and creativity! 🌐🤖",
+      "Known as F_Junior, I'm currently a Master 1 Software Engineering and Information Systems student with a passion for artificial intelligence. I love developing innovative solutions that blend technology and creativity!",
     viewMyWork: "View my work",
     contactMe: "Contact me",
 
@@ -253,7 +253,7 @@ export const translations = {
     // Chat
     chatWithMe: "Chat with me",
     typingMessage: "Type your message...",
-    messageSent: "Message sent!",
+    messageSent: "Message sent",
     messageConfirmation: "Thank you for your message. I'll get back to you soon.",
 
     // Resume/CV
@@ -265,13 +265,13 @@ export const translations = {
     hardSkills: "Hard Skills",
     technicalSkills: "Technical Skills",
     interests: "Interests",
-    contact: "Contact",
+    resume_contact: "Contact",
     personalInfo: "Personal Information",
-    age: "Age",
-    years: "years old",
+    resume_age: "Age",
+    resume_years: "years old",
     downloadResume: "Download my resume",
-    skills: "Skills",
-    languages: "Languages",
+    resume_skills: "Skills",
+    resume_languages: "Languages",
     french: "French",
     english: "English",
     fluent: "Fluent",
@@ -320,12 +320,12 @@ export const translations = {
 
     // Hero section
     availableForWork: "Verfügbar für Arbeit",
-    hi: "Hallo, ich bin",
-    name: "FOKO TADJUIGE B. JUNIOR",
+    hi: "Hallo, ich bin FOKO TADJUIGE B. JUNIOR",
+    fullName: "FOKO TADJUIGE B. JUNIOR",
     nickname: "F_Junior",
     titles: ["Full Stack Webentwickler", "Mobile Entwickler", "Student der Softwaretechnik", "KI & ML Enthusiast"],
     shortBio:
-      "Bekannt als F_Junior, ich bin derzeit ein Student der Softwaretechnik im 3. Jahr mit einer Leidenschaft für künstliche Intelligenz. Ich entwickle gerne innovative Lösungen, die Technologie und Kreativität verbinden! 🌐🤖",
+      "Bekannt als F_Junior, ich bin derzeit ein Student der Softwaretechnik im 3. Jahr mit einer Leidenschaft für künstliche Intelligenz. Ich entwickle gerne innovative Lösungen, die Technologie und Kreativität verbinden!",
     viewMyWork: "Meine Arbeit ansehen",
     contactMe: "Kontaktiere mich",
 
@@ -406,7 +406,7 @@ export const translations = {
     // Chat
     chatWithMe: "Chatten Sie mit mir",
     typingMessage: "Schreiben Sie Ihre Nachricht...",
-    messageSent: "Nachricht gesendet!",
+    messageSent: "Nachricht gesendet",
     messageConfirmation: "Vielen Dank für Ihre Nachricht. Ich werde mich bald bei Ihnen melden.",
 
     // Resume/CV
@@ -418,13 +418,13 @@ export const translations = {
     hardSkills: "Hard Skills",
     technicalSkills: "Technische Fähigkeiten",
     interests: "Interessen",
-    contact: "Kontakt",
+    resume_contact: "Kontakt",
     personalInfo: "Persönliche Informationen",
-    age: "Alter",
-    years: "Jahre alt",
+    resume_age: "Alter",
+    resume_years: "Jahre alt",
     downloadResume: "Meinen Lebenslauf herunterladen",
-    skills: "Fähigkeiten",
-    languages: "Sprachen",
+    resume_skills: "Fähigkeiten",
+    resume_languages: "Sprachen",
     french: "Französisch",
     english: "Englisch",
     fluent: "Fließend",
@@ -473,12 +473,12 @@ export const translations = {
 
     // Hero section
     availableForWork: "可接受工作",
-    hi: "你好，我是",
-    name: "FOKO TADJUIGE B. JUNIOR",
+    hi: "你好，我是 FOKO TADJUIGE B. JUNIOR",
+    fullName: "FOKO TADJUIGE B. JUNIOR",
     nickname: "F_Junior",
     titles: ["全栈网页开发者", "移动应用开发者", "软件工程学生", "人工智能爱好者"],
     shortBio:
-      "我目前是一名三年级软件工程专业的学生，对人工智能充满热情。我喜欢开发将技术和创造力融为一体的创新解决方案！🌐🤖",
+      "我目前是一名三年级软件工程专业的学生，对人工智能充满热情。我喜欢开发将技术和创造力融为一体的创新解决方案！",
     viewMyWork: "查看我的作品",
     contactMe: "联系我",
 
@@ -552,7 +552,7 @@ export const translations = {
     // Chat
     chatWithMe: "与我聊天",
     typingMessage: "输入您的消息...",
-    messageSent: "消息已发送！",
+    messageSent: "消息已发送",
     messageConfirmation: "感谢您的消息。我会尽快回复您。",
 
     // Resume/CV
@@ -564,13 +564,13 @@ export const translations = {
     hardSkills: "硬技能",
     technicalSkills: "技术技能",
     interests: "兴趣爱好",
-    contact: "联系方式",
+    resume_contact: "联系方式",
     personalInfo: "个人信息",
-    age: "年龄",
-    years: "岁",
+    resume_age: "年龄",
+    resume_years: "岁",
     downloadResume: "下载我的简历",
-    skills: "技能",
-    languages: "语言",
+    resume_skills: "技能",
+    resume_languages: "语言",
     french: "法语",
     english: "英语",
     fluent: "流利",

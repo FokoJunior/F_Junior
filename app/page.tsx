@@ -14,13 +14,19 @@ import {
   ChevronDown,
   Code,
   Sparkles,
-  Zap,
+  Laptop,
   Terminal,
+  Zap,
+  Loader2,
   ExternalLink,
+  Linkedin,
+  Twitter,
+  Heart,
+  Coffee,
+  MapPin as MapPinIcon,
 } from "lucide-react"
 import { motion, useAnimation, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import dynamic from "next/dynamic"
-import { Linkedin, Twitter, Heart, Coffee } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -283,10 +289,10 @@ export default function Home() {
                 className="space-y-2"
               >
                 <h2 className="text-xl md:text-2xl font-medium text-muted-foreground">
-                  {t("hi")}, {t("name")}
+                  {t("hi")}
                 </h2>
                 <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-                  I am <span className="text-glow" style={{ color: `hsl(${primaryHue}, 70%, 50%)` }}>{t("nickname")}</span>
+                  <span className="text-glow" style={{ color: `hsl(${primaryHue}, 70%, 50%)` }}>{t("nickname")}</span>
                 </h1>
               </motion.div>
 
@@ -423,7 +429,7 @@ export default function Home() {
         </section>
 
         {/* About Section */}
-        <section id="about" className="container py-16 md:py-24 border-t">
+        <section id="about" className="container py-12 md:py-24 border-t">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -446,7 +452,7 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
                   <div className="p-4 w-full">
-                    <h3 className="text-white text-xl font-bold">{t("name")}</h3>
+                    <h3 className="text-white text-xl font-bold">{t("fullName")}</h3>
                     <p className="text-white/80">{t("nickname")}</p>
                   </div>
                 </div>
@@ -498,7 +504,7 @@ export default function Home() {
         </section>
 
         {/* Code Demo Section */}
-        <section id="code-demo" className="container py-16 md:py-24 border-t">
+        <section id="code-demo" className="container py-12 md:py-24 border-t">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -514,7 +520,7 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
-            className="neo-brutalism-terminal h-[600px] md:h-[700px]"
+            className="neo-brutalism-terminal h-[450px] md:h-[700px]"
           >
             <CodeDemo primaryHue={primaryHue} />
           </motion.div>
@@ -543,7 +549,7 @@ export default function Home() {
         </section>
 
         {/* Skills Section */}
-        <section id="skills" className="container py-16 md:py-24 border-t">
+        <section id="skills" className="container py-12 md:py-24 border-t">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -618,7 +624,7 @@ export default function Home() {
         </section>
 
         {/* Projects Section */}
-        <section id="projects" className="container py-16 md:py-24 border-t">
+        <section id="projects" className="container py-12 md:py-24 border-t">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -1337,7 +1343,7 @@ function ContactForm({ onSubmit, primaryHue }: { onSubmit: (formData: { name: st
           >
             {isLoading ? (
               <>
-                <span className="animate-spin mr-2">⏳</span>
+                <Loader2 className="animate-spin mr-2 h-4 w-4" />
                 Envoi en cours...
               </>
             ) : (

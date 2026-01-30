@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
 <body>
   <div class="container">
     <div class="header">
-      <div class="icon">✨</div>
+      <div class="icon"></div>
       <h1 class="title">Merci pour votre message</h1>
       <p class="subtitle">Je vous répondrai très prochainement.</p>
     </div>

@@ -39,7 +39,7 @@ export default function ChatButton() {
     setMessages([
       {
         id: 1,
-        text: "Bonjour ! 👋 Je suis l'assistant de F_Junior. Comment puis-je vous aider à découvrir son parcours ou ses projets aujourd'hui ?",
+        text: "Bonjour ! Je suis l'assistant de F_Junior. Comment puis-je vous aider à découvrir son parcours ou ses projets aujourd'hui ?",
         sender: "assistant",
         timestamp: new Date(),
       },
