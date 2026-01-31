@@ -26,7 +26,7 @@ export const translations = {
     // About section
     aboutMe: "À propos de moi",
     aboutMeP1:
-      "Je suis un développeur Full Stack passionné par la création d'applications web et mobiles innovantes. Actuellement en Master 1 Génie Logiciel et Systèmes d'Information, je me spécialise dans le développement web avec React, Next.js et Node.js, ainsi que le développement mobile avec React Native et Flutter.",
+      "Je suis un développeur Full Stack passionné par la création d'applications web et mobiles innovantes. Actuellement étudiant en Master 1 Systèmes d'Information et Génie Logiciel (SIGL) à l'IUC, et titulaire d'une licence en Génie Logiciel, je me spécialise dans le développement web avec React, Next.js et Node.js, ainsi que le développement mobile avec React Native et Flutter.",
     aboutMeP2:
       "Mon parcours dans le développement a commencé pendant mes études, où j'ai découvert ma passion pour la création d'interfaces utilisateur intuitives et la résolution de problèmes complexes. Je m'intéresse particulièrement à l'intelligence artificielle et au machine learning, domaines dans lesquels j'aspire à me spécialiser.",
     aboutMeP3:
