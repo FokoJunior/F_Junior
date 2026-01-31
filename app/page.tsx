@@ -207,7 +207,7 @@ export default function Home() {
       "@type": "Person",
       "name": "FOKO TADJUIGE B. JUNIOR",
       "alternateName": "F_Junior",
-      "jobTitle": "Développeur Full Stack & Ingénieur IA",
+      "jobTitle": "Développeur Full Stack & Étudiant en Master 1 SIGL",
       "url": "https://fokojunior.com",
       "sameAs": [
         "https://github.com/FokoJunior",
@@ -221,7 +221,8 @@ export default function Home() {
         "Intelligence Artificielle",
         "Machine Learning",
         "Python",
-        "Génie Logiciel"
+        "Génie Logiciel",
+        "SIGL"
       ]
     }
   }

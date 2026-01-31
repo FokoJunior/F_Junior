@@ -19,7 +19,7 @@ export const metadata = {
     template: "%s | F_Junior Portfolio",
   },
   description:
-    "Portfolio de FOKO TADJUIGE B. JUNIOR (F_Junior), étudiant en Génie Logiciel passionné par le développement Full Stack (Next.js, React, Node.js) et l'Intelligence Artificielle.",
+    "Portfolio de FOKO TADJUIGE B. JUNIOR (F_Junior), titulaire d'une licence en Génie Logiciel et actuellement étudiant en Master 1 SIGL à l'IUC (Douala), passionné par le développement Full Stack et l'IA.",
   keywords: [
     "F_Junior",
     "Foko Junior",
@@ -39,7 +39,7 @@ export const metadata = {
     locale: "fr_FR",
     url: "https://fokojunior.com",
     title: "F_Junior | Développeur Full Stack & IA",
-    description: "Découvrez mes projets et compétences en développement web et intelligence artificielle.",
+    description: "Découvrez mon parcours de Master 1 SIGL et mes projets innovants en développement web et intelligence artificielle.",
     siteName: "F_Junior Portfolio",
     images: [
       {
@@ -53,7 +53,7 @@ export const metadata = {
   twitter: {
     card: "summary_large_image",
     title: "F_Junior | Développeur Full Stack & IA",
-    description: "Portfolio de FOKO TADJUIGE B. JUNIOR. Projets Web & IA.",
+    description: "Portfolio de FOKO TADJUIGE B. JUNIOR. Étudiant en Master 1 SIGL & Développeur Full Stack.",
     images: ["/og-image.png"],
     creator: "@FokoJunior", // À ajuster si vous avez un handle Twitter
   },

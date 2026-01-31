@@ -17,9 +17,9 @@ export const translations = {
     hi: "Bonjour, je suis FOKO TADJUIGE B. JUNIOR",
     fullName: "FOKO TADJUIGE B. JUNIOR",
     nickname: "F_Junior",
-    titles: ["Développeur Web Full Stack", "Développeur Mobile", "Étudiant en Master 1 GLSI", "Passionné d'IA et ML"],
+    titles: ["Développeur Web Full Stack", "Développeur Mobile", "Étudiant en Master 1 SIGL", "Passionné d'IA et ML"],
     shortBio:
-      "Connu sous le pseudo F_Junior, je suis présentement étudiant en Master 1 Génie Logiciel et Systèmes d'Information avec une passion pour l'intelligence artificielle. J'aime développer des solutions innovantes qui mêlent technologie et créativité !",
+      "Connu sous le pseudo F_Junior, je suis présentement étudiant en Master 1 Systèmes d'Information et Génie Logiciel (SIGL) à l'IUC. Titulaire d'une licence en Génie Logiciel, je me passionne pour l'intelligence artificielle et le développement de solutions innovantes mélangeant technologie et créativité !",
     viewMyWork: "Voir mes projets",
     contactMe: "Me contacter",
 
@@ -170,16 +170,16 @@ export const translations = {
     hi: "Hi, I'm FOKO TADJUIGE B. JUNIOR",
     fullName: "FOKO TADJUIGE B. JUNIOR",
     nickname: "F_Junior",
-    titles: ["Full Stack Web Developer", "Mobile Developer", "Master 1 GLSI Student", "AI & ML Enthusiast"],
+    titles: ["Full Stack Web Developer", "Mobile Developer", "Master 1 SIGL Student", "AI & ML Enthusiast"],
     shortBio:
-      "Known as F_Junior, I'm currently a Master 1 Software Engineering and Information Systems student with a passion for artificial intelligence. I love developing innovative solutions that blend technology and creativity!",
+      "Known as F_Junior, I am currently a Master 1 student in Information Systems and Software Engineering (SIGL) at IUC. With a Bachelor's degree in Software Engineering, I am passionate about artificial intelligence and developing innovative solutions that blend technology and creativity!",
     viewMyWork: "View my work",
     contactMe: "Contact me",
 
     // About section
     aboutMe: "About me",
     aboutMeP1:
-      "I'm a Full Stack developer passionate about creating innovative web and mobile applications. Currently in Master 1 Software Engineering and Information Systems, I specialize in web development with React, Next.js and Node.js, as well as mobile development with React Native and Flutter.",
+      "I'm a Full Stack developer passionate about creating innovative web and mobile applications. Currently a Master 1 student in Information Systems and Software Engineering (SIGL) at IUC, with a Bachelor's degree in Software Engineering, I specialize in web development with React, Next.js and Node.js, as well as mobile development with React Native and Flutter.",
     aboutMeP2:
       "My journey in development began during my studies, where I discovered my passion for creating intuitive user interfaces and solving complex problems. I'm particularly interested in artificial intelligence and machine learning, fields in which I aspire to specialize.",
     aboutMeP3:
@@ -323,16 +323,16 @@ export const translations = {
     hi: "Hallo, ich bin FOKO TADJUIGE B. JUNIOR",
     fullName: "FOKO TADJUIGE B. JUNIOR",
     nickname: "F_Junior",
-    titles: ["Full Stack Webentwickler", "Mobile Entwickler", "Student der Softwaretechnik", "KI & ML Enthusiast"],
+    titles: ["Full Stack Webentwickler", "Mobile Entwickler", "Master 1 SIGL Student", "KI & ML Enthusiast"],
     shortBio:
-      "Bekannt als F_Junior, ich bin derzeit ein Student der Softwaretechnik im 3. Jahr mit einer Leidenschaft für künstliche Intelligenz. Ich entwickle gerne innovative Lösungen, die Technologie und Kreativität verbinden!",
+      "Bekannt als F_Junior, bin ich derzeit Master-1-Student für Informationssysteme und Software-Engineering (SIGL) am IUC. Mit einem Bachelor-Abschluss in Software-Engineering begeistere ich mich für künstliche Intelligenz und die Entwicklung innovativer Lösungen, die Technologie und Kreativität vereinen!",
     viewMyWork: "Meine Arbeit ansehen",
     contactMe: "Kontaktiere mich",
 
     // About section
     aboutMe: "Über mich",
     aboutMeP1:
-      "Ich bin ein Full Stack Entwickler mit Leidenschaft für die Erstellung innovativer Web- und Mobile-Anwendungen. Derzeit im 3. Jahr meines Softwaretechnik-Studiums, spezialisiere ich mich auf Webentwicklung mit React, Next.js und Node.js sowie Mobile-Entwicklung mit React Native und Flutter.",
+      "Ich bin ein Full Stack Entwickler mit Leidenschaft für die Erstellung innovativer Web- und Mobile-Anwendungen. Derzeit Master-1-Student für Informationssysteme und Software-Engineering (SIGL) am IUC, mit einem Bachelor-Abschluss in Softwaretechnik, spezialisiere ich mich auf Webentwicklung mit React, Next.js und Node.js sowie Mobile-Entwicklung mit React Native und Flutter.",
     aboutMeP2:
       "Meine Reise in der Entwicklung begann während meines Studiums, wo ich meine Leidenschaft für die Erstellung intuitiver Benutzeroberflächen und die Lösung komplexer Probleme entdeckte. Ich interessiere mich besonders für künstliche Intelligenz und maschinelles Lernen, Bereiche, in denen ich mich spezialisieren möchte.",
     aboutMeP3:
@@ -476,16 +476,16 @@ export const translations = {
     hi: "你好，我是 FOKO TADJUIGE B. JUNIOR",
     fullName: "FOKO TADJUIGE B. JUNIOR",
     nickname: "F_Junior",
-    titles: ["全栈网页开发者", "移动应用开发者", "软件工程学生", "人工智能爱好者"],
+    titles: ["全栈网页开发者", "移动应用开发者", "Master 1 SIGL 学生", "人工智能爱好者"],
     shortBio:
-      "我目前是一名三年级软件工程专业的学生，对人工智能充满热情。我喜欢开发将技术和创造力融为一体的创新解决方案！",
+      "我是 F_Junior，目前是 IUC 信息系统与软件工程 (SIGL) 的硕士一年级学生。我拥有软件工程学士学位，热衷于人工智能，致力于开发融合技术与创意的创新解决方案！",
     viewMyWork: "查看我的作品",
     contactMe: "联系我",
 
     // About section
     aboutMe: "关于我",
     aboutMeP1:
-      "我是一名全栈开发者，热衷于创建创新的网页和移动应用程序。目前我正在攻读软件工程三年级，专注于使用React、Next.js和Node.js进行网页开发，以及使用React Native和Flutter进行移动开发。",
+      "我是 F_Junior，目前是 IUC 信息系统与软件工程 (SIGL) 的硕士一年级学生。我拥有软件工程学士学位，热衷于人工智能，致力于开发融合技术与创意的创新解决方案！我专注于使用React、Next.js和Node.js进行网页开发，以及使用React Native和Flutter进行移动开发。",
     aboutMeP2:
       "我的开发之旅始于我的学习期间，在那里我发现了我对创建直观用户界面和解决复杂问题的热情。我特别对人工智能和机器学习感兴趣，这是我希望专攻的领域。",
     aboutMeP3: "当我不编码时，你可以发现我在探索新技术，为开源项目做贡献，或参加黑客马拉松和技术活动。",

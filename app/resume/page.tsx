@@ -458,11 +458,11 @@ export default function ResumePage() {
                     </CardHeader>
                     <CardContent>
                       <p className="text-muted-foreground">
-                        Étudiant en troisième année de Génie Informatique à l'Université Aventist Cosendai (UAC), je
-                        souhaite mettre en pratique mes compétences dans un environnement stimulant et rigoureux. Je me
-                        distingue par mon esprit de synthèse, ainsi que par mes solides compétences dans le
-                        développement logiciel. Curieux et ouvert, j'apprécie travailler sur des problématiques variées
-                        et relever des défis techniques.
+                        Actuellement étudiant en Master 1 Systèmes d'Information et Génie Logiciel (SIGL) à l'Institut
+                        Universitaire de la Côte (IUC), je suis titulaire d'une Licence en Génie Logiciel de l'Université
+                        Adventiste Cosendai (UAC). Passionné par l'innovation technologique, je me distingue par mes
+                        solides compétences en développement Full Stack et mon intérêt marqué pour l'Intelligence
+                        Artificielle. Rigoureux et créatif, j'aspire à relever des défis techniques complexes.
                       </p>
                     </CardContent>
                   </Card>
@@ -605,8 +605,8 @@ export default function ResumePage() {
                       <div>
                         <div className="flex justify-between items-start">
                           <div>
-                            <h3 className="font-medium">Licence - Génie Logiciel</h3>
-                            <p className="text-muted-foreground">UAC, Douala, Cameroun</p>
+                            <h3 className="font-medium">Master 1 - SIGL</h3>
+                            <p className="text-muted-foreground">IUC, Douala, Cameroun</p>
                           </div>
                           <Badge
                             className="animate-pulse neo-brutalism-badge"
@@ -616,7 +616,29 @@ export default function ResumePage() {
                             }}
                           >
                             <Calendar className="h-3 w-3 mr-1" />
-                            2024 - Présent
+                            2025 - Présent
+                          </Badge>
+                        </div>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Systèmes d'Information et Génie Logiciel. Approfondissement en architecture logicielle, Big Data et IA.
+                        </p>
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-medium">Licence - Génie Logiciel</h3>
+                            <p className="text-muted-foreground">UAC, Douala, Cameroun</p>
+                          </div>
+                          <Badge
+                            className="neo-brutalism-badge"
+                            style={{
+                              backgroundColor: `hsl(${primaryHue}, 70%, 50%, 0.2)`,
+                              color: `hsl(${primaryHue}, 70%, 50%)`,
+                            }}
+                          >
+                            <Calendar className="h-3 w-3 mr-1" />
+                            2024 - 2025
                           </Badge>
                         </div>
                         <p className="mt-2 text-sm text-muted-foreground">
