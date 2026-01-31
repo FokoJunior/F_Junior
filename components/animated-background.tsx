@@ -23,9 +23,9 @@ export default function AnimatedBackground() {
   const [isMounted, setIsMounted] = useState(false)
 
   // Configuration simple et élégante
-  const moleculeCount = 60 // Un peu plus pour l'effet visuel
-  const connectionDistance = 150
-  const mouseRadius = 200
+  const moleculeCount = 80
+  const connectionDistance = 180
+  const mouseRadius = 250
 
   const initMolecules = useCallback((width: number, height: number) => {
     moleculesRef.current = []
@@ -100,7 +100,7 @@ export default function AnimatedBackground() {
       const blink = (Math.sin(Date.now() * mol.blinkSpeed + mol.blinkOffset) + 1) / 2
 
       // La couleur du point est basée sur le cycle de couleur du site
-      const opacity = isDark ? 0.2 + blink * 0.6 : 0.1 + blink * 0.5
+      const opacity = isDark ? 0.3 + blink * 0.6 : 0.2 + blink * 0.6
       const color = `hsla(${currentHue}, 70%, ${isDark ? 60 : 50}%, ${opacity})`
 
       // Dessiner le point (molécule)
@@ -127,7 +127,7 @@ export default function AnimatedBackground() {
         const distance = Math.sqrt(dx2 * dx2 + dy2 * dy2)
 
         if (distance < connectionDistance) {
-          const lineOpacity = (1 - distance / connectionDistance) * 0.15
+          const lineOpacity = (1 - distance / connectionDistance) * 0.3
           ctx.beginPath()
           ctx.moveTo(mol.x, mol.y)
           ctx.lineTo(mol2.x, mol2.y)
@@ -196,7 +196,7 @@ export default function AnimatedBackground() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none"
-      style={{ zIndex: -1 }}
+      style={{ zIndex: 0 }}
     />
   )
 }
