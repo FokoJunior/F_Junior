@@ -9,6 +9,9 @@ import Navbar from "@/components/navbar"
 import SiteFooter from "@/components/site-footer"
 import ChatButton from "@/components/chat-button"
 import { Toaster } from "@/components/ui/toaster"
+import CustomCursor from "@/components/motion/custom-cursor"
+import ScrollProgress from "@/components/motion/scroll-progress"
+import SmoothScroll from "@/components/motion/smooth-scroll"
 import { SITE_URL, defaultDescription, defaultTitle, keywords } from "@/lib/seo"
 
 const sans = Geist({ subsets: ["latin"], variable: "--font-sans" })
@@ -21,6 +24,11 @@ const serif = Instrument_Serif({
 })
 
 export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  // Empêche le zoom automatique quand on touche un champ de saisie sur mobile
+  maximumScale: 1,
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f6f3ec" },
     { media: "(prefers-color-scheme: dark)", color: "#10100e" },
@@ -41,6 +49,13 @@ export const metadata: Metadata = {
   publisher: "Foko Junior",
   category: "technology",
   alternates: { canonical: "/" },
+  // Codes de validation Google Search Console / Bing Webmaster (voir .env.local)
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+    other: process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
+      ? { "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION }
+      : undefined,
+  },
   formatDetection: { telephone: false, email: false, address: false },
   openGraph: {
     type: "profile",
@@ -84,12 +99,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body id="top" className="grain min-h-screen font-sans">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <LanguageProvider>
-            <a
-              href="#main"
-              className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-foreground focus:px-4 focus:py-2 focus:text-background"
-            >
-              Aller au contenu
-            </a>
+            <SmoothScroll />
+            <ScrollProgress />
+            <CustomCursor />
             <Navbar />
             <main id="main">{children}</main>
             <SiteFooter />

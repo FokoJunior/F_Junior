@@ -65,6 +65,12 @@ export default function Navbar() {
 
   return (
     <>
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-foreground focus:px-4 focus:py-2 focus:text-background"
+      >
+        {t("skipToContent")}
+      </a>
       <header
         className={cn(
           "no-print fixed inset-x-0 top-0 z-50 transition-all duration-300",
@@ -74,11 +80,11 @@ export default function Navbar() {
         )}
       >
         <div className="container flex h-16 items-center justify-between gap-6">
-          <Link href="/" className="text-2xl leading-none" aria-label="F_Junior — accueil">
+          <Link href="/" className="text-2xl leading-none" aria-label={t("homeLink")}>
             <Wordmark />
           </Link>
 
-          <nav className="hidden items-center gap-8 lg:flex" aria-label="Navigation principale">
+          <nav className="hidden items-center gap-8 lg:flex" aria-label={t("mainNav")}>
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -167,7 +173,7 @@ export default function Navbar() {
             transition={{ duration: 0.25 }}
             className="fixed inset-0 z-40 flex flex-col bg-background pt-16 lg:hidden"
           >
-            <nav className="container flex flex-1 flex-col justify-center gap-1" aria-label="Navigation mobile">
+            <nav className="container flex flex-1 flex-col justify-center gap-1" aria-label={t("mobileNav")}>
               {[...navLinks, { href: "/#contact", label: "contact" }].map((link, i) => (
                 <motion.div
                   key={link.href}

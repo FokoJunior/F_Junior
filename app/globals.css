@@ -60,9 +60,45 @@
     scroll-padding-top: 5rem;
   }
 
+  /* Lenis gère le défilement fluide : on neutralise le smooth natif */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  /* Curseur personnalisé (souris uniquement) */
+  html.custom-cursor,
+  html.custom-cursor * {
+    cursor: none !important;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "ss01", "cv11";
+  }
+
+  /* Mobile : champs en 16 px minimum, sinon iOS zoome à la saisie */
+  @media (max-width: 767px) {
+    input,
+    textarea,
+    select {
+      font-size: max(16px, 1em) !important;
+    }
+  }
+
+  /* Pas de zoom par double-tap, ni de flash gris au toucher */
+  html {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
   }
 
   ::selection {
@@ -143,6 +179,11 @@
 
 .animate-marquee {
   animation: marquee 40s linear infinite;
+}
+
+/* Le bandeau ralentit au survol */
+*:hover > .animate-marquee {
+  animation-play-state: paused;
 }
 
 @keyframes blink {

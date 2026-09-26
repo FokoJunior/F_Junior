@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises"
 import { join } from "node:path"
 import { ImageResponse } from "next/og"
 
-export const alt = "Foko Junior (F_Junior) — Développeur Full Stack · Mobile · IA à Douala"
+export const alt = "Foko Junior (F_Junior) — Développeur Full Stack Web · Mobile · IA · DevOps"
 export const size = { width: 1200, height: 630 }
 export const contentType = "image/png"
 
@@ -21,7 +21,7 @@ export default async function OpengraphImage() {
           <div style={{ display: "flex", flexDirection: "column" }}>
             <div style={{ fontSize: 132, lineHeight: 0.95, letterSpacing: -4 }}>Foko</div>
             <div style={{ fontSize: 132, lineHeight: 0.95, letterSpacing: -4, color: "#d6461a", fontStyle: "italic" }}>Junior</div>
-            <div style={{ marginTop: 28, fontSize: 30, color: "#3b3833" }}>Développeur Full Stack · Mobile · IA</div>
+            <div style={{ marginTop: 28, fontSize: 30, color: "#3b3833" }}>Développeur Full Stack Web · Mobile · IA · DevOps</div>
           </div>
           <div style={{ display: "flex", fontSize: 22, color: "#6b665e" }}>
             FOKO TADJUIGE Benoît Junior · F_Junior · Douala, Cameroun

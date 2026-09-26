@@ -37,7 +37,7 @@ export default function Skills() {
             <ul className="mt-6 space-y-1.5 font-mono text-xs text-muted-foreground">
               {group.items.map((item) => (
                 <li key={item} className="transition-colors group-hover:text-foreground">
-                  {item}
+                  {item === "Agents IA" ? t("aiAgents") : item}
                 </li>
               ))}
             </ul>

@@ -4,6 +4,7 @@ import Link from "next/link"
 import { ArrowRight, Link2 } from "lucide-react"
 
 import { useLanguage } from "@/components/language-provider"
+import { tr } from "@/lib/i18n"
 import PageHeader from "@/components/page-header"
 import { Reveal } from "@/components/reveal"
 import { useToast } from "@/hooks/use-toast"
@@ -32,9 +33,9 @@ export default function PostView({ slug }: { slug: string }) {
     <article>
       <PageHeader
         back={{ href: "/blog", label: t("backToBlog") }}
-        eyebrow={`${post.category} · ${post.date} · ${post.readTime} ${t("minRead")}`}
-        title={<span className="block max-w-5xl text-[clamp(2.5rem,7vw,6.5rem)]">{post.title}</span>}
-        intro={post.excerpt}
+        eyebrow={`${post.category} · ${tr(post.date, language)} · ${post.readTime} ${t("minRead")}`}
+        title={<span className="block max-w-5xl text-[clamp(2.5rem,7vw,6.5rem)]">{tr(post.title, language)}</span>}
+        intro={tr(post.excerpt, language)}
       />
 
       <div className="container grid gap-12 pb-20 md:grid-cols-12">
@@ -45,7 +46,7 @@ export default function PostView({ slug }: { slug: string }) {
               <p className="text-sm">{site.nickname}</p>
             </div>
             <div>
-              <p className="eyebrow mb-2">Tags</p>
+              <p className="eyebrow mb-2">{t("tags")}</p>
               <ul className="flex flex-wrap gap-1.5">
                 {post.tags.map((tag) => (
                   <li key={tag} className="rounded-full border border-border px-2.5 py-0.5 font-mono text-[0.7rem]">
@@ -62,12 +63,11 @@ export default function PostView({ slug }: { slug: string }) {
         </aside>
 
         <Reveal className="md:col-span-8 md:col-start-5">
-          {language !== "fr" && (
-            <p lang={language} className="mb-8 border-l-2 border-primary pl-4 text-sm text-muted-foreground">
-              {t("frenchOnly")}
-            </p>
-          )}
-          <div lang="fr" className="article-content max-w-[68ch]" dangerouslySetInnerHTML={{ __html: post.content ?? "" }} />
+          <div
+            lang={language}
+            className="article-content max-w-[68ch]"
+            dangerouslySetInnerHTML={{ __html: tr(post.content, language) }}
+          />
         </Reveal>
       </div>
 
@@ -81,10 +81,10 @@ export default function PostView({ slug }: { slug: string }) {
                   <Link href={`/blog/${p.slug}`} className="group flex h-full flex-col justify-between gap-8 p-7 md:p-9">
                     <div>
                       <p className="eyebrow">
-                        {p.category} · {p.date}
+                        {p.category} · {tr(p.date, language)}
                       </p>
                       <p className="mt-3 font-serif text-3xl leading-tight transition-colors group-hover:text-primary">
-                        {p.title}
+                        {tr(p.title, language)}
                       </p>
                     </div>
                     <span className="inline-flex items-center gap-2 text-sm">

@@ -9,7 +9,7 @@ import { useLanguage } from "@/components/language-provider"
 import { Emphasis, Reveal, SectionLabel } from "@/components/reveal"
 import ProjectCover from "@/components/project-cover"
 import { tr } from "@/lib/i18n"
-import { categoryLabels, featuredProjects, mainProjects } from "@/lib/projects"
+import { categoryLabels, featuredProjects, mainProjects, titleOf } from "@/lib/projects"
 
 export default function Work() {
   const { t, language } = useLanguage()
@@ -59,13 +59,14 @@ export default function Work() {
             <Link
               href={`/projects/${project.slug}`}
               onMouseEnter={() => setHovered(i)}
+              data-cursor={t("cursorView")}
               className="group grid grid-cols-12 items-center gap-4 border-b border-border py-6 transition-colors md:py-8"
             >
               <span className="col-span-2 font-mono text-xs text-muted-foreground md:col-span-1">
                 {String(i + 1).padStart(2, "0")}
               </span>
               <span className="col-span-10 font-serif text-3xl leading-tight transition-[transform,color] duration-500 group-hover:translate-x-2 group-hover:text-primary md:col-span-6 md:text-5xl">
-                {project.title}
+                {titleOf(project, language)}
               </span>
               <span className="eyebrow col-span-5 col-start-3 md:col-span-2 md:col-start-auto">
                 {tr(categoryLabels[project.category], language)}

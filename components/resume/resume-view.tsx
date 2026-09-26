@@ -34,7 +34,7 @@ export default function ResumeView() {
     <>
       <PageHeader
         back={{ href: "/", label: t("backToHome") }}
-        eyebrow="Curriculum vitæ — 2026"
+        eyebrow={`${t("cvEyebrow")} — 2026`}
         title={
           <>
             Junior Benoît

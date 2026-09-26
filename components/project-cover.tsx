@@ -2,7 +2,7 @@
 
 import { useLanguage } from "@/components/language-provider"
 import { tr } from "@/lib/i18n"
-import { categoryLabels, coverOf, prettyUrl, type Project } from "@/lib/projects"
+import { categoryLabels, coverOf, prettyUrl, titleOf, type Project } from "@/lib/projects"
 import { cn } from "@/lib/utils"
 
 const tones = [
@@ -29,7 +29,7 @@ export default function ProjectCover({
   if (cover) {
     return (
       <div className={cn("overflow-hidden bg-muted", className)}>
-        <img src={cover} alt={project.title} loading="lazy" className="h-full w-full object-cover object-top" />
+        <img src={cover} alt={titleOf(project, language)} loading="lazy" className="h-full w-full object-cover object-top" />
       </div>
     )
   }
@@ -54,7 +54,7 @@ export default function ProjectCover({
           size === "lg" ? "text-[clamp(3rem,9vw,8rem)]" : "text-4xl md:text-5xl",
         )}
       >
-        {project.title}
+        {titleOf(project, language)}
       </p>
       <div className="flex items-end justify-between gap-4 font-mono text-[0.65rem] opacity-70">
         <span className="truncate">{project.tags.join(" · ")}</span>

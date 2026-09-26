@@ -17,10 +17,10 @@ export const nameVariants = [
   "FokoJunior",
 ]
 
-export const defaultTitle = "Foko Junior (F_Junior) — Développeur Full Stack · Mobile · IA à Douala"
+export const defaultTitle = "Foko Junior (F_Junior) — Développeur Full Stack Web · Mobile · IA · DevOps"
 
 export const defaultDescription =
-  "Portfolio officiel de Foko Junior — FOKO TADJUIGE Benoît Junior, alias F_Junior : développeur Full Stack, Mobile (Flutter) et IA à Douala, Cameroun. Étudiant en Master 2 Génie Logiciel à l'IUC. Projets : TCHOOP237, Oystr, FermeConnect, DanAid, JudgeX, Stock Junior."
+  "Portfolio officiel de Foko Junior — FOKO TADJUIGE Benoît Junior, alias F_Junior : développeur Full Stack Web, Mobile (Flutter), IA et DevOps à Douala, Cameroun. Étudiant en Master 2 Génie Logiciel à l'IUC. Projets : TCHOOP237, Oystr, FermeConnect, DanAid, JudgeX, Stock Junior."
 
 export const keywords = [
   ...nameVariants,
@@ -31,6 +31,9 @@ export const keywords = [
   "Foko Tadjuige",
   "développeur Full Stack Douala",
   "développeur Full Stack Cameroun",
+  "développeur DevOps Cameroun",
+  "DevOps Douala",
+  "Full Stack Web Mobile IA DevOps",
   "développeur Next.js Cameroun",
   "développeur Flutter Cameroun",
   "développeur mobile Douala",
@@ -60,7 +63,7 @@ export const personJsonLd = {
   givenName: "Junior Benoît",
   familyName: "FOKO TADJUIGE",
   additionalName: "Benoît",
-  jobTitle: "Développeur Full Stack · Mobile · IA",
+  jobTitle: "Développeur Full Stack Web · Mobile · IA · DevOps",
   description: defaultDescription,
   url: SITE_URL,
   image: `${SITE_URL}${site.portrait}`,
@@ -79,7 +82,7 @@ export const personJsonLd = {
   knowsAbout: [
     "TypeScript", "JavaScript", "Next.js", "React", "Node.js", "Express.js", "Flutter", "Dart", "Python", "PHP",
     "PostgreSQL", "Supabase", "Prisma", "Stripe", "Docker", "Intelligence Artificielle", "Agents IA",
-    "Génie Logiciel", "Développement mobile", "Développement web",
+    "Génie Logiciel", "Développement mobile", "Développement web", "DevOps", "Nginx", "Portainer", "CI/CD", "Déploiement VPS",
   ],
   sameAs: [...Object.values(site.socials), site.whatsapp],
 }

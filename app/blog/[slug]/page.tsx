@@ -15,15 +15,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = getPost((await params).slug)
   if (!post) return {}
   return {
-    title: post.title,
-    description: post.excerpt,
+    title: post.title.fr,
+    description: post.excerpt.fr,
     authors: [{ name: "Foko Junior (F_Junior)", url: SITE_URL }],
     alternates: { canonical: `/blog/${post.slug}` },
     openGraph: {
       type: "article",
       url: `/blog/${post.slug}`,
-      title: post.title,
-      description: post.excerpt,
+      title: post.title.fr,
+      description: post.excerpt.fr,
       authors: ["Foko Junior"],
       tags: post.tags,
     },
@@ -38,8 +38,8 @@ export default async function BlogPostPage({ params }: Props) {
   const jsonLd = jsonLdGraph(
     {
       "@type": "BlogPosting",
-      headline: post.title,
-      description: post.excerpt,
+      headline: post.title.fr,
+      description: post.excerpt.fr,
       inLanguage: "fr",
       keywords: post.tags.join(", "),
       url: `${SITE_URL}/blog/${post.slug}`,
@@ -50,7 +50,7 @@ export default async function BlogPostPage({ params }: Props) {
     breadcrumb([
       { name: "Foko Junior", path: "/" },
       { name: "Blog", path: "/blog" },
-      { name: post.title, path: `/blog/${post.slug}` },
+      { name: post.title.fr, path: `/blog/${post.slug}` },
     ]),
   )
 

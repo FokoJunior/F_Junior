@@ -26,7 +26,7 @@ export default function ChatButton() {
   const [isLoading, setIsLoading] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const { toast } = useToast()
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
 
   // Vérifier si le composant est monté côté client
   useEffect(() => {
@@ -82,12 +82,12 @@ export default function ChatButton() {
         content: userMessageText
       })
 
-      const response = await chatWithOpenAI(apiMessages)
+      const response = await chatWithOpenAI(apiMessages, language)
 
       if (response.error) {
         toast({
-          title: "Erreur",
-          description: response.error,
+          title: t("errorTitle"),
+          description: t("chatUnavailable"),
           variant: "destructive"
         })
       } else if (response.text) {
@@ -102,8 +102,8 @@ export default function ChatButton() {
     } catch (error) {
       console.error("Error sending message:", error)
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue.",
+        title: t("errorTitle"),
+        description: t("chatError"),
         variant: "destructive"
       })
     } finally {
@@ -133,7 +133,7 @@ export default function ChatButton() {
                   <p className="text-sm font-medium">{t("chatWithMe")}</p>
                   <p className="eyebrow flex items-center gap-1.5 !text-[0.62rem]">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    Assistant F_Junior
+                    {t("assistantName")}
                   </p>
                 </div>
               </div>
@@ -147,7 +147,7 @@ export default function ChatButton() {
               </button>
             </div>
 
-            <div className="flex h-[min(440px,60vh)] flex-col gap-3 overflow-y-auto p-4" aria-live="polite">
+            <div className="flex h-[min(440px,60vh)] flex-col gap-3 overflow-y-auto p-4" aria-live="polite" data-lenis-prevent>
               {messages.map((msg) => (
                 <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
                   <div
@@ -185,7 +185,7 @@ export default function ChatButton() {
               <textarea
                 rows={1}
                 placeholder={t("typingMessage")}
-                className="max-h-28 min-h-[40px] flex-1 resize-none rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground"
+                className="max-h-28 min-h-[40px] flex-1 resize-none rounded-md border border-input bg-transparent px-3 py-2 text-base outline-none md:text-sm placeholder:text-muted-foreground focus:border-foreground"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={(e) => {

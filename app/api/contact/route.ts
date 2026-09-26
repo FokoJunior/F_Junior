@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
       
       <div class="signature">
         <div class="name">FOKO TADJUIGE B. Junior</div>
-        <div class="role">Développeur Full Stack & IA</div>
+        <div class="role">Développeur Full Stack Web · Mobile · IA · DevOps</div>
         <div class="links">
           <a href="https://fjunior.tchoop237.com">Portfolio</a>
           <a href="https://github.com/FokoJunior">GitHub</a>

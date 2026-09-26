@@ -5,18 +5,19 @@ import Link from "next/link"
 import { ArrowUpRight, Search } from "lucide-react"
 
 import { useLanguage } from "@/components/language-provider"
+import { tr } from "@/lib/i18n"
 import PageHeader from "@/components/page-header"
 import { Reveal } from "@/components/reveal"
 import { blogCategories, posts, type Post } from "@/lib/blog"
 import { cn } from "@/lib/utils"
 
 function PostRow({ post, index }: { post: Post; index: number }) {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const published = !!post.content
 
   const inner = (
     <>
-      <span className="font-mono text-xs text-muted-foreground md:col-span-2">{post.date}</span>
+      <span className="font-mono text-xs text-muted-foreground md:col-span-2">{tr(post.date, language)}</span>
       <span className="md:col-span-6">
         <span
           className={cn(
@@ -24,9 +25,9 @@ function PostRow({ post, index }: { post: Post; index: number }) {
             published && "transition-colors group-hover:text-primary",
           )}
         >
-          {post.title}
+          {tr(post.title, language)}
         </span>
-        <span className="mt-2 block text-sm leading-relaxed text-muted-foreground">{post.excerpt}</span>
+        <span className="mt-2 block text-sm leading-relaxed text-muted-foreground">{tr(post.excerpt, language)}</span>
       </span>
       <span className="eyebrow md:col-span-2">{post.category}</span>
       <span className="flex items-center justify-between gap-3 font-mono text-xs text-muted-foreground md:col-span-2 md:justify-end">
@@ -45,7 +46,7 @@ function PostRow({ post, index }: { post: Post; index: number }) {
   return (
     <Reveal as="li" delay={Math.min(index, 6) * 0.03}>
       {published ? (
-        <Link href={`/blog/${post.slug}`} className={cls}>
+        <Link href={`/blog/${post.slug}`} className={cls} data-cursor={t("cursorRead")}>
           {inner}
         </Link>
       ) : (
@@ -58,7 +59,7 @@ function PostRow({ post, index }: { post: Post; index: number }) {
 }
 
 export default function BlogIndex() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const [query, setQuery] = useState("")
   const [category, setCategory] = useState<string | null>(null)
 
@@ -69,18 +70,18 @@ export default function BlogIndex() {
       .filter(
         (p) =>
           !q ||
-          p.title.toLowerCase().includes(q) ||
-          p.excerpt.toLowerCase().includes(q) ||
+          tr(p.title, language).toLowerCase().includes(q) ||
+          tr(p.excerpt, language).toLowerCase().includes(q) ||
           p.tags.some((tag) => tag.toLowerCase().includes(q)),
       )
       .sort((a, b) => Number(!!b.content) - Number(!!a.content))
-  }, [query, category])
+  }, [query, category, language])
 
   return (
     <>
       <PageHeader
         back={{ href: "/", label: t("backToHome") }}
-        eyebrow={`${posts.length} articles`}
+        eyebrow={`${posts.length} ${t("articlesCount")}`}
         title={
           <>
             Blog<span className="text-primary">.</span>
@@ -114,7 +115,7 @@ export default function BlogIndex() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("searchArticles")}
-              className="w-full border-0 border-b border-input bg-transparent py-2 pl-7 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground"
+              className="w-full border-0 border-b border-input bg-transparent py-2 pl-7 text-base outline-none md:text-sm transition-colors placeholder:text-muted-foreground focus:border-foreground"
             />
           </label>
         </div>

@@ -4,7 +4,7 @@ import Link from "next/link"
 import { ArrowUp, ArrowUpRight } from "lucide-react"
 
 import { useLanguage } from "@/components/language-provider"
-import { Wordmark } from "@/components/navbar"
+import { SplitText } from "@/components/reveal"
 import { site } from "@/lib/site"
 
 export default function SiteFooter() {
@@ -12,7 +12,7 @@ export default function SiteFooter() {
 
   const columns = [
     {
-      title: "Navigation",
+      title: t("navigation"),
       links: [
         { href: "/#about", label: t("about") },
         { href: "/projects", label: t("work") },
@@ -21,7 +21,7 @@ export default function SiteFooter() {
       ],
     },
     {
-      title: "Social",
+      title: t("social"),
       links: [
         { href: site.socials.github, label: "GitHub", external: true },
         { href: site.socials.linkedin, label: "LinkedIn", external: true },
@@ -79,7 +79,11 @@ export default function SiteFooter() {
 
       <div className="container">
         <p aria-hidden className="select-none pb-[0.14em] text-[21vw] leading-[0.8] tracking-tighter text-foreground lg:text-[19vw] 2xl:text-[16rem]">
-          <Wordmark />
+          <span className="font-serif tracking-tight">
+            <SplitText text="F" />
+            <SplitText text="_" className="text-primary" delay={0.04} />
+            <SplitText text="Junior" delay={0.08} />
+          </span>
         </p>
       </div>
 

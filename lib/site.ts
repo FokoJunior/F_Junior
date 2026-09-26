@@ -3,7 +3,7 @@ export const site = {
   fullName: "Junior Benoît FOKO TADJUIGE",
   shortName: "Foko Junior",
   nickname: "F_Junior",
-  role: "Développeur Full Stack · Mobile · IA",
+  role: "Développeur Full Stack Web · Mobile · IA · DevOps",
   email: "benitojunior2022@gmail.com",
   phone: "+237 690 713 130",
   phoneHref: "tel:+237690713130",

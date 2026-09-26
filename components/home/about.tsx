@@ -2,14 +2,15 @@
 
 import { useLanguage } from "@/components/language-provider"
 import { tr } from "@/lib/i18n"
-import { Reveal, SectionLabel } from "@/components/reveal"
+import { Reveal, RevealImage, SectionLabel } from "@/components/reveal"
 import { experience } from "@/lib/resume"
 import { site, stack } from "@/lib/site"
 
 export function StackMarquee() {
+  const { t } = useLanguage()
   const items = [...stack, ...stack]
   return (
-    <div className="overflow-hidden border-y border-border bg-foreground py-4 text-background" aria-label="Stack technique">
+    <div className="overflow-hidden border-y border-border bg-foreground py-4 text-background" aria-label={t("techStack")}>
       <div className="animate-marquee flex w-max items-center gap-8 pr-8">
         {items.map((tech, i) => (
           <span
@@ -55,17 +56,17 @@ export default function About() {
         <div className="mt-14 grid gap-10 md:grid-cols-9 md:gap-12">
           <Reveal className="md:col-span-4">
             <figure className="relative">
-              <div className="aspect-[4/5] overflow-hidden rounded-md bg-muted">
+              <RevealImage className="aspect-[4/5] rounded-md bg-muted">
                 <img
                   src={site.portrait}
                   alt={site.fullName}
                   loading="lazy"
                   className="h-full w-full object-cover object-[50%_18%] grayscale transition-[filter] duration-700 hover:grayscale-0"
                 />
-              </div>
+              </RevealImage>
               <figcaption className="eyebrow mt-3 flex justify-between">
                 <span>{site.fullName}</span>
-                <span>Douala</span>
+                <span>{t("cityName")}</span>
               </figcaption>
             </figure>
           </Reveal>

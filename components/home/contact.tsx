@@ -115,7 +115,7 @@ export default function Contact() {
               <dd>{t("locationValue")}</dd>
             </div>
             <div>
-              <dt className="eyebrow mb-2">Social</dt>
+              <dt className="eyebrow mb-2">{t("social")}</dt>
               <dd className="flex flex-wrap gap-2">
                 {Object.entries(site.socials).map(([name, href]) => (
                   <a

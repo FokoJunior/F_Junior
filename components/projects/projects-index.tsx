@@ -8,12 +8,13 @@ import { ArrowUpRight } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
 import PageHeader from "@/components/page-header"
 import ProjectCover from "@/components/project-cover"
-import { Reveal, SectionLabel } from "@/components/reveal"
+import { Reveal, RevealImage, SectionLabel } from "@/components/reveal"
 import {
   archivedProjects,
   categoryLabels,
   mainProjects,
   prettyUrl,
+  titleOf,
   type ProjectCategory,
 } from "@/lib/projects"
 import { tr } from "@/lib/i18n"
@@ -35,7 +36,7 @@ export default function ProjectsIndex() {
     <>
       <PageHeader
         back={{ href: "/", label: t("backToHome") }}
-        eyebrow={`Index — ${mainProjects.length} ${t("projectsCount")}`}
+        eyebrow={`${t("index")} — ${mainProjects.length} ${t("projectsCount")}`}
         title={
           <>
             {t("work")}
@@ -75,14 +76,14 @@ export default function ProjectsIndex() {
                   exit={{ opacity: 0, scale: 0.96 }}
                   transition={{ duration: 0.4 }}
                 >
-                  <Link href={`/projects/${project.slug}`} className="group block">
-                    <div className="overflow-hidden rounded-md">
+                  <Link href={`/projects/${project.slug}`} className="group block" data-cursor={t("cursorView")}>
+                    <RevealImage className="rounded-md">
                       <ProjectCover
                         project={project}
                         index={index}
-                        className="aspect-[4/3] transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                        className="aspect-[4/3] transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                       />
-                    </div>
+                    </RevealImage>
                     <div className="mt-5 flex items-start justify-between gap-4">
                       <div>
                         <p className="eyebrow">
@@ -90,7 +91,7 @@ export default function ProjectsIndex() {
                           {project.context && ` · ${tr(project.context, language)}`}
                         </p>
                         <h2 className="mt-2 font-serif text-3xl leading-tight transition-colors group-hover:text-primary">
-                          {project.title}
+                          {titleOf(project, language)}
                         </h2>
                       </div>
                       <span className="mt-1 grid h-10 w-10 shrink-0 place-items-center rounded-full border border-border transition-all duration-300 group-hover:rotate-45 group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground">
@@ -126,9 +127,10 @@ export default function ProjectsIndex() {
                 <Link
                   href={`/projects/${project.slug}`}
                   className="group grid grid-cols-12 items-baseline gap-3 border-b border-border py-4"
+                  data-cursor={t("cursorView")}
                 >
                   <span className="col-span-8 font-serif text-xl transition-colors group-hover:text-primary md:col-span-5 md:text-2xl">
-                    {project.title}
+                    {titleOf(project, language)}
                   </span>
                   <span className="eyebrow col-span-4 text-right md:col-span-2 md:text-left">
                     {tr(categoryLabels[project.category], language)}

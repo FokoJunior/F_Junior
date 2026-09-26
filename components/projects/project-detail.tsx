@@ -8,9 +8,9 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useLanguage } from "@/components/language-provider"
 import PageHeader from "@/components/page-header"
 import ProjectCover from "@/components/project-cover"
-import { Reveal } from "@/components/reveal"
+import { Reveal, RevealImage } from "@/components/reveal"
 import { tr } from "@/lib/i18n"
-import { categoryLabels, getProject, mainProjects, projects, shotsOf } from "@/lib/projects"
+import { categoryLabels, getProject, mainProjects, projects, shotsOf, titleOf } from "@/lib/projects"
 
 export default function ProjectDetail({ slug }: { slug: string }) {
   const { t, language } = useLanguage()
@@ -19,6 +19,7 @@ export default function ProjectDetail({ slug }: { slug: string }) {
   const index = list.indexOf(project)
   const next = list[(index + 1) % list.length]
   const shots = shotsOf(project)
+  const projectTitle = titleOf(project, language)
   const desktop = shots.filter((s) => !s.mobile)
   const mobile = shots.filter((s) => s.mobile)
   const [open, setOpen] = useState<number | null>(null)
@@ -37,7 +38,7 @@ export default function ProjectDetail({ slug }: { slug: string }) {
       <PageHeader
         back={{ href: "/projects", label: t("backToProjects") }}
         eyebrow={`${String(index + 1).padStart(2, "0")} / ${String(list.length).padStart(2, "0")}`}
-        title={project.title}
+        title={projectTitle}
         intro={tr(project.description, language)}
       >
         {project.links && project.links.length > 0 && (
@@ -61,15 +62,16 @@ export default function ProjectDetail({ slug }: { slug: string }) {
 
       <div className="container">
         {/* Visuel principal */}
-        <Reveal>
+        <RevealImage>
           {desktop[0] ? (
             <button
               type="button"
               onClick={() => setOpen(shots.indexOf(desktop[0]))}
+              data-cursor={t("cursorZoom")}
               className="block w-full overflow-hidden rounded-md border border-border bg-muted"
-              aria-label={`${project.title} — 1`}
+              aria-label={`${projectTitle} — 1`}
             >
-              <img src={desktop[0].src} alt={`${project.title} — capture 1`} className="w-full" />
+              <img src={desktop[0].src} alt={`${projectTitle} — ${t("screenshot")} 1`} className="w-full" />
             </button>
           ) : (
             <ProjectCover
@@ -79,7 +81,7 @@ export default function ProjectDetail({ slug }: { slug: string }) {
               className="mx-auto aspect-[16/10] w-full rounded-md md:aspect-[21/9] [&_img]:object-contain"
             />
           )}
-        </Reveal>
+        </RevealImage>
 
         <div className="grid gap-12 py-16 md:grid-cols-12 md:py-24">
           <Reveal className="md:col-span-4">
@@ -152,11 +154,12 @@ export default function ProjectDetail({ slug }: { slug: string }) {
                     <button
                       type="button"
                       onClick={() => setOpen(shots.indexOf(shot))}
+                      data-cursor={t("cursorZoom")}
                       className="group block w-full overflow-hidden rounded-md border border-border bg-muted"
                     >
                       <img
                         src={shot.src}
-                        alt={`${project.title} — capture ${shots.indexOf(shot) + 1}`}
+                        alt={`${projectTitle} — ${t("screenshot")} ${shots.indexOf(shot) + 1}`}
                         loading="lazy"
                         className="w-full transition-transform duration-700 group-hover:scale-[1.02]"
                       />
@@ -172,11 +175,12 @@ export default function ProjectDetail({ slug }: { slug: string }) {
                     <button
                       type="button"
                       onClick={() => setOpen(shots.indexOf(shot))}
+                      data-cursor={t("cursorZoom")}
                       className="block w-[200px] overflow-hidden rounded-[1.6rem] border-[6px] border-foreground bg-foreground shadow-xl md:w-[240px]"
                     >
                       <img
                         src={shot.src}
-                        alt={`${project.title} — mobile`}
+                        alt={`${projectTitle} — mobile`}
                         loading="lazy"
                         className="w-full rounded-[1.1rem]"
                       />
@@ -191,12 +195,12 @@ export default function ProjectDetail({ slug }: { slug: string }) {
 
       <Dialog open={open !== null} onOpenChange={(v) => !v && setOpen(null)}>
         <DialogContent className="max-w-[min(96vw,1400px)] border-none bg-transparent p-0 shadow-none [&>button]:hidden">
-          <DialogTitle className="sr-only">{project.title}</DialogTitle>
+          <DialogTitle className="sr-only">{projectTitle}</DialogTitle>
           {openShot && (
             <div className="relative">
               <img
                 src={openShot.src}
-                alt={project.title}
+                alt={projectTitle}
                 className={`mx-auto max-h-[85vh] rounded-md ${openShot.mobile ? "w-auto" : "w-full object-contain"}`}
               />
               <div className="mt-3 flex items-center justify-center gap-3 text-white">
@@ -223,7 +227,7 @@ export default function ProjectDetail({ slug }: { slug: string }) {
           <div>
             <p className="eyebrow mb-3">{t("nextProject")}</p>
             <p className="font-serif text-4xl leading-none transition-colors group-hover:text-primary md:text-7xl">
-              {next.title}
+              {titleOf(next, language)}
             </p>
           </div>
           <ArrowRight className="h-8 w-8 shrink-0 transition-transform group-hover:translate-x-2 md:h-12 md:w-12" strokeWidth={1} />

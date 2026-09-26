@@ -1,5 +1,5 @@
 import { gallery, type Shot } from "@/lib/gallery"
-import type { T } from "@/lib/i18n"
+import { tr, type T } from "@/lib/i18n"
 
 export type ProjectCategory = "web" | "mobile" | "ai"
 
@@ -20,6 +20,8 @@ export type Project = {
   archive?: boolean
   /** Visuel d'une archive (les projets principaux utilisent la galerie) */
   image?: string
+  /** Titre traduit quand il diffère selon la langue */
+  localTitle?: T
   /** Mise en garde affichée sur la fiche */
   note?: T
 }
@@ -34,32 +36,32 @@ const site = (href: string): ProjectLink => ({ label: prettyUrl(href), href })
 
 const IMG = "https://github.com/FokoJunior/uniprice_website/blob/master/img/porfolio"
 
-type ArchiveRow = [slug: string, title: string, category: ProjectCategory, tags: string[], image: string, description: T]
+type ArchiveRow = [slug: string, title: T, category: ProjectCategory, tags: string[], image: string, description: T]
 
 const archives: ArchiveRow[] = [
-  ["synda-tech", "Site web — SyndaTech", "web", ["PHP", "JavaScript", "MySQL", "Bootstrap"], `${IMG}/syndatech-website.png?raw=true`,
+  ["synda-tech", { fr: "Site web — SyndaTech", en: "Website — SyndaTech", de: "Website — SyndaTech", zh: "网站 — SyndaTech" }, "web", ["PHP", "JavaScript", "MySQL", "Bootstrap"], `${IMG}/syndatech-website.png?raw=true`,
     { fr: "Site dynamique avec gestion de contenu et blog interactif pour SyndaTech.", en: "Dynamic website with content management and an interactive blog for SyndaTech.", de: "Dynamische Website mit Content-Management und interaktivem Blog für SyndaTech.", zh: "为 SyndaTech 打造的动态网站，含内容管理与互动博客。" }],
-  ["uniprice-dwash", "Site vitrine — Uniprice Dwash", "web", ["HTML", "CSS", "JavaScript", "Bootstrap"], `${IMG}/Uniprice-website.png?raw=true`,
+  ["uniprice-dwash", { fr: "Site vitrine — Uniprice Dwash", en: "Showcase site — Uniprice Dwash", de: "Firmenwebsite — Uniprice Dwash", zh: "展示网站 — Uniprice Dwash" }, "web", ["HTML", "CSS", "JavaScript", "Bootstrap"], `${IMG}/Uniprice-website.png?raw=true`,
     { fr: "Site vitrine d'un service de lavage auto, avec formules et prise de rendez-vous.", en: "Showcase site for a car wash, with packages and online booking.", de: "Website einer Autowäsche mit Paketen und Online-Terminbuchung.", zh: "洗车服务展示网站，含套餐与在线预约。" }],
-  ["ecommerce", "Site e-commerce", "web", ["Next.js", "React", "Tailwind CSS"], `${IMG}/ecommerce.png?raw=true`,
+  ["ecommerce", { fr: "Site e-commerce", en: "E-commerce site", de: "Onlineshop", zh: "电商网站" }, "web", ["Next.js", "React", "Tailwind CSS"], `${IMG}/ecommerce.png?raw=true`,
     { fr: "Premier site e-commerce : catalogue, filtres, panier et paiement.", en: "First e-commerce site: catalogue, filters, cart and checkout.", de: "Erster Onlineshop: Katalog, Filter, Warenkorb und Bezahlung.", zh: "第一个电商网站：目录、筛选、购物车与结算。" }],
-  ["jm-expenses-tracker", "J-M Expenses Tracker", "mobile", ["Flutter", "Dart", "Firebase"], `${IMG}/tracker.png?raw=true`,
+  ["jm-expenses-tracker", { fr: "J-M Expenses Tracker", en: "J-M Expenses Tracker", de: "J-M Expenses Tracker", zh: "J-M 记账应用" }, "mobile", ["Flutter", "Dart", "Firebase"], `${IMG}/tracker.png?raw=true`,
     { fr: "Suivi des dépenses personnelles avec graphiques et catégories.", en: "Personal expense tracker with charts and categories.", de: "Ausgaben-Tracker mit Diagrammen und Kategorien.", zh: "带图表和分类的个人记账应用。" }],
-  ["test-personnalite", "Test de personnalité", "mobile", ["Flutter", "Dart"], `${IMG}/test_personnalite.png?raw=true`,
+  ["test-personnalite", { fr: "Test de personnalité", en: "Personality test", de: "Persönlichkeitstest", zh: "性格测试" }, "mobile", ["Flutter", "Dart"], `${IMG}/test_personnalite.png?raw=true`,
     { fr: "Application de tests de personnalité aux résultats partageables.", en: "Personality test app with shareable results.", de: "Persönlichkeitstest-App mit teilbaren Ergebnissen.", zh: "可分享结果的性格测试应用。" }],
-  ["quiz-app", "Application de quiz", "mobile", ["Flutter", "Dart", "API"], `${IMG}/quiz.png?raw=true`,
+  ["quiz-app", { fr: "Application de quiz", en: "Quiz app", de: "Quiz-App", zh: "问答应用" }, "mobile", ["Flutter", "Dart", "API"], `${IMG}/quiz.png?raw=true`,
     { fr: "Quiz par catégories et niveaux, avec classement.", en: "Quiz by category and level, with a leaderboard.", de: "Quiz nach Kategorien und Stufen mit Rangliste.", zh: "分类分级问答游戏，带排行榜。" }],
-  ["reconnaissance-faciale", "Reconnaissance faciale", "ai", ["Python", "OpenCV", "TensorFlow"], "https://hans-associes.fr/wp-content/uploads/2025/01/k4_14741506.jpg",
+  ["reconnaissance-faciale", { fr: "Reconnaissance faciale", en: "Face recognition", de: "Gesichtserkennung", zh: "人脸识别" }, "ai", ["Python", "OpenCV", "TensorFlow"], "https://hans-associes.fr/wp-content/uploads/2025/01/k4_14741506.jpg",
     { fr: "Détection et identification de visages en temps réel avec OpenCV.", en: "Real-time face detection and recognition with OpenCV.", de: "Gesichtserkennung in Echtzeit mit OpenCV.", zh: "基于 OpenCV 的实时人脸检测与识别。" }],
-  ["chatbot-telegram", "Chatbot Telegram", "ai", ["Python", "NLP", "Telegram API"], "https://fiverr-res.cloudinary.com/images/t_main1,q_auto,f_auto,q_auto,f_auto/gigs/207441761/original/aaf3c0f3c869463f18b04ff9c8d547f261e04445/make-a-telegram-bot-using-python.png",
+  ["chatbot-telegram", { fr: "Chatbot Telegram", en: "Telegram chatbot", de: "Telegram-Chatbot", zh: "Telegram 聊天机器人" }, "ai", ["Python", "NLP", "Telegram API"], "https://fiverr-res.cloudinary.com/images/t_main1,q_auto,f_auto,q_auto,f_auto/gigs/207441761/original/aaf3c0f3c869463f18b04ff9c8d547f261e04445/make-a-telegram-bot-using-python.png",
     { fr: "Chatbot Telegram s'appuyant sur le traitement du langage naturel.", en: "Telegram chatbot built on natural language processing.", de: "Telegram-Chatbot auf Basis von Sprachverarbeitung.", zh: "基于自然语言处理的 Telegram 聊天机器人。" }],
-  ["dfs-bfs", "Parcours de graphes DFS & BFS", "ai", ["Python", "Matplotlib"], "https://raw.githubusercontent.com/Daytron/graph-bfs-dfs-gui/master/screenshots/screenshot1.png",
+  ["dfs-bfs", { fr: "Parcours de graphes DFS & BFS", en: "DFS & BFS graph traversal", de: "Graphtraversierung DFS & BFS", zh: "DFS 与 BFS 图遍历" }, "ai", ["Python", "Matplotlib"], "https://raw.githubusercontent.com/Daytron/graph-bfs-dfs-gui/master/screenshots/screenshot1.png",
     { fr: "Implémentation et visualisation des parcours en profondeur et en largeur.", en: "Implementation and visualisation of depth- and breadth-first search.", de: "Implementierung und Visualisierung von Tiefen- und Breitensuche.", zh: "深度优先与广度优先搜索的实现与可视化。" }],
-  ["gestion-vote", "Gestion de vote", "web", ["PHP", "MySQL", "AJAX"], "https://www.esri.com/content/dam/esrisites/en-us/industries/2021/state-and-local-government/elections/assets/elections-mgmt-card-arcgis-survey-123.jpg",
+  ["gestion-vote", { fr: "Gestion de vote", en: "Voting system", de: "Abstimmungssystem", zh: "投票管理系统" }, "web", ["PHP", "MySQL", "AJAX"], "https://www.esri.com/content/dam/esrisites/en-us/industries/2021/state-and-local-government/elections/assets/elections-mgmt-card-arcgis-survey-123.jpg",
     { fr: "Système de vote en ligne avec authentification et résultats en direct.", en: "Online voting system with authentication and live results.", de: "Online-Abstimmung mit Anmeldung und Live-Ergebnissen.", zh: "带身份验证和实时结果的在线投票系统。" }],
-  ["blog-interactif", "Blog interactif", "web", ["PHP", "MySQL", "jQuery"], "https://img.freepik.com/vecteurs-libre/illustration-publication-blog-plat-organique-personnes_23-2148955260.jpg",
+  ["blog-interactif", { fr: "Blog interactif", en: "Interactive blog", de: "Interaktiver Blog", zh: "互动博客" }, "web", ["PHP", "MySQL", "jQuery"], "https://img.freepik.com/vecteurs-libre/illustration-publication-blog-plat-organique-personnes_23-2148955260.jpg",
     { fr: "Blog avec commentaires, partage social et administration.", en: "Blog with comments, social sharing and admin.", de: "Blog mit Kommentaren, Teilen und Verwaltung.", zh: "带评论、社交分享和后台的博客。" }],
-  ["weather", "Application météo", "web", ["JavaScript", "OpenWeather API", "Chart.js"], "https://static.vecteezy.com/ti/vecteur-libre/p1/3774267-meteo-verifier-cartoon-smartphone-interface-vector-templates-set-winter-overcast-mobile-app-screen-page-day-and-dark-mode-design-forecast-ui-for-application-phone-display-avec-caractere-plat-vectoriel.jpg",
+  ["weather", { fr: "Application météo", en: "Weather app", de: "Wetter-App", zh: "天气应用" }, "web", ["JavaScript", "OpenWeather API", "Chart.js"], "https://static.vecteezy.com/ti/vecteur-libre/p1/3774267-meteo-verifier-cartoon-smartphone-interface-vector-templates-set-winter-overcast-mobile-app-screen-page-day-and-dark-mode-design-forecast-ui-for-application-phone-display-avec-caractere-plat-vectoriel.jpg",
     { fr: "Tableau de bord météo avec prévisions sur 7 jours.", en: "Weather dashboard with a 7-day forecast.", de: "Wetter-Dashboard mit 7-Tage-Vorhersage.", zh: "带 7 天预报的天气看板。" }],
 ]
 
@@ -466,7 +468,8 @@ export const projects: Project[] = [
   // Archives : projets d'études et premiers projets
   ...archives.map(([slug, title, category, tags, image, description]) => ({
     slug,
-    title,
+    title: title.fr,
+    localTitle: title,
     category,
     tags,
     image,
@@ -478,6 +481,10 @@ export const projects: Project[] = [
 export const mainProjects = projects.filter((p) => !p.archive)
 export const archivedProjects = projects.filter((p) => p.archive)
 export const featuredProjects = projects.filter((p) => p.featured)
+
+export function titleOf(project: Project, lang: string) {
+  return project.localTitle ? tr(project.localTitle, lang) : project.title
+}
 
 export function getProject(slug: string) {
   return projects.find((p) => p.slug === slug)

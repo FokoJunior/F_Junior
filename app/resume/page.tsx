@@ -4,7 +4,7 @@ import ResumeView from "@/components/resume/resume-view"
 import { SITE_URL, breadcrumb, jsonLdGraph, personId, personJsonLd } from "@/lib/seo"
 
 const description =
-  "CV de Foko Junior (Junior Benoît FOKO TADJUIGE, F_Junior) : développeur Full Stack · Mobile · IA, Master 2 Génie Logiciel à l'IUC de Douala. Expériences chez DanAid, Uniprice, Aigle Digital, Revolute Consulting et SyndaTech."
+  "CV de Foko Junior (Junior Benoît FOKO TADJUIGE, F_Junior) : développeur Full Stack Web · Mobile · IA · DevOps, Master 2 Génie Logiciel à l'IUC de Douala. Expériences chez DanAid, Uniprice, Aigle Digital, Revolute Consulting et SyndaTech."
 
 export const metadata: Metadata = {
   title: "CV — Foko Tadjuige Benoît Junior",
