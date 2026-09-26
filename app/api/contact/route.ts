@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
       </div>
     </div>
     <div class="footer">
-      Reçu le ${currentDate} via fokojunior.com
+      Reçu le ${currentDate} via fjunior.tchoop237.com
     </div>
   </div>
 </body>
@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
         <div class="name">FOKO TADJUIGE B. Junior</div>
         <div class="role">Développeur Full Stack & IA</div>
         <div class="links">
-          <a href="https://fokojunior.com">Portfolio</a>
+          <a href="https://fjunior.tchoop237.com">Portfolio</a>
           <a href="https://github.com/FokoJunior">GitHub</a>
           <a href="https://linkedin.com/in/fokojunior">LinkedIn</a>
         </div>

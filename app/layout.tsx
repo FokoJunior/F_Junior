@@ -1,61 +1,64 @@
 import type React from "react"
+import type { Metadata, Viewport } from "next"
 import "@/app/globals.css"
-import { Inter } from "next/font/google"
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google"
 
 import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/components/language-provider"
 import Navbar from "@/components/navbar"
-import CursorFollower from "@/components/cursor-follower"
-import { FloatingButtonsProvider } from "@/components/floating-buttons-provider"
-import GlobalSplash from "@/components/global-splash"
-import DynamicBackground from "@/components/dynamic-background"
+import SiteFooter from "@/components/site-footer"
+import ChatButton from "@/components/chat-button"
+import { Toaster } from "@/components/ui/toaster"
+import { SITE_URL, defaultDescription, defaultTitle, keywords } from "@/lib/seo"
 
-const inter = Inter({ subsets: ["latin"] })
+const sans = Geist({ subsets: ["latin"], variable: "--font-sans" })
+const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" })
+const serif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-serif",
+})
 
-export const metadata = {
-  metadataBase: new URL("https://fokojunior.com"), // Remplacez par votre domaine réel si différent
-  title: {
-    default: "F_Junior | Développeur Full Stack & IA",
-    template: "%s | F_Junior Portfolio",
-  },
-  description:
-    "Portfolio de FOKO TADJUIGE B. JUNIOR (F_Junior), titulaire d'une licence en Génie Logiciel et actuellement étudiant en Master 1 SIGL à l'IUC (Douala), passionné par le développement Full Stack et l'IA.",
-  keywords: [
-    "F_Junior",
-    "Foko Junior",
-    "Développeur Full Stack",
-    "Génie Logiciel",
-    "Intelligence Artificielle",
-    "Next.js",
-    "React",
-    "Portfolio Développeur",
-    "Cameroun",
-    "Tailwind CSS",
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f6f3ec" },
+    { media: "(prefers-color-scheme: dark)", color: "#10100e" },
   ],
-  authors: [{ name: "F_Junior", url: "https://github.com/FokoJunior" }],
-  creator: "F_Junior",
+}
+
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: defaultTitle,
+    template: "%s | Foko Junior (F_Junior)",
+  },
+  description: defaultDescription,
+  applicationName: "Foko Junior — Portfolio",
+  keywords,
+  authors: [{ name: "Foko Junior (FOKO TADJUIGE Benoît Junior)", url: SITE_URL }],
+  creator: "Foko Junior",
+  publisher: "Foko Junior",
+  category: "technology",
+  alternates: { canonical: "/" },
+  formatDetection: { telephone: false, email: false, address: false },
   openGraph: {
-    type: "website",
+    type: "profile",
+    firstName: "Junior Benoît",
+    lastName: "FOKO TADJUIGE",
+    username: "FokoJunior",
     locale: "fr_FR",
-    url: "https://fokojunior.com",
-    title: "F_Junior | Développeur Full Stack & IA",
-    description: "Découvrez mon parcours de Master 1 SIGL et mes projets innovants en développement web et intelligence artificielle.",
-    siteName: "F_Junior Portfolio",
-    images: [
-      {
-        url: "/og-image.png", // Assurez-vous d'avoir une image à ce chemin
-        width: 1200,
-        height: 630,
-        alt: "F_Junior Portfolio Preview",
-      },
-    ],
+    alternateLocale: ["en_US", "de_DE", "zh_CN"],
+    url: SITE_URL,
+    siteName: "Foko Junior — Portfolio",
+    title: defaultTitle,
+    description: defaultDescription,
   },
   twitter: {
     card: "summary_large_image",
-    title: "F_Junior | Développeur Full Stack & IA",
-    description: "Portfolio de FOKO TADJUIGE B. JUNIOR. Étudiant en Master 1 SIGL & Développeur Full Stack.",
-    images: ["/og-image.png"],
-    creator: "@FokoJunior", // À ajuster si vous avez un handle Twitter
+    title: defaultTitle,
+    description: defaultDescription,
+    creator: "@FokoJunior",
   },
   robots: {
     index: true,
@@ -77,23 +80,24 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <html lang="fr" suppressHydrationWarning className={`${sans.variable} ${mono.variable} ${serif.variable}`}>
+      <body id="top" className="grain min-h-screen font-sans">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <LanguageProvider>
-            <GlobalSplash />
-            <DynamicBackground />
-            <FloatingButtonsProvider>
-              <Navbar />
-              <CursorFollower />
-              {children}
-            </FloatingButtonsProvider>
+            <a
+              href="#main"
+              className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-foreground focus:px-4 focus:py-2 focus:text-background"
+            >
+              Aller au contenu
+            </a>
+            <Navbar />
+            <main id="main">{children}</main>
+            <SiteFooter />
+            <ChatButton />
+            <Toaster />
           </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>
   )
 }
-
-
-import './globals.css'

@@ -4,6 +4,15 @@ import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
 import { translations } from "@/lib/translations"
 
+export const LANGUAGES = [
+  { code: "fr", label: "Français" },
+  { code: "en", label: "English" },
+  { code: "de", label: "Deutsch" },
+  { code: "zh", label: "中文" },
+]
+
+const SUPPORTED = LANGUAGES.map((l) => l.code)
+
 type LanguageContextType = {
   language: string
   setLanguage: (lang: string) => void
@@ -20,25 +29,28 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState("fr")
 
   useEffect(() => {
-    // Only run on client side
-    if (typeof window === "undefined") return
-
-    // Get browser language
     const browserLang = navigator.language.split("-")[0]
-    if (["fr", "en", "de", "zh"].includes(browserLang)) {
+    if (SUPPORTED.includes(browserLang)) {
       setLanguage(browserLang)
     }
 
-    // Check localStorage
-    const savedLang = localStorage.getItem("language")
-    if (savedLang && ["fr", "en", "de", "zh"].includes(savedLang)) {
-      setLanguage(savedLang)
-    }
+    try {
+      const savedLang = localStorage.getItem("language")
+      if (savedLang && SUPPORTED.includes(savedLang)) {
+        setLanguage(savedLang)
+      }
+    } catch {}
   }, [])
+
+  useEffect(() => {
+    document.documentElement.lang = language
+  }, [language])
 
   const handleSetLanguage = (lang: string) => {
     setLanguage(lang)
-    localStorage.setItem("language", lang)
+    try {
+      localStorage.setItem("language", lang)
+    } catch {}
   }
 
   const t = (key: string) => {
@@ -46,7 +58,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       return translations[language][key]
     }
 
-    // Fallback to French
+    // Repli sur le français
     if (translations.fr && translations.fr[key]) {
       return translations.fr[key]
     }

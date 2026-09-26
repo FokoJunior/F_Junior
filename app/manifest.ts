@@ -2,13 +2,13 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: 'F_Junior Portfolio',
-        short_name: 'F_Junior',
-        description: 'Portfolio de FOKO TADJUIGE B. JUNIOR, développeur Full Stack & IA',
+        name: 'Foko Junior (F_Junior) — Portfolio',
+        short_name: 'Foko Junior',
+        description: 'Portfolio de Foko Junior (FOKO TADJUIGE Benoît Junior, F_Junior), développeur Full Stack · Mobile · IA à Douala',
         start_url: '/',
         display: 'standalone',
-        background_color: '#ffffff',
-        theme_color: '#000000',
+        background_color: '#f6f3ec',
+        theme_color: '#10100e',
         icons: [
             {
                 src: '/logo.png',

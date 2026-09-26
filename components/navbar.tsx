@@ -1,305 +1,202 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { motion } from "framer-motion"
-import { Github, Mail, Menu, Moon, Sun, Globe, X, Download } from "lucide-react"
+import { AnimatePresence, motion } from "framer-motion"
+import { useTheme } from "next-themes"
+import { ArrowUpRight, Check, Moon, Sun } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useLanguage } from "@/components/language-provider"
-import { useToast } from "@/hooks/use-toast"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { LANGUAGES, useLanguage } from "@/components/language-provider"
+import { site } from "@/lib/site"
+import { cn } from "@/lib/utils"
 
 const navLinks = [
-  { href: "/", label: "home" },
   { href: "/#about", label: "about" },
   { href: "/#skills", label: "skills" },
-  { href: "/#projects", label: "projets" },
-  { href: "/projects", label: "myProjects" },
-  { href: "/#contact", label: "contact" },
-  { href: "/blog", label: "blog" },
+  { href: "/projects", label: "work" },
   { href: "/resume", label: "resume" },
+  { href: "/blog", label: "blog" },
 ]
 
+export function Wordmark({ className }: { className?: string }) {
+  return (
+    <span className={cn("font-serif tracking-tight", className)}>
+      F<span className="text-primary">_</span>Junior
+    </span>
+  )
+}
+
 export default function Navbar() {
-  const [darkMode, setDarkMode] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
   const { t, setLanguage, language } = useLanguage()
-  const [isMounted, setIsMounted] = useState(false)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { toast } = useToast()
-
-  /* eslint-disable react-hooks/exhaustive-deps */
-  const [activeSection, setActiveSection] = useState("")
+  const { resolvedTheme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    setIsMounted(true)
-
-    // Check if dark mode is stored in localStorage
-    const storedDarkMode = localStorage.getItem("darkMode")
-
-    // Check system preference
-    const isDark =
-      storedDarkMode === "true" ||
-      (storedDarkMode === null && window.matchMedia("(prefers-color-scheme: dark)").matches)
-
-    setDarkMode(isDark)
-
-    if (isDark) {
-      document.documentElement.classList.add("dark")
-    } else {
-      document.documentElement.classList.remove("dark")
-    }
-
-    const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setScrolled(true)
-      } else {
-        setScrolled(false)
-      }
-    }
-
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
+    setMounted(true)
+    const onScroll = () => setScrolled(window.scrollY > 12)
+    onScroll()
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
   }, [])
 
-  // Observer pour les sections actives
   useEffect(() => {
-    if (!isMounted) return
+    setOpen(false)
+  }, [pathname])
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id)
-          }
-        })
-      },
-      { threshold: 0.5 } // Déclenche quand 50% de la section est visible
-    )
-
-    // Observer toutes les sections correspondant aux liens
-    navLinks.forEach((link) => {
-      if (link.href.startsWith("/#")) {
-        const id = link.href.substring(2)
-        const element = document.getElementById(id)
-        if (element) observer.observe(element)
-      } else if (link.href === "/") {
-        // Pour la home, on peut observer une section "hero" ou "home"
-        const element = document.getElementById("home")
-        if (element) observer.observe(element)
-      }
-    })
-
-    return () => observer.disconnect()
-  }, [isMounted])
-
-  const toggleDarkMode = () => {
-    const newDarkMode = !darkMode
-    setDarkMode(newDarkMode)
-
-    if (newDarkMode) {
-      document.documentElement.classList.add("dark")
-    } else {
-      document.documentElement.classList.remove("dark")
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : ""
+    return () => {
+      document.body.style.overflow = ""
     }
+  }, [open])
 
-    // Store preference in localStorage
-    localStorage.setItem("darkMode", newDarkMode.toString())
-  }
-
-  const handleDownloadCV = () => {
-    // URL vers le fichier CV (à remplacer par l'URL réelle)
-    const cvUrl = "/CV_FOKO_JUNIOR.pdf"
-
-    // Créer un élément a temporaire
-    const link = document.createElement("a")
-    link.href = cvUrl
-    link.setAttribute("download", "CV_FOKO_JUNIOR.pdf")
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-
-    toast({
-      title: "Téléchargement démarré",
-      description: "Votre téléchargement a commencé.",
-    })
-
-    // Fermer le menu mobile si ouvert
-    setIsMenuOpen(false)
-  }
-
-  const isActive = (href: string) => {
-    if (href === "/") {
-      return pathname === "/" && (activeSection === "home" || activeSection === "")
-    }
-    if (href.startsWith("/#")) {
-      const sectionId = href.substring(2)
-      return pathname === "/" && activeSection === sectionId
-    }
-    return pathname.startsWith(href)
-  }
-
-  const handleNavLinkClick = (href: string) => {
-    // Fermer le menu mobile si ouvert
-    setIsMenuOpen(false)
-  }
-
-  const languages = [
-    { code: "fr", label: "Français" },
-    { code: "en", label: "English" },
-    { code: "de", label: "Deutsch" },
-    { code: "zh", label: "中文" },
-  ]
-
-  // Ne pas rendre sur le serveur
-  if (!isMounted) {
-    return <div className="h-16 border-b"></div>
-  }
+  const isActive = (href: string) => !href.startsWith("/#") && pathname.startsWith(href)
+  const isDark = mounted && resolvedTheme === "dark"
 
   return (
-    <header
-      className={`sticky top-0 z-50 w-full border-b backdrop-blur supports-[backdrop-filter]:bg-background/60 ${scrolled ? "bg-background/95 shadow-sm" : "bg-background/50"
-        } transition-all duration-200`}
-    >
-      <div className="container flex h-16 items-center justify-between">
-        <div className="font-bold">
-          <Link href="/" className="text-xl group">
-            <motion.span
-              className="inline-block"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 500 }}
-            >
-              F_Junior
-            </motion.span>
-          </Link>
-        </div>
-        <nav className="hidden md:flex gap-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`text-sm font-medium transition-colors hover:text-primary ${isActive(link.href) ? "text-primary" : ""
-                }`}
-              onClick={() => handleNavLinkClick(link.href)}
-            >
-              {t(link.label)}
-              {isActive(link.href) && <motion.div className="h-0.5 bg-primary mt-0.5" layoutId="navbar-indicator" />}
-            </Link>
-          ))}
-        </nav>
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="mr-2">
-                <Globe className="h-5 w-5" />
-                <span className="sr-only">Change language</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {languages.map((lang) => (
-                <DropdownMenuItem
-                  key={lang.code}
-                  onClick={() => setLanguage(lang.code)}
-                  className={language === lang.code ? "bg-muted" : ""}
-                >
-                  {lang.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button variant="ghost" size="icon" onClick={toggleDarkMode} className="mr-2">
-            {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            <span className="sr-only">Toggle theme</span>
-          </Button>
-
-          <Link
-            href="https://github.com/FokoJunior"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden md:inline-flex"
-          >
-            <Button variant="ghost" size="icon">
-              <Github className="h-5 w-5" />
-              <span className="sr-only">GitHub</span>
-            </Button>
+    <>
+      <header
+        className={cn(
+          "no-print fixed inset-x-0 top-0 z-50 transition-all duration-300",
+          scrolled || open
+            ? "border-b border-border bg-background/85 backdrop-blur-md"
+            : "border-b border-transparent",
+        )}
+      >
+        <div className="container flex h-16 items-center justify-between gap-6">
+          <Link href="/" className="text-2xl leading-none" aria-label="F_Junior — accueil">
+            <Wordmark />
           </Link>
 
-          <Link href="mailto:benitojunior2022@gmail.com" className="hidden md:inline-flex">
-            <Button variant="ghost" size="icon">
-              <Mail className="h-5 w-5" />
-              <span className="sr-only">Email</span>
-            </Button>
-          </Link>
+          <nav className="hidden items-center gap-8 lg:flex" aria-label="Navigation principale">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "link-underline text-sm transition-colors",
+                  isActive(link.href) ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+                )}
+                aria-current={isActive(link.href) ? "page" : undefined}
+              >
+                {t(link.label)}
+              </Link>
+            ))}
+          </nav>
 
-          <Button variant="outline" size="sm" onClick={handleDownloadCV} className="hidden md:inline-flex gap-1">
-            <Download className="h-4 w-4" />
-            {t("downloadCV")}
-          </Button>
-
-          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Open menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-semibold">Menu</h2>
-                <SheetClose asChild>
-                  <Button variant="ghost" size="icon">
-                    <X className="h-5 w-5" />
-                  </Button>
-                </SheetClose>
-              </div>
-              <div className="flex flex-col gap-6 mt-8">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`text-lg font-medium transition-colors hover:text-primary ${isActive(link.href) ? "text-primary" : ""
-                      }`}
-                    onClick={() => handleNavLinkClick(link.href)}
+          <div className="flex items-center gap-1">
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className="h-9 rounded-full px-3 font-mono text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
+                aria-label={t("changeLanguage")}
+              >
+                {language}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[9rem]">
+                {LANGUAGES.map((lang) => (
+                  <DropdownMenuItem
+                    key={lang.code}
+                    onClick={() => setLanguage(lang.code)}
+                    className="flex justify-between"
                   >
-                    {t(link.label)}
-                  </Link>
+                    {lang.label}
+                    {language === lang.code && <Check className="h-3.5 w-3.5" />}
+                  </DropdownMenuItem>
                 ))}
-                <Button
-                  variant="outline"
-                  onClick={handleDownloadCV}
-                  className="mt-4 w-full flex items-center justify-center gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  {t("downloadCV")}
-                </Button>
-                <div className="flex gap-4 mt-4 justify-center">
-                  <Link href="https://github.com/FokoJunior" target="_blank" rel="noopener noreferrer">
-                    <Button variant="ghost" size="icon">
-                      <Github className="h-5 w-5" />
-                      <span className="sr-only">GitHub</span>
-                    </Button>
-                  </Link>
-                  <Link href="mailto:benitojunior2022@gmail.com">
-                    <Button variant="ghost" size="icon">
-                      <Mail className="h-5 w-5" />
-                      <span className="sr-only">Email</span>
-                    </Button>
-                  </Link>
-                  <Button variant="ghost" size="icon" onClick={toggleDarkMode}>
-                    {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                    <span className="sr-only">Toggle theme</span>
-                  </Button>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <button
+              type="button"
+              onClick={() => setTheme(isDark ? "light" : "dark")}
+              className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
+              aria-label={t("toggleTheme")}
+            >
+              {mounted ? isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" /> : <span className="h-4 w-4" />}
+            </button>
+
+            <Link href="/#contact" className="btn btn-solid ml-2 hidden h-9 px-4 md:inline-flex">
+              {t("contactMe")}
+              <ArrowUpRight />
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              className="ml-1 grid h-9 w-9 place-items-center lg:hidden"
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+              aria-label={open ? t("close") : t("menu")}
+            >
+              <span className="relative block h-3 w-5">
+                <span
+                  className={cn(
+                    "absolute left-0 top-0 h-px w-full bg-foreground transition-transform duration-300",
+                    open && "translate-y-1.5 rotate-45",
+                  )}
+                />
+                <span
+                  className={cn(
+                    "absolute bottom-0 left-0 h-px w-full bg-foreground transition-transform duration-300",
+                    open && "-translate-y-1.5 -rotate-45",
+                  )}
+                />
+              </span>
+            </button>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            id="mobile-menu"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-40 flex flex-col bg-background pt-16 lg:hidden"
+          >
+            <nav className="container flex flex-1 flex-col justify-center gap-1" aria-label="Navigation mobile">
+              {[...navLinks, { href: "/#contact", label: "contact" }].map((link, i) => (
+                <motion.div
+                  key={link.href}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 * i, duration: 0.4 }}
+                >
+                  <Link
+                    href={link.href}
+                    onClick={() => setOpen(false)}
+                    className="flex items-baseline gap-4 border-b border-border py-4"
+                  >
+                    <span className="font-mono text-xs text-primary">0{i + 1}</span>
+                    <span className="font-serif text-4xl">{t(link.label)}</span>
+                  </Link>
+                </motion.div>
+              ))}
+            </nav>
+            <div className="container flex flex-wrap items-center justify-between gap-4 pb-10 pt-6">
+              <a href={`mailto:${site.email}`} className="text-sm text-muted-foreground">
+                {site.email}
+              </a>
+              <a href={site.cv} download className="btn btn-outline h-9 px-4">
+                {t("downloadCV")}
+              </a>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   )
 }
