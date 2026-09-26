@@ -15,12 +15,13 @@ export const nameVariants = [
   "F_Junior",
   "F Junior",
   "FokoJunior",
+  "f_junior_2022",
 ]
 
 export const defaultTitle = "Foko Junior (F_Junior) — Développeur Full Stack Web · Mobile · IA · DevOps"
 
 export const defaultDescription =
-  "Portfolio officiel de Foko Junior — FOKO TADJUIGE Benoît Junior, alias F_Junior : développeur Full Stack Web, Mobile (Flutter), IA et DevOps à Douala, Cameroun. Étudiant en Master 2 Génie Logiciel à l'IUC. Projets : TCHOOP237, Oystr, FermeConnect, DanAid, JudgeX, Stock Junior."
+  "Portfolio officiel de Foko Junior — FOKO TADJUIGE Benoît Junior, alias F_Junior : développeur Full Stack Web, Mobile (Flutter), IA et DevOps à Douala, Cameroun. Étudiant en Master 2 Génie Logiciel à l'IUC. Projets : TCHOOP237, Oystr, FermeConnect, DanAid, JudgeX, Omnivault."
 
 export const keywords = [
   ...nameVariants,
@@ -50,6 +51,7 @@ export const keywords = [
   "FermeConnect",
   "DanAid",
   "JudgeX",
+  "Omnivault",
 ]
 
 export const personId = `${SITE_URL}/#person`

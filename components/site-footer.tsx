@@ -25,7 +25,7 @@ export default function SiteFooter() {
       links: [
         { href: site.socials.github, label: "GitHub", external: true },
         { href: site.socials.linkedin, label: "LinkedIn", external: true },
-        { href: site.socials.twitter, label: "Twitter / X", external: true },
+        { href: site.socials.x, label: "X (Twitter)", external: true },
       ],
     },
     {

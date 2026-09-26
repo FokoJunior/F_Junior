@@ -42,7 +42,7 @@ export const experience: Experience[] = [
     period: { fr: "Avr. 2024 — Juil. 2026", en: "Apr 2024 — Jul 2026", de: "Apr. 2024 — Juli 2026", zh: "2024.04 — 2026.07" },
     duration: { fr: "2 ans 4 mois", en: "2 yrs 4 mos", de: "2 Jahre 4 Monate", zh: "2 年 4 个月" },
     points: [
-      { fr: "Application de gestion de stock multi-tenant stock.uniprice.org", en: "Multi-tenant inventory app stock.uniprice.org", de: "Mandantenfähige Lager-App stock.uniprice.org", zh: "多租户库存管理应用 stock.uniprice.org" },
+      { fr: "Omnivault (stocks.uniprice.org) : logiciel de gestion de stock multi-tenant (Next.js, PostgreSQL, IA), réécriture de l'ancien système", en: "Omnivault (stocks.uniprice.org): multi-tenant inventory software (Next.js, PostgreSQL, AI), rewriting the legacy system", de: "Omnivault (stocks.uniprice.org): mandantenfähige Lagerverwaltung (Next.js, PostgreSQL, KI), Neuentwicklung des Altsystems", zh: "Omnivault（stocks.uniprice.org）：多租户库存管理软件（Next.js、PostgreSQL、AI），重写旧系统" },
       { fr: "Conception du site e-commerce uniprice.org", en: "Designed the uniprice.org e-commerce site", de: "Konzeption des Onlineshops uniprice.org", zh: "设计 uniprice.org 电商网站" },
       { fr: "Supports visuels et supervision informatique", en: "Visual assets and IT supervision", de: "Visuelle Medien und IT-Betreuung", zh: "视觉物料与 IT 运维" },
     ],

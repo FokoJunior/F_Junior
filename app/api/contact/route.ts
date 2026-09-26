@@ -189,7 +189,8 @@ export async function POST(request: NextRequest) {
         <div class="links">
           <a href="https://fjunior.tchoop237.com">Portfolio</a>
           <a href="https://github.com/FokoJunior">GitHub</a>
-          <a href="https://linkedin.com/in/fokojunior">LinkedIn</a>
+          <a href="https://www.linkedin.com/in/foko-junior-62b987266">LinkedIn</a>
+          <a href="https://x.com/f_junior_2022">X</a>
         </div>
       </div>
     </div>

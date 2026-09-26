@@ -13,8 +13,8 @@ export const site = {
   portrait: "/portrait.jpg",
   socials: {
     github: "https://github.com/FokoJunior",
-    linkedin: "https://linkedin.com/in/fokojunior",
-    twitter: "https://twitter.com/FokoJunior",
+    linkedin: "https://www.linkedin.com/in/foko-junior-62b987266",
+    x: "https://x.com/f_junior_2022",
   },
 }
 

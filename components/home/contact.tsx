@@ -117,15 +117,17 @@ export default function Contact() {
             <div>
               <dt className="eyebrow mb-2">{t("social")}</dt>
               <dd className="flex flex-wrap gap-2">
-                {Object.entries(site.socials).map(([name, href]) => (
+                {Object.entries(site.socials).map(([key, href]) => (
+                  [key, href, { github: "GitHub", linkedin: "LinkedIn", x: "X" }[key] ?? key] as const
+                )).map(([name, href, label]) => (
                   <a
                     key={name}
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="chip capitalize"
+                    className="chip"
                   >
-                    {name}
+                    {label}
                     <ArrowUpRight className="h-3 w-3" />
                   </a>
                 ))}

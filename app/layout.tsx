@@ -73,7 +73,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: defaultTitle,
     description: defaultDescription,
-    creator: "@FokoJunior",
+    creator: "@f_junior_2022",
+    site: "@f_junior_2022",
   },
   robots: {
     index: true,

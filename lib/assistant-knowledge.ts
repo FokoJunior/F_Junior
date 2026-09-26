@@ -86,6 +86,8 @@ ${profile.fr}
 - Email : [${site.email}](mailto:${site.email})
 - Téléphone : ${site.phone} — WhatsApp : [wa.me/237690713130](${site.whatsapp})
 - GitHub : [github.com/FokoJunior](${site.socials.github}) (la plupart des dépôts sont privés)
+- LinkedIn : [Foko Junior](${site.socials.linkedin})
+- X (Twitter) : [@f_junior_2022](${site.socials.x})
 - Formulaire : [section contact](/#contact) — CV PDF : [télécharger](${site.cv}) — CV en ligne : [page CV](/resume)
 - Site : ${prettyUrl(SITE_URL)}
 

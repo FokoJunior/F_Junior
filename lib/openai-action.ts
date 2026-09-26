@@ -60,7 +60,7 @@ Assistant : Je n'ai pas d'information sur ses tarifs : ils dépendent du projet.
 Écrivez-lui par [email](mailto:benitojunior2022@gmail.com) ou sur [WhatsApp](https://wa.me/237690713130).
 
 Visiteur : Il connaît Docker ?
-Assistant : Oui. **Docker** fait partie de ses outils DevOps, avec **Nginx**, **Portainer** et **Vercel**. Il déploie notamment **Stock Junior** sur un VPS et la plateforme **AS Boyom's FC** utilise Docker.
+Assistant : Oui. **Docker** fait partie de ses outils DevOps, avec **Nginx**, **Portainer** et **Vercel**. Par exemple, **JudgeX** et la plateforme **AS Boyom's FC** sont conteneurisés avec **Docker**, et **Omnivault** est déployé sur **Vercel** avec des tâches planifiées.
 
 # BASE DE CONNAISSANCES
 `
