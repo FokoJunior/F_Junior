@@ -3,7 +3,7 @@ export const site = {
   fullName: "Junior Benoît FOKO TADJUIGE",
   shortName: "Foko Junior",
   nickname: "F_Junior",
-  role: "Développeur Full Stack Web · Mobile · IA · DevOps",
+  role: "Développeur Full Stack · Mobile · DevOps · Data Scientist · IA",
   email: "benitojunior2022@gmail.com",
   phone: "+237 690 713 130",
   phoneHref: "tel:+237690713130",
@@ -39,7 +39,7 @@ export const stack = [
 
 /** Compétences du CV ; `key` = clé de traduction du nom de la catégorie. */
 export const skillGroups = [
-  { key: "skLanguages", items: ["TypeScript", "JavaScript", "Python", "Dart", "PHP", "HTML/CSS"] },
+  { key: "skLanguages", items: ["TypeScript", "JavaScript", "Python", "Java", "C++", "Dart", "PHP", "HTML/CSS"] },
   { key: "skFrameworks", items: ["Next.js", "React", "Flutter", "Express.js", "CodeIgniter"] },
   { key: "skAi", items: ["Agents IA", "Anthropic SDK", "Google Gemini", "n8n"] },
   { key: "skData", items: ["PostgreSQL", "Supabase", "Prisma", "Drizzle", "MySQL", "Firebase"] },

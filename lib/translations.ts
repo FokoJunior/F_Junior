@@ -154,7 +154,7 @@ export const translations: Record<string, Record<string, any>> = {
     // Redesign
     work: "Projets",
     journey: "Parcours",
-    heroRole: "Développeur Full Stack Web · Mobile · IA · DevOps",
+    heroRole: "Développeur Full Stack · Mobile · DevOps · Data Scientist · IA",
     heroLead: "Je conçois des produits complets — SaaS, applications mobiles, e-commerce — en TypeScript / Next.js et Flutter, avec une touche d'IA. Actuellement en Master 2 Génie Logiciel à l'IUC de Douala.",
     basedIn: "Basé à Douala, Cameroun",
     localTime: "Heure locale",
@@ -408,7 +408,7 @@ export const translations: Record<string, Record<string, any>> = {
     // Redesign
     work: "Work",
     journey: "Journey",
-    heroRole: "Full Stack Web · Mobile · AI · DevOps Developer",
+    heroRole: "Full Stack · Mobile · DevOps · Data Scientist · AI Developer",
     heroLead: "I build complete products — SaaS, mobile apps, e-commerce — with TypeScript / Next.js and Flutter, plus a touch of AI. Currently a Master 2 Software Engineering student at IUC, Douala.",
     basedIn: "Based in Douala, Cameroon",
     localTime: "Local time",
@@ -662,7 +662,7 @@ export const translations: Record<string, Record<string, any>> = {
     // Redesign
     work: "Projekte",
     journey: "Werdegang",
-    heroRole: "Full-Stack-Entwickler Web · Mobile · KI · DevOps",
+    heroRole: "Full-Stack-Entwickler · Mobile · DevOps · Data Scientist · KI",
     heroLead: "Ich baue komplette Produkte — SaaS, Mobile-Apps, E-Commerce — mit TypeScript / Next.js und Flutter, ergänzt um KI. Derzeit Master-2-Student in Softwaretechnik an der IUC in Douala.",
     basedIn: "Ansässig in Douala, Kamerun",
     localTime: "Ortszeit",
@@ -909,7 +909,7 @@ export const translations: Record<string, Record<string, any>> = {
     // Redesign
     work: "作品",
     journey: "经历",
-    heroRole: "全栈开发者 · Web · 移动 · 人工智能 · DevOps",
+    heroRole: "全栈开发者 · 移动 · DevOps · 数据科学 · 人工智能",
     heroLead: "我使用 TypeScript / Next.js 和 Flutter 打造完整的产品——SaaS、移动应用、电子商务——并融入人工智能。目前在杜阿拉 IUC 攻读软件工程硕士二年级。",
     basedIn: "现居喀麦隆杜阿拉",
     localTime: "当地时间",
