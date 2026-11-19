@@ -207,29 +207,43 @@ export default function GamesHub() {
   const toggleArenaFullscreen = useCallback(async () => {
     if (typeof document === "undefined") return
     const el = arenaContainerRef.current
-    if (!el) return
-    try {
-      if (!document.fullscreenElement) {
-        if (el.requestFullscreen) {
-          await el.requestFullscreen()
-        } else if ((el as any).webkitRequestFullscreen) {
-          await (el as any).webkitRequestFullscreen()
+
+    if (isArenaFullscreen) {
+      // Exit fullscreen
+      setIsArenaFullscreen(false)
+      try {
+        if (document.fullscreenElement || (document as any).webkitFullscreenElement) {
+          if (document.exitFullscreen) {
+            await document.exitFullscreen()
+          } else if ((document as any).webkitExitFullscreen) {
+            await (document as any).webkitExitFullscreen()
+          }
         }
-      } else {
-        if (document.exitFullscreen) {
-          await document.exitFullscreen()
-        } else if ((document as any).webkitExitFullscreen) {
-          await (document as any).webkitExitFullscreen()
+      } catch {}
+    } else {
+      // Enter fullscreen: Activate CSS fixed overlay immediately (works on iOS, Safari, webviews, iframes)
+      setIsArenaFullscreen(true)
+      if (el) {
+        try {
+          if (el.requestFullscreen) {
+            await el.requestFullscreen()
+          } else if ((el as any).webkitRequestFullscreen) {
+            await (el as any).webkitRequestFullscreen()
+          }
+        } catch {
+          // Native fullscreen may be restricted or unsupported - CSS fullscreen is already active!
         }
       }
-    } catch {
-      // Ignore if denied
     }
-  }, [])
+  }, [isArenaFullscreen])
 
+  // Sync with native fullscreen changes (e.g. user pressing Escape in native fullscreen)
   useEffect(() => {
     const onFsChange = () => {
-      setIsArenaFullscreen(Boolean(document.fullscreenElement))
+      const hasNativeFs = Boolean(document.fullscreenElement || (document as any).webkitFullscreenElement)
+      if (!hasNativeFs) {
+        setIsArenaFullscreen(false)
+      }
     }
     document.addEventListener("fullscreenchange", onFsChange)
     document.addEventListener("webkitfullscreenchange", onFsChange)
@@ -238,6 +252,34 @@ export default function GamesHub() {
       document.removeEventListener("webkitfullscreenchange", onFsChange)
     }
   }, [])
+
+  // Keyboard Escape listener to exit fullscreen
+  useEffect(() => {
+    if (!isArenaFullscreen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsArenaFullscreen(false)
+        try {
+          if (document.fullscreenElement || (document as any).webkitFullscreenElement) {
+            if (document.exitFullscreen) document.exitFullscreen().catch(() => {})
+            else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen()
+          }
+        } catch {}
+      }
+    }
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, [isArenaFullscreen])
+
+  // Lock body scroll while in fullscreen
+  useEffect(() => {
+    if (!isArenaFullscreen) return
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = prevOverflow
+    }
+  }, [isArenaFullscreen])
 
   const refreshRecords = useCallback(() => {
     const next: Record<GameId, number | null> = {
@@ -671,7 +713,7 @@ export default function GamesHub() {
           className={cn(
             "overflow-hidden rounded-md border border-border bg-card transition-all",
             isArenaFullscreen &&
-              "fixed inset-0 z-50 h-screen w-screen max-w-none overflow-y-auto rounded-none border-none bg-background p-2 sm:p-6",
+              "fixed inset-0 z-[99999] h-[100dvh] w-screen max-w-none overflow-y-auto rounded-none border-none bg-background p-2 sm:p-4",
           )}
         >
           {/* Arena Header */}
@@ -881,7 +923,12 @@ export default function GamesHub() {
           {/* Arena Stage + Right Sidebar (Leaderboard & CCM) */}
           <div className="grid lg:grid-cols-12">
             {/* Playable Game Area (Mobile-first padding + ambient backdrop + 8 cols on desktop) */}
-            <div className="relative flex min-h-[380px] min-w-0 items-center justify-center overflow-hidden p-3 sm:min-h-[480px] sm:p-8 lg:col-span-8 lg:min-h-[540px] lg:p-10">
+            <div
+              className={cn(
+                "relative flex min-h-[380px] min-w-0 items-center justify-center overflow-hidden p-3 sm:min-h-[480px] sm:p-8 lg:p-10",
+                isArenaFullscreen ? "lg:col-span-12 min-h-[calc(100dvh-130px)]" : "lg:col-span-8 lg:min-h-[540px]",
+              )}
+            >
               {/* Ambient Studio Background Image */}
               <div aria-hidden className="pointer-events-none absolute inset-0">
                 <img
@@ -1054,7 +1101,12 @@ export default function GamesHub() {
             </div>
 
             {/* Right Sidebar: Leaderboard + How It Works (CCM) */}
-            <aside className="flex min-w-0 flex-col border-t border-border bg-background/40 lg:col-span-4 lg:border-l lg:border-t-0">
+            <aside
+              className={cn(
+                "flex min-w-0 flex-col border-t border-border bg-background/40 lg:border-l lg:border-t-0",
+                isArenaFullscreen ? "hidden" : "lg:col-span-4",
+              )}
+            >
               {/* Sidebar Tabs */}
               <div className="grid grid-cols-2 border-b border-border bg-card/50">
                 <button

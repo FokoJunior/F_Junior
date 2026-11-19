@@ -119,10 +119,43 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   useEffect(() => {
-    const onFs = () => setIsFullscreen(Boolean(document.fullscreenElement))
+    const onFs = () => {
+      const hasNative = Boolean(document.fullscreenElement || (document as any).webkitFullscreenElement)
+      if (!hasNative) setIsFullscreen(false)
+    }
     document.addEventListener("fullscreenchange", onFs)
-    return () => document.removeEventListener("fullscreenchange", onFs)
+    document.addEventListener("webkitfullscreenchange", onFs)
+    return () => {
+      document.removeEventListener("fullscreenchange", onFs)
+      document.removeEventListener("webkitfullscreenchange", onFs)
+    }
   }, [])
+
+  useEffect(() => {
+    if (!isFullscreen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsFullscreen(false)
+        try {
+          if (document.fullscreenElement || (document as any).webkitFullscreenElement) {
+            if (document.exitFullscreen) document.exitFullscreen().catch(() => {})
+            else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen()
+          }
+        } catch {}
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [isFullscreen])
+
+  useEffect(() => {
+    if (!isFullscreen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [isFullscreen])
 
   useEffect(() => {
     setPlayerId(getPlayerId())
@@ -406,14 +439,32 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
     updateRoom(null)
   }
 
-  const toggleFullscreen = () => {
+  const toggleFullscreen = async () => {
     if (typeof document === "undefined") return
     const el = rootRef.current
-    if (!el) return
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {})
+
+    if (isFullscreen) {
+      setIsFullscreen(false)
+      try {
+        if (document.fullscreenElement || (document as any).webkitFullscreenElement) {
+          if (document.exitFullscreen) {
+            await document.exitFullscreen()
+          } else if ((document as any).webkitExitFullscreen) {
+            await (document as any).webkitExitFullscreen()
+          }
+        }
+      } catch {}
     } else {
-      el.requestFullscreen?.().catch(() => {})
+      setIsFullscreen(true)
+      if (el) {
+        try {
+          if (el.requestFullscreen) {
+            await el.requestFullscreen()
+          } else if ((el as any).webkitRequestFullscreen) {
+            await (el as any).webkitRequestFullscreen()
+          }
+        } catch {}
+      }
     }
   }
 
@@ -1121,8 +1172,9 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
     <div
       ref={rootRef}
       className={cn(
-        "mx-auto flex w-full max-w-[640px] flex-col items-center gap-4 sm:gap-5",
-        isFullscreen && "max-w-none overflow-y-auto bg-background p-4 sm:p-8",
+        "mx-auto flex w-full max-w-[640px] flex-col items-center gap-4 sm:gap-5 transition-all",
+        isFullscreen &&
+          "fixed inset-0 z-[99999] h-[100dvh] w-screen max-w-none overflow-y-auto bg-background p-3 sm:p-6",
       )}
     >
       {/* Room top bar: Code, Total Timer, Spectators, Share & Actions */}
@@ -1160,11 +1212,24 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="btn btn-outline h-8 px-2.5 text-xs"
-            title={language === "fr" ? "Plein écran" : "Fullscreen"}
-            aria-label={language === "fr" ? "Plein écran" : "Fullscreen"}
+            className={cn(
+              "btn h-8 px-2.5 text-xs transition-colors",
+              isFullscreen
+                ? "border-primary/60 bg-primary/20 text-primary shadow-sm hover:bg-primary/25"
+                : "btn-outline",
+            )}
+            title={
+              isFullscreen
+                ? language === "fr"
+                  ? "Quitter le plein écran (Échap)"
+                  : "Exit fullscreen (Esc)"
+                : language === "fr"
+                  ? "Plein écran"
+                  : "Fullscreen"
+            }
+            aria-label={isFullscreen ? "Quitter le plein écran" : "Plein écran"}
           >
-            {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+            {isFullscreen ? <Minimize2 className="h-3.5 w-3.5 text-primary" /> : <Maximize2 className="h-3.5 w-3.5" />}
           </button>
           {!isSpectator && room.status === "playing" && (
             <button
