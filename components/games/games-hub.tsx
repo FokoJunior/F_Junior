@@ -23,7 +23,9 @@ import {
   Layers,
   Lightbulb,
   Loader2,
+  Maximize2,
   Medal,
+  Minimize2,
   Music,
   Pencil,
   Play,
@@ -199,6 +201,43 @@ export default function GamesHub() {
   const [launchConfig, setLaunchConfig] = useState<{ difficulty?: string; nonce: number }>({ nonce: 0 })
 
   const arenaRef = useRef<HTMLElement | null>(null)
+  const arenaContainerRef = useRef<HTMLDivElement | null>(null)
+  const [isArenaFullscreen, setIsArenaFullscreen] = useState<boolean>(false)
+
+  const toggleArenaFullscreen = useCallback(async () => {
+    if (typeof document === "undefined") return
+    const el = arenaContainerRef.current
+    if (!el) return
+    try {
+      if (!document.fullscreenElement) {
+        if (el.requestFullscreen) {
+          await el.requestFullscreen()
+        } else if ((el as any).webkitRequestFullscreen) {
+          await (el as any).webkitRequestFullscreen()
+        }
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen()
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen()
+        }
+      }
+    } catch {
+      // Ignore if denied
+    }
+  }, [])
+
+  useEffect(() => {
+    const onFsChange = () => {
+      setIsArenaFullscreen(Boolean(document.fullscreenElement))
+    }
+    document.addEventListener("fullscreenchange", onFsChange)
+    document.addEventListener("webkitfullscreenchange", onFsChange)
+    return () => {
+      document.removeEventListener("fullscreenchange", onFsChange)
+      document.removeEventListener("webkitfullscreenchange", onFsChange)
+    }
+  }, [])
 
   const refreshRecords = useCallback(() => {
     const next: Record<GameId, number | null> = {
@@ -627,7 +666,14 @@ export default function GamesHub() {
             transition={{ duration: 0.3, ease: "easeOut" }}
             className="mx-auto w-full max-w-[1440px] scroll-mt-20 px-3 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-10 lg:px-10"
           >
-        <div className="overflow-hidden rounded-md border border-border bg-card">
+        <div
+          ref={arenaContainerRef}
+          className={cn(
+            "overflow-hidden rounded-md border border-border bg-card transition-all",
+            isArenaFullscreen &&
+              "fixed inset-0 z-50 h-screen w-screen max-w-none overflow-y-auto rounded-none border-none bg-background p-2 sm:p-6",
+          )}
+        >
           {/* Arena Header */}
           <div className="flex flex-col gap-3.5 border-b border-border px-4 py-4 sm:px-8 sm:py-5 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex flex-wrap items-center justify-between gap-3 xl:justify-start">
@@ -768,6 +814,42 @@ export default function GamesHub() {
                   )}
                   <span className="hidden xs:inline sm:inline">
                     {sharedCopied ? tr(gamesCopy.linkCopied, language) : tr(gamesCopy.share, language)}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={toggleArenaFullscreen}
+                  title={
+                    isArenaFullscreen
+                      ? language === "fr"
+                        ? "Quitter le plein écran (Échap)"
+                        : "Exit fullscreen (Esc)"
+                      : language === "fr"
+                        ? "Passer en plein écran"
+                        : "Full screen"
+                  }
+                  aria-label={isArenaFullscreen ? "Quitter le plein écran" : "Plein écran"}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 font-mono text-[11px] transition-colors sm:px-3 sm:text-xs",
+                    isArenaFullscreen
+                      ? "border-primary/50 bg-primary/15 text-primary shadow-sm"
+                      : "border-border bg-background text-muted-foreground hover:border-primary hover:text-foreground",
+                  )}
+                >
+                  {isArenaFullscreen ? (
+                    <Minimize2 className="h-3.5 w-3.5" />
+                  ) : (
+                    <Maximize2 className="h-3.5 w-3.5" />
+                  )}
+                  <span className="hidden sm:inline">
+                    {isArenaFullscreen
+                      ? language === "fr"
+                        ? "Réduire"
+                        : "Exit"
+                      : language === "fr"
+                        ? "Plein écran"
+                        : "Fullscreen"}
                   </span>
                 </button>
               </div>
