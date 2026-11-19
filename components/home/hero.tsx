@@ -52,8 +52,19 @@ export default function Hero() {
   ]
 
   return (
-    <section ref={sectionRef} id="home" className="relative flex min-h-[100svh] flex-col pt-16">
-      <div className="container flex flex-1 flex-col">
+    <section ref={sectionRef} id="home" className="relative flex min-h-[100svh] flex-col overflow-hidden pt-16">
+      {/* Full-bleed architectural hero background image */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <img
+          src="/hero-bg.jpg"
+          alt=""
+          className="h-full w-full object-cover object-[76%_center] opacity-35 dark:opacity-75 sm:object-right"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/75 to-background/20 dark:from-background/95 dark:via-background/65 dark:to-background/15" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/40" />
+      </div>
+
+      <div className="container relative z-10 flex flex-1 flex-col">
         {/* Ligne de métadonnées */}
         <motion.div
           {...rise(0)}

@@ -511,9 +511,9 @@ export default function GamesHub() {
                 <img
                   src="/arena-bg.jpg"
                   alt=""
-                  className="h-full w-full object-cover object-center opacity-15 dark:opacity-55"
+                  className="h-full w-full object-cover object-center opacity-30 dark:opacity-60"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-card/70 via-card/45 to-card/75 dark:from-card/55 dark:via-card/35 dark:to-card/65" />
+                <div className="absolute inset-0 bg-gradient-to-b from-card/55 via-card/30 to-card/60 dark:from-card/50 dark:via-card/30 dark:to-card/60" />
               </div>
 
               <div className="relative z-10 w-full">

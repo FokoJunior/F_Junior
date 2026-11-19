@@ -47,10 +47,10 @@ export default function SiteFooter() {
         <img
           src="/footer-bg.jpg"
           alt=""
-          className="h-full w-full object-cover object-right opacity-15 dark:opacity-55"
+          className="h-full w-full object-cover object-right opacity-35 dark:opacity-65"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/70 to-background/40 dark:from-background dark:via-background/60 dark:to-background/30" />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/55 to-background/25 dark:from-background dark:via-background/55 dark:to-background/25" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/40 to-transparent" />
       </div>
 
       <div className="container relative z-10 grid gap-10 py-16 md:grid-cols-12">
