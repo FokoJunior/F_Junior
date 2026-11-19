@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import nodemailer from "nodemailer"
 
+import { ensureGamesSchema, getSql, hasDatabase } from "@/lib/db"
+
 // Validation simple d'email côté serveur
 function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -40,6 +42,20 @@ export async function POST(request: NextRequest) {
     const cleanName = sanitizeText(name)
     const cleanSubject = sanitizeText(subject || `Message de ${name}`)
     const cleanMessage = sanitizeText(message)
+
+    // Sauvegarder dans Neon PostgreSQL pour l'inbox /admin/messages
+    if (hasDatabase()) {
+      try {
+        await ensureGamesSchema()
+        const sql = getSql()
+        await sql`
+          INSERT INTO contact_messages (name, email, subject, message)
+          VALUES (${cleanName}, ${email.trim()}, ${cleanSubject}, ${cleanMessage})
+        `
+      } catch (dbErr) {
+        console.error("Failed to save contact message to Neon:", dbErr)
+      }
+    }
 
     // Configuration du transporteur SMTP avec options anti-spam
     const transporter = nodemailer.createTransport({

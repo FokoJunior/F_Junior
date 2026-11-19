@@ -63,6 +63,7 @@ export default function Navbar() {
 
   const isActive = (href: string) => !href.startsWith("/#") && pathname.startsWith(href)
   const isDark = mounted && resolvedTheme === "dark"
+  const overDarkBanner = pathname?.startsWith("/jeux") && !scrolled && !open
 
   return (
     <>
@@ -81,7 +82,11 @@ export default function Navbar() {
         )}
       >
         <div className="container flex h-16 items-center justify-between gap-6">
-          <Link href="/" className="text-2xl leading-none" aria-label={t("homeLink")}>
+          <Link
+            href="/"
+            className={cn("text-2xl leading-none transition-colors", overDarkBanner && "text-white")}
+            aria-label={t("homeLink")}
+          >
             <Wordmark />
           </Link>
 
@@ -92,7 +97,13 @@ export default function Navbar() {
                 href={link.href}
                 className={cn(
                   "link-underline text-sm transition-colors",
-                  isActive(link.href) ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+                  overDarkBanner
+                    ? isActive(link.href)
+                      ? "text-white"
+                      : "text-white/75 hover:text-white"
+                    : isActive(link.href)
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
                 )}
                 aria-current={isActive(link.href) ? "page" : undefined}
               >
@@ -104,7 +115,12 @@ export default function Navbar() {
           <div className="flex items-center gap-1">
             <DropdownMenu>
               <DropdownMenuTrigger
-                className="h-9 rounded-full px-3 font-mono text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
+                className={cn(
+                  "h-9 rounded-full px-3 font-mono text-xs uppercase tracking-wider transition-colors",
+                  overDarkBanner
+                    ? "text-white/80 hover:text-white"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
                 aria-label={t("changeLanguage")}
               >
                 {language}
@@ -126,13 +142,26 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setTheme(isDark ? "light" : "dark")}
-              className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
+              className={cn(
+                "grid h-9 w-9 place-items-center rounded-full transition-colors",
+                overDarkBanner
+                  ? "text-white/80 hover:text-white"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
               aria-label={t("toggleTheme")}
             >
               {mounted ? isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" /> : <span className="h-4 w-4" />}
             </button>
 
-            <Link href="/#contact" className="btn btn-solid ml-2 hidden h-9 px-4 md:inline-flex">
+            <Link
+              href="/#contact"
+              className={cn(
+                "btn ml-2 hidden h-9 px-4 md:inline-flex",
+                overDarkBanner
+                  ? "bg-white text-[#0b0f17] hover:bg-primary hover:text-primary-foreground"
+                  : "btn-solid",
+              )}
+            >
               {t("contactMe")}
               <ArrowUpRight />
             </Link>
@@ -148,13 +177,15 @@ export default function Navbar() {
               <span className="relative block h-3 w-5">
                 <span
                   className={cn(
-                    "absolute left-0 top-0 h-px w-full bg-foreground transition-transform duration-300",
+                    "absolute left-0 top-0 h-px w-full transition-transform duration-300",
+                    overDarkBanner ? "bg-white" : "bg-foreground",
                     open && "translate-y-1.5 rotate-45",
                   )}
                 />
                 <span
                   className={cn(
-                    "absolute bottom-0 left-0 h-px w-full bg-foreground transition-transform duration-300",
+                    "absolute bottom-0 left-0 h-px w-full transition-transform duration-300",
+                    overDarkBanner ? "bg-white" : "bg-foreground",
                     open && "-translate-y-1.5 -rotate-45",
                   )}
                 />

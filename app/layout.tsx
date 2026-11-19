@@ -5,9 +5,7 @@ import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google"
 
 import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/components/language-provider"
-import Navbar from "@/components/navbar"
-import SiteFooter from "@/components/site-footer"
-import ChatButton from "@/components/chat-button"
+import SiteChrome from "@/components/site-chrome"
 import { Toaster } from "@/components/ui/toaster"
 import CustomCursor from "@/components/motion/custom-cursor"
 import ScrollProgress from "@/components/motion/scroll-progress"
@@ -103,10 +101,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <SmoothScroll />
             <ScrollProgress />
             <CustomCursor />
-            <Navbar />
-            <main id="main">{children}</main>
-            <SiteFooter />
-            <ChatButton />
+            <SiteChrome>{children}</SiteChrome>
             <Toaster />
           </LanguageProvider>
         </ThemeProvider>

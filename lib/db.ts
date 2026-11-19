@@ -64,6 +64,46 @@ export async function ensureGamesSchema(): Promise<void> {
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         )
       `
+      await sql`
+        CREATE TABLE IF NOT EXISTS admin_projects (
+          id SERIAL PRIMARY KEY,
+          slug TEXT UNIQUE NOT NULL,
+          title TEXT NOT NULL,
+          category TEXT NOT NULL DEFAULT 'web',
+          year TEXT NOT NULL DEFAULT '2026',
+          description TEXT NOT NULL,
+          tags JSONB NOT NULL DEFAULT '[]'::jsonb,
+          live_url TEXT,
+          repo_url TEXT,
+          cover_url TEXT,
+          featured BOOLEAN NOT NULL DEFAULT FALSE,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `
+      await sql`
+        CREATE TABLE IF NOT EXISTS admin_posts (
+          id SERIAL PRIMARY KEY,
+          slug TEXT UNIQUE NOT NULL,
+          title TEXT NOT NULL,
+          category TEXT NOT NULL DEFAULT 'Tech',
+          excerpt TEXT NOT NULL,
+          content TEXT NOT NULL,
+          published BOOLEAN NOT NULL DEFAULT TRUE,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `
+      await sql`
+        CREATE TABLE IF NOT EXISTS contact_messages (
+          id SERIAL PRIMARY KEY,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL,
+          subject TEXT NOT NULL,
+          message TEXT NOT NULL,
+          read BOOLEAN NOT NULL DEFAULT FALSE,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `
     })().catch((err) => {
       schemaReadyPromise = null
       throw err
