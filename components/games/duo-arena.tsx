@@ -86,6 +86,7 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
   const [playerId, setPlayerId] = useState("")
   const [joinCode, setJoinCode] = useState(initialRoomCode ?? "")
   const [joinName, setJoinName] = useState(() => (playerName && !looksLikeRoomCode(playerName) ? playerName : ""))
+  const [turnLimitSec, setTurnLimitSec] = useState<number>(10)
   const [room, setRoom] = useState<DuoRoom | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -112,10 +113,10 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
     }
   }, [joinName, playerName])
 
-  // 1-second local clock tick for live timers
+  // Smooth 150ms local clock tick for live timers & turn countdown bar
   useEffect(() => {
     if (!room || room.status !== "playing") return
-    const id = window.setInterval(() => setNowTick(Date.now()), 500)
+    const id = window.setInterval(() => setNowTick(Date.now()), 150)
     return () => window.clearInterval(id)
   }, [room?.status])
 
@@ -240,6 +241,7 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
         body: JSON.stringify({
           action: "create",
           gameType,
+          turnLimitSec,
           playerId,
           playerName: cleanName,
         }),
@@ -452,6 +454,35 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
               <p className="eyebrow mb-3">
                 {language === "fr" ? "01 · Créer un salon" : "01 · Create a room"}
               </p>
+
+              {(gameType === "tictactoe" || gameType === "connect4" || gameType === "rps") && (
+                <div className="mb-4">
+                  <p className="eyebrow mb-2 inline-flex items-center gap-1.5 text-foreground">
+                    <Clock className="h-3.5 w-3.5 text-primary" />
+                    {language === "fr" ? "Temps de réflexion par tour" : "Thinking time per turn"}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { val: 4, label: "4s (Blitz)" },
+                      { val: 10, label: "10s" },
+                      { val: 15, label: "15s" },
+                      { val: 30, label: "30s" },
+                      { val: 0, label: language === "fr" ? "Illimité" : "Unlimited" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.val}
+                        type="button"
+                        onClick={() => setTurnLimitSec(opt.val)}
+                        data-active={turnLimitSec === opt.val}
+                        className="chip h-8"
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <button
                 type="button"
                 onClick={handleCreate}
@@ -763,6 +794,53 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
               {copied ? (language === "fr" ? "Copié !" : "Copied!") : language === "fr" ? "Copier" : "Copy"}
             </button>
           </div>
+        </div>
+      )}
+
+      {/* TURN THINKING COUNTDOWN BAR (e.g. 4s / 10s / 15s / 30s) */}
+      {room.status === "playing" &&
+        room.turnLimitSec > 0 &&
+        room.turnStartedAt &&
+        (room.gameType === "tictactoe" || room.gameType === "connect4" || room.gameType === "rps") && (() => {
+          const limitMs = room.turnLimitSec * 1000
+          const remainingMs = Math.max(0, limitMs - liveTurnDelta)
+          const pct = Math.max(0, Math.min(100, (remainingMs / limitMs) * 100))
+          const secsLeft = (remainingMs / 1000).toFixed(1)
+          const isUrgent = remainingMs <= 2000
+          const isWarn = !isUrgent && pct <= 45
+          return (
+            <div className="w-full space-y-1.5 rounded-md border border-border bg-background px-4 py-2.5">
+              <div className="flex items-center justify-between gap-2 font-mono text-xs">
+                <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                  <Clock className={cn("h-3.5 w-3.5", isUrgent ? "animate-pulse text-destructive" : "text-primary")} />
+                  {language === "fr" ? "Temps de réflexion" : "Turn timer"}
+                </span>
+                <span
+                  className={cn(
+                    "font-semibold tabular-nums",
+                    isUrgent ? "text-destructive" : isWarn ? "text-amber-500" : "text-primary",
+                  )}
+                >
+                  {secsLeft}s / {room.turnLimitSec}s
+                </span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-[width] duration-100",
+                    isUrgent ? "bg-destructive" : isWarn ? "bg-amber-500" : "bg-primary",
+                  )}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </div>
+          )
+        })()}
+
+      {/* Timeout notice banner */}
+      {room.lastTimeoutNotice && room.status === "playing" && (
+        <div className="w-full rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-center font-mono text-xs text-amber-600 dark:text-amber-400">
+          ⏱ {room.lastTimeoutNotice}
         </div>
       )}
 

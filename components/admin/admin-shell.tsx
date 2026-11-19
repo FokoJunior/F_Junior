@@ -266,6 +266,60 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           {NAV_ITEMS.map((item) => {
             const Icon = item.Icon
             const active = isActive(item)
+
+            if (item.children) {
+              return (
+                <div key={item.label} className="space-y-1">
+                  <button
+                    type="button"
+                    onClick={() => setGamesMenuOpen((v) => !v)}
+                    aria-expanded={gamesMenuOpen}
+                    className={cn(
+                      "flex w-full items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                      active
+                        ? "bg-primary/15 text-primary"
+                        : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
+                    )}
+                  >
+                    <span className="flex items-center gap-3">
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span>{item.label}</span>
+                    </span>
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 shrink-0 transition-transform duration-200",
+                        gamesMenuOpen && "rotate-180",
+                      )}
+                    />
+                  </button>
+
+                  {gamesMenuOpen && (
+                    <div className="ml-4 space-y-1 border-l border-border pl-3">
+                      {item.children.map((sub) => {
+                        const SubIcon = sub.Icon
+                        const subActive = pathname?.startsWith(sub.href) ?? false
+                        return (
+                          <Link
+                            key={sub.href}
+                            href={sub.href}
+                            className={cn(
+                              "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                              subActive
+                                ? "bg-primary text-primary-foreground shadow-sm"
+                                : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
+                            )}
+                          >
+                            <SubIcon className="h-3.5 w-3.5 shrink-0" />
+                            <span>{sub.label}</span>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            }
+
             return (
               <Link
                 key={item.href}
@@ -342,8 +396,10 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                 <Menu className="h-4 w-4" />
               </button>
               <div>
-                <p className="eyebrow hidden sm:block">Admin / {currentItem.label}</p>
-                <p className="font-serif text-xl leading-none sm:text-2xl">{currentItem.label}</p>
+                <p className="eyebrow hidden sm:block">Admin / {currentLabel}</p>
+                <p className="font-serif text-xl leading-none sm:text-2xl">
+                  {currentLabel.includes(" / ") ? currentLabel.split(" / ").pop() : currentLabel}
+                </p>
               </div>
             </div>
 

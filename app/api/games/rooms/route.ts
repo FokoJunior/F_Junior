@@ -39,9 +39,11 @@ export interface DuoRoom {
   host: DuoPlayer
   guest: DuoPlayer | null
   spectators: DuoSpectator[]
-  // Timers (ms)
+  // Timers (ms) & Turn Thinking Limit
   matchStartedAt: string | null
   turnStartedAt: string | null
+  turnLimitSec: number // 0 = unlimited, e.g. 4, 10, 15, 30
+  lastTimeoutNotice: string | null
   hostElapsedMs: number
   guestElapsedMs: number
   // Forfeit / End tracking
@@ -259,12 +261,79 @@ function normalizeRoom(room: DuoRoom): DuoRoom {
     spectators: activeSpectators,
     matchStartedAt: room.matchStartedAt ?? null,
     turnStartedAt: room.turnStartedAt ?? null,
+    turnLimitSec: Number(room.turnLimitSec ?? 0),
+    lastTimeoutNotice: room.lastTimeoutNotice ?? null,
     hostElapsedMs: Number(room.hostElapsedMs ?? 0),
     guestElapsedMs: Number(room.guestElapsedMs ?? 0),
     abandonedBy: room.abandonedBy ?? null,
     endedBy: room.endedBy ?? null,
     endReason: room.endReason ?? null,
   }
+}
+
+/**
+ * Checks if the active player exceeded `turnLimitSec` and automatically passes the turn.
+ * Returns true if the room state was modified.
+ */
+function applyTurnTimeoutIfNeeded(room: DuoRoom): boolean {
+  if (room.status !== "playing" || !room.guest || !room.turnLimitSec || room.turnLimitSec <= 0 || !room.turnStartedAt) {
+    return false
+  }
+  const elapsedMs = Date.now() - new Date(room.turnStartedAt).getTime()
+  if (elapsedMs < room.turnLimitSec * 1000) return false
+
+  const nowIso = new Date().toISOString()
+
+  if (room.gameType === "tictactoe") {
+    const timedOutHost = room.turn === "X"
+    const timedOutName = timedOutHost ? room.host.name : room.guest.name
+    addPlayerElapsed(room, timedOutHost ? "host" : "guest")
+    room.turn = timedOutHost ? "O" : "X"
+    room.turnStartedAt = nowIso
+    room.lastTimeoutNotice = `Temps écoulé pour ${timedOutName} — tour passé !`
+    room.updatedAt = nowIso
+    return true
+  }
+
+  if (room.gameType === "connect4") {
+    const timedOutHost = room.c4Turn === "R"
+    const timedOutName = timedOutHost ? room.host.name : room.guest.name
+    addPlayerElapsed(room, timedOutHost ? "host" : "guest")
+    room.c4Turn = timedOutHost ? "Y" : "R"
+    room.turnStartedAt = nowIso
+    room.lastTimeoutNotice = `Temps écoulé pour ${timedOutName} — tour passé !`
+    room.updatedAt = nowIso
+    return true
+  }
+
+  if (room.gameType === "rps") {
+    if (room.rpsHostChoice && !room.rpsGuestChoice) {
+      room.rpsHostScore += 1
+      room.lastTimeoutNotice = `${room.guest.name} n'a pas joué à temps (+1 pour ${room.host.name}) !`
+    } else if (room.rpsGuestChoice && !room.rpsHostChoice) {
+      room.rpsGuestScore += 1
+      room.lastTimeoutNotice = `${room.host.name} n'a pas joué à temps (+1 pour ${room.guest.name}) !`
+    } else {
+      room.lastTimeoutNotice = "Temps écoulé — nouvelle manche !"
+    }
+    room.rpsHostChoice = null
+    room.rpsGuestChoice = null
+    room.rpsRound += 1
+    room.turnStartedAt = nowIso
+    if (room.rpsHostScore >= room.rpsTarget) {
+      room.rpsWinner = "host"
+      room.status = "finished"
+      room.host.wins += 1
+    } else if (room.rpsGuestScore >= room.rpsTarget) {
+      room.rpsWinner = "guest"
+      room.status = "finished"
+      room.guest.wins += 1
+    }
+    room.updatedAt = nowIso
+    return true
+  }
+
+  return false
 }
 
 function addPlayerElapsed(room: DuoRoom, side: "host" | "guest") {
@@ -378,13 +447,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Salon introuvable ou expiré" }, { status: 404 })
   }
 
+  let dirty = applyTurnTimeoutIfNeeded(room)
+
   // Heartbeat spectator presence if watching
   if (playerId) {
     const specIdx = room.spectators.findIndex((s) => s.id === playerId)
     if (specIdx !== -1) {
       room.spectators[specIdx].lastSeen = new Date().toISOString()
-      await saveRoom(room)
+      dirty = true
     }
+  }
+
+  if (dirty) {
+    await saveRoom(room)
   }
 
   return NextResponse.json({ room: sanitizeRoomForPlayer(room, playerId) })
@@ -415,6 +490,9 @@ export async function POST(request: NextRequest) {
         if (!exists) break
         code = generateCode({})
       }
+      const allowedLimits = [0, 4, 10, 15, 30]
+      const reqLimit = Number(body?.turnLimitSec)
+      const turnLimitSec = allowedLimits.includes(reqLimit) ? reqLimit : 10
       const room: DuoRoom = {
         code,
         gameType,
@@ -424,6 +502,8 @@ export async function POST(request: NextRequest) {
         spectators: [],
         matchStartedAt: null,
         turnStartedAt: null,
+        turnLimitSec,
+        lastTimeoutNotice: null,
         hostElapsedMs: 0,
         guestElapsedMs: 0,
         abandonedBy: null,
@@ -593,6 +673,7 @@ export async function POST(request: NextRequest) {
       }
 
       addPlayerElapsed(room, symbol === "X" ? "host" : "guest")
+      room.lastTimeoutNotice = null
       room.board[index] = symbol
       const res = evalTtt(room.board)
       if (res.winner) {
@@ -636,6 +717,7 @@ export async function POST(request: NextRequest) {
       }
 
       addPlayerElapsed(room, disc === "R" ? "host" : "guest")
+      room.lastTimeoutNotice = null
       room.c4Board[targetIdx] = disc
       const res = evalC4(room.c4Board)
       if (res.winner) {
@@ -823,6 +905,7 @@ export async function POST(request: NextRequest) {
       room.status = "playing"
       room.matchStartedAt = now
       room.turnStartedAt = now
+      room.lastTimeoutNotice = null
       room.hostElapsedMs = 0
       room.guestElapsedMs = 0
       room.abandonedBy = null
