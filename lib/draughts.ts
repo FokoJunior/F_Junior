@@ -16,7 +16,13 @@ export interface DraughtsState {
   board: DraughtsPiece[][]
   turn: DraughtsSide
   winner: DraughtsSide | "draw" | null
-  lastMove: { from: [number, number]; to: [number, number]; captures: number } | null
+  lastMove: {
+    from: [number, number]
+    to: [number, number]
+    captures: number
+    capturedSquares?: [number, number][]
+    path?: [number, number][]
+  } | null
   movesWithoutCapture: number
   lastEvent: string | null
 }
@@ -276,7 +282,13 @@ export function applyDraughtsMove(state: DraughtsState, move: DraughtsMove): Dra
     board: nextBoard,
     turn: nextTurn,
     winner,
-    lastMove: { from: move.from, to: move.to, captures: move.captures.length },
+    lastMove: {
+      from: move.from,
+      to: move.to,
+      captures: move.captures.length,
+      capturedSquares: move.captures,
+      path: move.path,
+    },
     movesWithoutCapture,
     lastEvent,
   }
