@@ -11,11 +11,13 @@ export type GameId =
   | "typing"
   | "simon"
   | "puzzle"
+  | "chess"
   | "connect4"
   | "duo-tictactoe"
   | "rps"
   | "quiz"
   | "duo-reaction"
+  | "duo-chess"
 export type GameCategory = "arcade" | "puzzle" | "strategy" | "speed" | "duo"
 
 export interface GameMeta {
@@ -696,6 +698,69 @@ export const gamesList: GameMeta[] = [
     lowerIsBetter: true,
   },
   {
+    id: "chess",
+    category: "strategy",
+    title: {
+      fr: "Échecs",
+      en: "Chess",
+      de: "Schach",
+      zh: "国际象棋",
+    },
+    tagline: {
+      fr: "IA 3 niveaux & 2 joueurs",
+      en: "3-level AI & 2 players",
+      de: "3-Stufen-KI & 2 Spieler",
+      zh: "3 级 AI 与双人本地",
+    },
+    description: {
+      fr: "Jouez aux échecs avec toutes les règles officielles (roque, prise en passant, promotion, échec et mat) contre une IA Minimax ou à deux sur le même écran.",
+      en: "Play chess with full official rules (castling, en passant, promotion, checkmate) against a Minimax AI or locally with two players.",
+      de: "Spiele Schach nach offiziellen Regeln gegen eine Minimax-KI oder zu zweit am selben Gerät.",
+      zh: "完整支持国际象棋官方规则（王车易位、吃过路兵、升变、将死），挑战 Minimax AI 或双人同屏对战。",
+    },
+    objective: {
+      fr: "Mettre le roi adverse en échec et mat et accumuler des victoires contre l'IA.",
+      en: "Checkmate the opponent's king and stack up wins against the AI.",
+      de: "Setze den gegnerischen König schachmatt und sammle Siege gegen die KI.",
+      zh: "将死对方国王并赢取更多 AI 对战胜场。",
+    },
+    howToPlay: [
+      {
+        fr: "Choisissez votre niveau d'IA (Facile, Normale, Difficile) ou le mode 2 Joueurs local.",
+        en: "Select your AI level (Easy, Normal, Hard) or local 2 Players mode.",
+        de: "Wähle das KI-Level (Leicht, Normal, Schwer) oder 2 Spieler lokal.",
+        zh: "选择 AI 难度（简单、普通、困难）或双人本地模式。",
+      },
+      {
+        fr: "Cliquez sur une pièce pour afficher tous ses coups légaux (points bleus) et captures possibles (cercles bleus).",
+        en: "Click any piece to highlight all legal moves (blue dots) and captures (blue rings).",
+        de: "Klicke auf eine Figur, um alle legalen Züge und Schlagmöglichkeiten zu sehen.",
+        zh: "点击任意棋子即可高亮显示所有合法走法与吃子位置。",
+      },
+      {
+        fr: "Utilisez les boutons Annuler (↩) et Retourner l'échiquier (⇅) à tout moment.",
+        en: "Use Undo (↩) and Flip board (⇅) anytime.",
+        de: "Nutze Zurück (↩) und Brett drehen (⇅) jederzeit.",
+        zh: "随时可使用悔棋（↩）与翻转棋盘（⇅）。",
+      },
+    ],
+    tip: {
+      fr: "Contrôlez les 4 cases centrales (d4, d5, e4, e5) dès l'ouverture et mettez rapidement votre roi à l'abri grâce au roque.",
+      en: "Control the 4 center squares (d4, d5, e4, e5) early and castle quickly to keep your king safe.",
+      de: "Kontrolliere früh das Zentrum (d4, d5, e4, e5) und rochiere rechtzeitig.",
+      zh: "开局优先抢占中心四格（d4、d5、e4、e5），并尽早王车易位保护国王。",
+    },
+    shortcuts: ["Clic / Toucher", "↩ Annuler", "⇅ Retourner"],
+    controls: {
+      fr: "Clic / Toucher · Annuler · Retourner l'échiquier",
+      en: "Click / Tap · Undo · Flip board",
+      de: "Klicken / Tippen · Zurück · Brett drehen",
+      zh: "点击 / 触控 · 悔棋 · 翻转棋盘",
+    },
+    scoreKey: "fj_game_best_chess",
+    scoreUnit: "wins",
+  },
+  {
     id: "connect4",
     category: "duo",
     title: {
@@ -1010,14 +1075,77 @@ export const gamesList: GameMeta[] = [
     scoreKey: "fj_game_best_duo_reaction",
     scoreUnit: "wins",
   },
+  {
+    id: "duo-chess",
+    category: "duo",
+    title: {
+      fr: "Échecs 1v1",
+      en: "Chess 1v1",
+      de: "Schach 1v1",
+      zh: "国际象棋 1v1",
+    },
+    tagline: {
+      fr: "Échecs en ligne · Chrono & Spectateurs",
+      en: "Online Chess · Timer & Spectators",
+      de: "Online-Schach · Timer & Zuschauer",
+      zh: "在线象棋 · 计时与观战",
+    },
+    description: {
+      fr: "Affrontez un ami aux échecs en ligne en temps réel avec échiquier orienté, chrono de réflexion par tour (15s, 30s, 60s) et mode spectateur.",
+      en: "Play live online chess against a friend with auto-oriented board, per-turn thinking clock (15s, 30s, 60s), and spectator mode.",
+      de: "Spiele live Online-Schach gegen einen Freund mit gedrehtem Brett, Zug-Timer und Zuschauermodus.",
+      zh: "与好友在线实时下国际象棋，支持自动翻转棋盘、每步限时（15s/30s/60s）与实时观战。",
+    },
+    objective: {
+      fr: "Faire échec et mat (ou gagner au temps) contre votre adversaire en ligne.",
+      en: "Deliver checkmate (or win on time) against your online opponent.",
+      de: "Setze deinen Online-Gegner schachmatt oder gewinne auf Zeit.",
+      zh: "将死在线对手或通过计时规则赢得胜利。",
+    },
+    howToPlay: [
+      {
+        fr: "Choisissez votre temps de réflexion par tour (15s Bullet, 30s, 60s ou Illimité) puis créez votre salon.",
+        en: "Pick your per-turn thinking limit (15s Bullet, 30s, 60s, or Unlimited) and create your room.",
+        de: "Wähle dein Zeitlimit pro Zug (15s, 30s, 60s oder Unbegrenzt) und erstelle den Raum.",
+        zh: "选择每步思考时间（15s、30s、60s 或不限时）并创建房间。",
+      },
+      {
+        fr: "Partagez le lien à votre ami : l'échiquier s'oriente automatiquement (Blancs en bas pour l'hôte, Noirs en bas pour l'invité).",
+        en: "Share the invite link: the board auto-orients (White at bottom for host, Black at bottom for guest).",
+        de: "Teile den Link: Das Brett richtet sich für Weiß und Schwarz automatisch aus.",
+        zh: "分享邀请链接：棋盘会自动按执白/执黑翻转视角。",
+      },
+      {
+        fr: "D'autres amis peuvent ouvrir le lien pour regarder la partie en direct en mode Spectateur.",
+        en: "Other friends can open the link to watch the game live in Spectator mode.",
+        de: "Weitere Freunde können das Match live im Zuschauermodus verfolgen.",
+        zh: "其他好友打开链接即可实时进入观战模式。",
+      },
+    ],
+    tip: {
+      fr: "Surveillez votre barre de temps de réflexion en mode 15s ou 30s : si le chrono tombe à zéro, vous perdez au temps !",
+      en: "Watch your turn clock in 15s or 30s mode — running out of time loses the match!",
+      de: "Achte im 15s/30s-Modus auf die Uhr — läuft die Zeit ab, gewinnt der Gegner!",
+      zh: "在 15s 或 30s 模式下注意倒计时，超时会直接判负！",
+    },
+    shortcuts: ["Lien d'invitation", "15s / 30s / 60s", "Spectateurs"],
+    controls: {
+      fr: "Lien d'invitation · Clic / Toucher · Chrono",
+      en: "Invite link · Click / Tap · Turn clock",
+      de: "Einladungslink · Klicken / Tippen · Uhr",
+      zh: "邀请链接 · 点击 / 触控 · 限时",
+    },
+    scoreKey: "fj_game_best_duo_chess",
+    scoreUnit: "wins",
+  },
 ]
 
 export const gamesCopy = {
   eyebrow: {
-    fr: "Playground — 15 jeux jouables (10 Solo · 5 Duo 1v1)",
-    en: "Playground — 15 playable games (10 Solo · 5 Online Duo)",
-    de: "Playground — 15 spielbare Spiele (10 Solo · 5 Online-Duo)",
-    zh: "游乐场 — 15 款可玩游戏（10 单人 · 5 在线双人）",
+    fr: "Playground — 17 jeux jouables (11 Solo · 6 Duo 1v1)",
+    en: "Playground — 17 playable games (11 Solo · 6 Online Duo)",
+    de: "Playground — 17 spielbare Spiele (11 Solo · 6 Online-Duo)",
+    zh: "游乐场 — 17 款可玩游戏（11 单人 · 6 在线双人）",
   },
   title: {
     fr: "Jeux",
@@ -1160,11 +1288,13 @@ const SCORE_KEY_TO_GAME: Record<string, GameId> = {
   fj_game_best_typing: "typing",
   fj_game_best_simon: "simon",
   fj_game_best_puzzle: "puzzle",
+  fj_game_best_chess: "chess",
   fj_game_best_connect4: "connect4",
   fj_game_best_duo_tictactoe: "duo-tictactoe",
   fj_game_best_rps: "rps",
   fj_game_best_quiz: "quiz",
   fj_game_best_duo_reaction: "duo-reaction",
+  fj_game_best_duo_chess: "duo-chess",
 }
 
 const pendingSubmitTimers: Partial<Record<GameId, number>> = {}

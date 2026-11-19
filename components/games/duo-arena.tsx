@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
+import { Chess } from "chess.js"
 import {
   Check,
   CircleDot,
   Clock,
   Copy,
+  Crown,
   Eye,
   Flag,
   Hand,
@@ -27,6 +29,7 @@ import {
 
 import type { DuoGameType, DuoRoom, RpsChoice } from "@/app/api/games/rooms/route"
 import { useConfirm } from "@/components/confirm-provider"
+import ChessBoard from "@/components/games/chess-board"
 import { useLanguage } from "@/components/language-provider"
 import { getPlayerId, looksLikeRoomCode, readScore, saveBestScore, setPlayerName } from "@/lib/games"
 import { cn } from "@/lib/utils"
@@ -54,6 +57,7 @@ const DUO_MODES: {
   { id: "rps", Icon: Hand, fr: "Chifoumi", en: "Rock Paper Scissors", subFr: "Premier à 3", subEn: "First to 3" },
   { id: "quiz", Icon: HelpCircle, fr: "Quiz Dev 1v1", en: "Dev Quiz 1v1", subFr: "5 questions", subEn: "5 questions" },
   { id: "reaction", Icon: Zap, fr: "Duel Réflexe", en: "Reflex Duel", subFr: "3 manches · ms", subEn: "3 rounds · ms" },
+  { id: "chess", Icon: Crown, fr: "Échecs 1v1", en: "Chess 1v1", subFr: "8×8 officiel", subEn: "Official 8×8" },
 ]
 
 const RPS_LABELS: Record<RpsChoice, { emoji: string; fr: string; en: string }> = {
@@ -86,7 +90,7 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
   const [playerId, setPlayerId] = useState("")
   const [joinCode, setJoinCode] = useState(initialRoomCode ?? "")
   const [joinName, setJoinName] = useState(() => (playerName && !looksLikeRoomCode(playerName) ? playerName : ""))
-  const [turnLimitSec, setTurnLimitSec] = useState<number>(10)
+  const [turnLimitSec, setTurnLimitSec] = useState<number>(() => (gameType === "chess" ? 30 : 10))
   const [room, setRoom] = useState<DuoRoom | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -455,20 +459,28 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
                 {language === "fr" ? "01 · Créer un salon" : "01 · Create a room"}
               </p>
 
-              {(gameType === "tictactoe" || gameType === "connect4" || gameType === "rps") && (
+              {(gameType === "tictactoe" || gameType === "connect4" || gameType === "rps" || gameType === "chess") && (
                 <div className="mb-4">
                   <p className="eyebrow mb-2 inline-flex items-center gap-1.5 text-foreground">
                     <Clock className="h-3.5 w-3.5 text-primary" />
                     {language === "fr" ? "Temps de réflexion par tour" : "Thinking time per turn"}
                   </p>
                   <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { val: 4, label: "4s (Blitz)" },
-                      { val: 10, label: "10s" },
-                      { val: 15, label: "15s" },
-                      { val: 30, label: "30s" },
-                      { val: 0, label: language === "fr" ? "Illimité" : "Unlimited" },
-                    ].map((opt) => (
+                    {(gameType === "chess"
+                      ? [
+                          { val: 15, label: "15s (Bullet)" },
+                          { val: 30, label: "30s" },
+                          { val: 60, label: "60s" },
+                          { val: 0, label: language === "fr" ? "Illimité" : "Unlimited" },
+                        ]
+                      : [
+                          { val: 4, label: "4s (Blitz)" },
+                          { val: 10, label: "10s" },
+                          { val: 15, label: "15s" },
+                          { val: 30, label: "30s" },
+                          { val: 0, label: language === "fr" ? "Illimité" : "Unlimited" },
+                        ]
+                    ).map((opt) => (
                       <button
                         key={opt.val}
                         type="button"
@@ -559,16 +571,23 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
     room.status === "playing" && room.turnStartedAt
       ? Math.max(0, nowTick - new Date(room.turnStartedAt).getTime())
       : 0
+  const chessInstance = room.gameType === "chess" ? new Chess(room.chessFen) : null
+  const chessTurnColor = chessInstance?.turn() ?? "w"
+  const chessHostColor: "w" | "b" = room.chessWhiteSide === "host" ? "w" : "b"
+  const chessGuestColor: "w" | "b" = room.chessWhiteSide === "guest" ? "w" : "b"
+
   const isHostTurnActive =
     room.status === "playing" &&
     ((room.gameType === "tictactoe" && room.turn === "X") ||
       (room.gameType === "connect4" && room.c4Turn === "R") ||
-      (room.gameType === "rps" && room.rpsHostChoice === null))
+      (room.gameType === "rps" && room.rpsHostChoice === null) ||
+      (room.gameType === "chess" && chessTurnColor === chessHostColor))
   const isGuestTurnActive =
     room.status === "playing" &&
     ((room.gameType === "tictactoe" && room.turn === "O") ||
       (room.gameType === "connect4" && room.c4Turn === "Y") ||
-      (room.gameType === "rps" && room.rpsGuestChoice === null))
+      (room.gameType === "rps" && room.rpsGuestChoice === null) ||
+      (room.gameType === "chess" && chessTurnColor === chessGuestColor))
 
   const hostLiveMs = (room.hostElapsedMs || 0) + (isHostTurnActive ? liveTurnDelta : 0)
   const guestLiveMs = (room.guestElapsedMs || 0) + (isGuestTurnActive ? liveTurnDelta : 0)
@@ -620,6 +639,8 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
       side = room.quizWinner
     } else if (room.gameType === "reaction") {
       side = room.reactionWinner
+    } else if (room.gameType === "chess") {
+      side = room.chessWinner
     }
 
     if (side === "draw") {
@@ -801,7 +822,7 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
       {room.status === "playing" &&
         room.turnLimitSec > 0 &&
         room.turnStartedAt &&
-        (room.gameType === "tictactoe" || room.gameType === "connect4" || room.gameType === "rps") && (() => {
+        (room.gameType === "tictactoe" || room.gameType === "connect4" || room.gameType === "rps" || room.gameType === "chess") && (() => {
           const limitMs = room.turnLimitSec * 1000
           const remainingMs = Math.max(0, limitMs - liveTurnDelta)
           const pct = Math.max(0, Math.min(100, (remainingMs / limitMs) * 100))
@@ -1175,6 +1196,28 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
             })()
           )}
         </div>
+      )}
+
+      {/* 6. CHESS 1v1 */}
+      {room.status !== "waiting" && room.status !== "ended" && room.gameType === "chess" && chessInstance && (
+        <>
+          {room.status === "playing" && (
+            <p className="font-serif text-xl sm:text-2xl">
+              {language === "fr"
+                ? `C'est au tour de ${isHostTurnActive ? room.host.name : room.guest?.name} (${chessTurnColor === "w" ? "Blancs" : "Noirs"})${chessInstance.inCheck() ? " · Échec !" : ""}`
+                : `${isHostTurnActive ? room.host.name : room.guest?.name}'s turn (${chessTurnColor === "w" ? "White" : "Black"})${chessInstance.inCheck() ? " · Check!" : ""}`}
+            </p>
+          )}
+
+          <ChessBoard
+            fen={room.chessFen}
+            orientation={isGuest ? chessGuestColor : chessHostColor}
+            interactive={!isSpectator && room.status === "playing"}
+            allowedColor={isHost ? chessHostColor : isGuest ? chessGuestColor : "w"}
+            lastMove={room.chessLastMove}
+            onMove={(from, to) => sendRoomAction({ action: "chess_move", from, to })}
+          />
+        </>
       )}
 
       {/* 5. REACTION DUEL 1v1 */}

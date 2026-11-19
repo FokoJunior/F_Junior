@@ -335,6 +335,41 @@ export default function GameCover({ gameId, className }: { gameId: GameId; class
           </g>
         )}
 
+        {(gameId === "chess" || gameId === "duo-chess") && (
+          <g transform="translate(88, 18)">
+            <rect width="144" height="144" rx="8" fill="#161d2b" stroke="#2c3a54" />
+            {[0, 1, 2, 3].map((r) =>
+              [0, 1, 2, 3].map((c) => (
+                <rect
+                  key={`${r}-${c}`}
+                  x={4 + c * 34}
+                  y={4 + r * 34}
+                  width="34"
+                  height="34"
+                  fill={(r + c) % 2 === 0 ? "#2a3548" : "#121826"}
+                />
+              )),
+            )}
+            <text x="55" y="64" textAnchor="middle" fontSize="28" fill="#ffffff">
+              ♛
+            </text>
+            <text x="89" y="98" textAnchor="middle" fontSize="28" fill="#60a5fa">
+              ♞
+            </text>
+            <text x="123" y="30" textAnchor="middle" fontSize="26" fill="#f59e0b">
+              ♚
+            </text>
+            {gameId === "duo-chess" && (
+              <g>
+                <rect x="34" y="114" width="76" height="22" rx="11" fill="#2563eb" />
+                <text x="72" y="129" textAnchor="middle" fontFamily="monospace" fontSize="11" fontWeight="700" fill="#ffffff">
+                  1V1 LIVE
+                </text>
+              </g>
+            )}
+          </g>
+        )}
+
         {gameId === "duo-reaction" && (
           <g>
             <rect x="28" y="40" width="114" height="100" rx="10" fill="#1d4ed8" opacity="0.9" />

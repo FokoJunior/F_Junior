@@ -41,6 +41,7 @@ import type { DuoGameType } from "@/app/api/games/rooms/route"
 
 import { useLanguage } from "@/components/language-provider"
 import BreakoutGame from "@/components/games/breakout-game"
+import ChessGame from "@/components/games/chess-game"
 import DuoArena from "@/components/games/duo-arena"
 import Game2048 from "@/components/games/game-2048"
 import GameCover from "@/components/games/game-cover"
@@ -86,11 +87,13 @@ const GAME_ICONS: Record<GameId, LucideIcon> = {
   typing: Keyboard,
   simon: Music,
   puzzle: ImageIcon,
+  chess: Crown,
   connect4: CircleDot,
   "duo-tictactoe": Users,
   rps: Hand,
   quiz: HelpCircle,
   "duo-reaction": Zap,
+  "duo-chess": Crown,
 }
 
 const DUO_ID_TO_TYPE: Partial<Record<GameId, DuoGameType>> = {
@@ -99,6 +102,7 @@ const DUO_ID_TO_TYPE: Partial<Record<GameId, DuoGameType>> = {
   rps: "rps",
   quiz: "quiz",
   "duo-reaction": "reaction",
+  "duo-chess": "chess",
 }
 
 const DUO_TYPE_TO_ID: Record<DuoGameType, GameId> = {
@@ -107,6 +111,7 @@ const DUO_TYPE_TO_ID: Record<DuoGameType, GameId> = {
   rps: "rps",
   quiz: "quiz",
   reaction: "duo-reaction",
+  chess: "duo-chess",
 }
 
 export default function GamesHub() {
@@ -136,11 +141,13 @@ export default function GamesHub() {
     typing: null,
     simon: null,
     puzzle: null,
+    chess: null,
     connect4: null,
     "duo-tictactoe": null,
     rps: null,
     quiz: null,
     "duo-reaction": null,
+    "duo-chess": null,
   })
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [loadingBoard, setLoadingBoard] = useState<boolean>(false)
@@ -162,11 +169,13 @@ export default function GamesHub() {
       typing: null,
       simon: null,
       puzzle: null,
+      chess: null,
       connect4: null,
       "duo-tictactoe": null,
       rps: null,
       quiz: null,
       "duo-reaction": null,
+      "duo-chess": null,
     }
     for (const g of gamesList) {
       next[g.id] = readScore(g.scoreKey)
@@ -554,6 +563,7 @@ export default function GamesHub() {
                     {activeId === "typing" && <TypingGame />}
                     {activeId === "simon" && <SimonGame />}
                     {activeId === "puzzle" && <PuzzleGame />}
+                    {activeId === "chess" && <ChessGame />}
                     {DUO_ID_TO_TYPE[activeId] && (
                       <DuoArena
                         key={activeId}

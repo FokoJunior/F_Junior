@@ -2,6 +2,7 @@ import crypto from "crypto"
 import { promises as fs } from "fs"
 import os from "os"
 import path from "path"
+import { Chess } from "chess.js"
 import { NextRequest, NextResponse } from "next/server"
 
 import { ensureGamesSchema, getSql, hasDatabase } from "@/lib/db"
@@ -9,7 +10,7 @@ import { ensureGamesSchema, getSql, hasDatabase } from "@/lib/db"
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-export type DuoGameType = "tictactoe" | "reaction" | "connect4" | "rps" | "quiz"
+export type DuoGameType = "tictactoe" | "reaction" | "connect4" | "rps" | "quiz" | "chess"
 export type TttCell = "X" | "O" | null
 export type C4Cell = "R" | "Y" | null
 export type RpsChoice = "rock" | "paper" | "scissors"
@@ -87,6 +88,11 @@ export interface DuoRoom {
   quizHostScore: number
   quizGuestScore: number
   quizWinner: "host" | "guest" | "draw" | null
+  // Chess 1v1
+  chessFen: string
+  chessWhiteSide: "host" | "guest"
+  chessLastMove: { from: string; to: string } | null
+  chessWinner: "host" | "guest" | "draw" | null
   updatedAt: string
   createdAt: string
 }
@@ -98,7 +104,8 @@ const FALLBACK_FILE = path.join(os.tmpdir(), "fj-rooms.json")
 const MAX_ROOM_AGE_MS = 6 * 60 * 60 * 1000 // 6h
 const SPECTATOR_TTL_MS = 45 * 1000 // 45s
 
-const VALID_GAME_TYPES: DuoGameType[] = ["tictactoe", "reaction", "connect4", "rps", "quiz"]
+const VALID_GAME_TYPES: DuoGameType[] = ["tictactoe", "reaction", "connect4", "rps", "quiz", "chess"]
+const INITIAL_CHESS_FEN = new Chess().fen()
 
 const TTT_LINES: [number, number, number][] = [
   [0, 1, 2],
@@ -268,6 +275,10 @@ function normalizeRoom(room: DuoRoom): DuoRoom {
     abandonedBy: room.abandonedBy ?? null,
     endedBy: room.endedBy ?? null,
     endReason: room.endReason ?? null,
+    chessFen: room.chessFen || INITIAL_CHESS_FEN,
+    chessWhiteSide: room.chessWhiteSide || "host",
+    chessLastMove: room.chessLastMove ?? null,
+    chessWinner: room.chessWinner ?? null,
   }
 }
 
@@ -329,6 +340,26 @@ function applyTurnTimeoutIfNeeded(room: DuoRoom): boolean {
       room.status = "finished"
       room.guest.wins += 1
     }
+    room.updatedAt = nowIso
+    return true
+  }
+
+  if (room.gameType === "chess") {
+    const chess = new Chess(room.chessFen || INITIAL_CHESS_FEN)
+    const activeSide: "host" | "guest" =
+      (chess.turn() === "w" && room.chessWhiteSide === "host") ||
+      (chess.turn() === "b" && room.chessWhiteSide === "guest")
+        ? "host"
+        : "guest"
+    const winnerSide: "host" | "guest" = activeSide === "host" ? "guest" : "host"
+    addPlayerElapsed(room, activeSide)
+    room.abandonedBy = activeSide
+    room.endReason = "forfeit"
+    room.chessWinner = winnerSide
+    room.status = "finished"
+    if (winnerSide === "host") room.host.wins += 1
+    else room.guest.wins += 1
+    room.lastTimeoutNotice = `Temps écoulé pour ${activeSide === "host" ? room.host.name : room.guest.name} !`
     room.updatedAt = nowIso
     return true
   }
@@ -490,9 +521,9 @@ export async function POST(request: NextRequest) {
         if (!exists) break
         code = generateCode({})
       }
-      const allowedLimits = [0, 4, 10, 15, 30]
+      const allowedLimits = [0, 4, 10, 15, 30, 60]
       const reqLimit = Number(body?.turnLimitSec)
-      const turnLimitSec = allowedLimits.includes(reqLimit) ? reqLimit : 10
+      const turnLimitSec = allowedLimits.includes(reqLimit) ? reqLimit : gameType === "chess" ? 30 : 10
       const room: DuoRoom = {
         code,
         gameType,
@@ -537,6 +568,10 @@ export async function POST(request: NextRequest) {
         quizHostScore: 0,
         quizGuestScore: 0,
         quizWinner: null,
+        chessFen: INITIAL_CHESS_FEN,
+        chessWhiteSide: "host",
+        chessLastMove: null,
+        chessWinner: null,
         createdAt: now,
         updatedAt: now,
       }
@@ -619,6 +654,7 @@ export async function POST(request: NextRequest) {
         if (room.gameType === "rps") room.rpsWinner = "guest"
         if (room.gameType === "quiz") room.quizWinner = "guest"
         if (room.gameType === "reaction") room.reactionWinner = "guest"
+        if (room.gameType === "chess") room.chessWinner = "guest"
       } else {
         room.host.wins += 1
         if (room.gameType === "tictactoe") room.winner = "X"
@@ -626,6 +662,7 @@ export async function POST(request: NextRequest) {
         if (room.gameType === "rps") room.rpsWinner = "host"
         if (room.gameType === "quiz") room.quizWinner = "host"
         if (room.gameType === "reaction") room.reactionWinner = "host"
+        if (room.gameType === "chess") room.chessWinner = "host"
       }
 
       room.updatedAt = now
@@ -895,6 +932,57 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ room })
     }
 
+    if (action === "chess_move") {
+      if (room.gameType !== "chess" || room.status !== "playing" || !room.guest) {
+        return NextResponse.json({ error: "Partie d'échecs non active" }, { status: 400 })
+      }
+      const from = typeof body?.from === "string" ? body.from.trim().toLowerCase() : ""
+      const to = typeof body?.to === "string" ? body.to.trim().toLowerCase() : ""
+      const isHostSide = room.host.id === playerId
+      const isGuestSide = room.guest.id === playerId
+      if (!isHostSide && !isGuestSide) {
+        return NextResponse.json({ error: "Non membre" }, { status: 403 })
+      }
+
+      const chess = new Chess(room.chessFen || INITIAL_CHESS_FEN)
+      const myColor: "w" | "b" =
+        (isHostSide && room.chessWhiteSide === "host") || (isGuestSide && room.chessWhiteSide === "guest")
+          ? "w"
+          : "b"
+      if (chess.turn() !== myColor) {
+        return NextResponse.json({ error: "Ce n'est pas votre tour" }, { status: 400 })
+      }
+
+      try {
+        const move = chess.move({ from, to, promotion: "q" })
+        if (!move) {
+          return NextResponse.json({ error: "Coup illégal" }, { status: 400 })
+        }
+      } catch {
+        return NextResponse.json({ error: "Coup illégal" }, { status: 400 })
+      }
+
+      addPlayerElapsed(room, isHostSide ? "host" : "guest")
+      room.lastTimeoutNotice = null
+      room.chessFen = chess.fen()
+      room.chessLastMove = { from, to }
+
+      if (chess.isCheckmate()) {
+        room.status = "finished"
+        const winnerSide: "host" | "guest" = isHostSide ? "host" : "guest"
+        room.chessWinner = winnerSide
+        if (winnerSide === "host") room.host.wins += 1
+        else room.guest.wins += 1
+      } else if (chess.isDraw() || chess.isStalemate()) {
+        room.status = "finished"
+        room.chessWinner = "draw"
+      }
+
+      room.updatedAt = now
+      await saveRoom(room)
+      return NextResponse.json({ room })
+    }
+
     if (action === "rematch") {
       if (room.host.id !== playerId && room.guest?.id !== playerId) {
         return NextResponse.json({ error: "Non autorisé" }, { status: 403 })
@@ -942,6 +1030,11 @@ export async function POST(request: NextRequest) {
       room.quizHostScore = 0
       room.quizGuestScore = 0
       room.quizWinner = null
+      // Reset Chess (swap White & Black)
+      room.chessFen = INITIAL_CHESS_FEN
+      room.chessWhiteSide = room.chessWhiteSide === "host" ? "guest" : "host"
+      room.chessLastMove = null
+      room.chessWinner = null
 
       room.updatedAt = now
       await saveRoom(room)
