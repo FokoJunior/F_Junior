@@ -6,6 +6,7 @@ import { RotateCcw, Trophy, Undo2 } from "lucide-react"
 import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
+import { playMove, playScore } from "@/lib/game-sound"
 import { tr } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
@@ -175,6 +176,8 @@ export default function Game2048() {
       if (gameOver || (won && !keepPlaying)) return
       const res = moveGrid(grid, dir)
       if (!res.moved) return
+      if (res.gained > 0) playScore()
+      else playMove()
 
       setPrevState({ grid: cloneGrid(grid), score })
       const spawned = spawnTile(res.grid)

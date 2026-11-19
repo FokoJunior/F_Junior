@@ -35,6 +35,8 @@ import {
   Trophy,
   User,
   Users,
+  Volume2,
+  VolumeX,
   Zap,
   type LucideIcon,
 } from "lucide-react"
@@ -82,6 +84,7 @@ import {
   type LeaderboardEntry,
 } from "@/lib/games"
 import { tr } from "@/lib/i18n"
+import { isSoundEnabled, playClick, setSoundEnabled } from "@/lib/game-sound"
 import { cn } from "@/lib/utils"
 
 type Filter = "all" | GameCategory
@@ -132,7 +135,7 @@ const DUO_TYPE_TO_ID: Record<DuoGameType, GameId> = {
 export default function GamesHub() {
   const { t, language } = useLanguage()
   const [filter, setFilter] = useState<Filter>("all")
-  const [activeId, setActiveId] = useState<GameId>("snake")
+  const [activeId, setActiveId] = useState<GameId | null>(null)
   const [sideTab, setSideTab] = useState<SideTab>("leaderboard")
 
   // Player identity
@@ -171,6 +174,7 @@ export default function GamesHub() {
   const [initialRoomCode, setInitialRoomCode] = useState<string | null>(null)
   const [activeRoomCode, setActiveRoomCode] = useState<string | null>(null)
   const [sharedCopied, setSharedCopied] = useState<boolean>(false)
+  const [soundOn, setSoundOn] = useState<boolean>(true)
   const [launchModalGroup, setLaunchModalGroup] = useState<UnifiedGameGroup | null>(null)
   const [launchInitialMode, setLaunchInitialMode] = useState<"solo" | "duo" | undefined>(undefined)
   const [launchConfig, setLaunchConfig] = useState<{ difficulty?: string; nonce: number }>({ nonce: 0 })
@@ -228,6 +232,7 @@ export default function GamesHub() {
     setNameInput(saved)
     setPlayerAvatarState(getPlayerAvatar())
     setHydrated(true)
+    setSoundOn(isSoundEnabled())
     refreshRecords()
 
     // Read ?room=CODE or ?game=ID from URL
@@ -277,7 +282,9 @@ export default function GamesHub() {
   }, [activeId, refreshRecords])
 
   useEffect(() => {
-    fetchLeaderboard(activeId)
+    if (activeId) {
+      fetchLeaderboard(activeId)
+    }
   }, [activeId, fetchLeaderboard])
 
   const filters: { value: Filter; label: string }[] = [
@@ -293,8 +300,20 @@ export default function GamesHub() {
   const visibleGroups = UNIFIED_GAME_GROUPS.filter(
     (g) => filter === "all" || g.categories.includes(filter),
   )
-  const activeGame = gamesList.find((g) => g.id === activeId) ?? gamesList[0]
-  const activeGroup = findGroupByGameId(activeId)
+  const activeGame = activeId ? (gamesList.find((g) => g.id === activeId) ?? gamesList[0]) : null
+  const activeGroup = activeId ? findGroupByGameId(activeId) : null
+
+  const closeArena = () => {
+    setActiveId(null)
+    setActiveRoomCode(null)
+    setInitialRoomCode(null)
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href)
+      url.searchParams.delete("room")
+      url.searchParams.delete("game")
+      window.history.replaceState({}, "", url.toString())
+    }
+  }
 
   const selectGame = (id: GameId, difficulty?: string) => {
     setActiveId(id)
@@ -305,7 +324,9 @@ export default function GamesHub() {
       url.searchParams.set("game", id)
       window.history.replaceState({}, "", url.toString())
     }
-    arenaRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    window.setTimeout(() => {
+      arenaRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }, 60)
   }
 
   const openGameLauncher = (group: UnifiedGameGroup, preferredMode?: "solo" | "duo") => {
@@ -357,7 +378,7 @@ export default function GamesHub() {
   }, [])
 
   const handleShareGame = async () => {
-    if (typeof window === "undefined") return
+    if (typeof window === "undefined" || !activeId || !activeGame) return
     const shareUrl =
       DUO_ID_TO_TYPE[activeId] && activeRoomCode
         ? `${window.location.origin}/jeux?room=${activeRoomCode}`
@@ -396,9 +417,11 @@ export default function GamesHub() {
     setEditingName(false)
 
     // Sync existing local best for current game if any
-    const currentBest = readScore(activeGame.scoreKey)
-    if (currentBest !== null) {
-      submitLeaderboardScore(activeGame.id, currentBest)
+    if (activeGame) {
+      const currentBest = readScore(activeGame.scoreKey)
+      if (currentBest !== null) {
+        submitLeaderboardScore(activeGame.id, currentBest)
+      }
     }
   }
 
@@ -420,7 +443,7 @@ export default function GamesHub() {
       if (data.url) {
         setPlayerAvatar(data.url)
         setPlayerAvatarState(data.url)
-        fetchLeaderboard(activeId)
+        if (activeId) fetchLeaderboard(activeId)
       }
     } catch {
       setAvatarError(language === "fr" ? "Erreur réseau" : "Network error")
@@ -517,7 +540,7 @@ export default function GamesHub() {
                 onSelectGame={handleHeroSelectGame}
                 onQuickJoinRoom={handleQuickJoinRoom}
                 topLeader={
-                  leaderboard[0]
+                  leaderboard[0] && activeGame
                     ? {
                         playerName: leaderboard[0].name,
                         score: leaderboard[0].score,
@@ -531,22 +554,44 @@ export default function GamesHub() {
         </div>
       </header>
 
-      {/* Active Game Arena (mobile-first full-bleed feel -> wider max-w-1440px on desktop) */}
-      <section ref={arenaRef} id="game-arena" className="mx-auto w-full max-w-[1440px] scroll-mt-20 px-3 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-10 lg:px-10">
+      {/* Active Game Arena — appears ONLY when the user selects a game */}
+      <AnimatePresence>
+        {activeId && activeGame && activeGroup && (
+          <motion.section
+            key="active-game-arena"
+            ref={arenaRef}
+            id="game-arena"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="mx-auto w-full max-w-[1440px] scroll-mt-20 px-3 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-10 lg:px-10"
+          >
         <div className="overflow-hidden rounded-md border border-border bg-card">
           {/* Arena Header */}
           <div className="flex flex-col gap-3.5 border-b border-border px-4 py-4 sm:px-8 sm:py-5 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex flex-wrap items-center justify-between gap-3 xl:justify-start">
-              <div>
-                <p className="eyebrow">
-                  {tr(gamesCopy.arenaEyebrow, language)} · {tr(gameCategoryLabels[activeGame.category], language)}
-                </p>
-                <h2 className="mt-1 font-serif text-2xl leading-tight sm:text-4xl">
-                  {tr(activeGame.title, language)}
-                  <span className="ml-2 hidden font-sans text-sm font-normal text-muted-foreground sm:inline">
-                    — {tr(activeGame.tagline, language)}
-                  </span>
-                </h2>
+              <div className="flex items-start gap-3">
+                <button
+                  type="button"
+                  onClick={closeArena}
+                  title={language === "fr" ? "Fermer l'arène et revenir au catalogue" : "Close arena"}
+                  className="mt-1 inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-background px-3 font-mono text-[11px] text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">{language === "fr" ? "Catalogue" : "Catalog"}</span>
+                </button>
+                <div>
+                  <p className="eyebrow">
+                    {tr(gamesCopy.arenaEyebrow, language)} · {tr(gameCategoryLabels[activeGame.category], language)}
+                  </p>
+                  <h2 className="mt-1 font-serif text-2xl leading-tight sm:text-4xl">
+                    {tr(activeGame.title, language)}
+                    <span className="ml-2 hidden font-sans text-sm font-normal text-muted-foreground sm:inline">
+                      — {tr(activeGame.tagline, language)}
+                    </span>
+                  </h2>
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
@@ -603,6 +648,26 @@ export default function GamesHub() {
                     <Pencil className="h-3 w-3 opacity-60" />
                   </button>
                 )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !soundOn
+                    setSoundOn(next)
+                    setSoundEnabled(next)
+                    if (next) playClick()
+                  }}
+                  title={soundOn ? (language === "fr" ? "Couper le son" : "Mute sound") : language === "fr" ? "Activer le son" : "Enable sound"}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 font-mono text-[11px] transition-colors sm:px-3 sm:text-xs",
+                    soundOn
+                      ? "border-primary/40 bg-primary/10 text-primary hover:border-primary"
+                      : "border-border bg-background text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {soundOn ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+                  <span className="hidden sm:inline">{soundOn ? "Son" : "Muet"}</span>
+                </button>
 
                 <button
                   type="button"
@@ -1047,7 +1112,9 @@ export default function GamesHub() {
             </p>
           </div>
         </div>
-      </section>
+          </motion.section>
+        )}
+      </AnimatePresence>
 
       {/* Games Catalog Grid */}
       <section className="border-t border-border bg-card/50">

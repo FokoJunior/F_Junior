@@ -6,6 +6,7 @@ import { Bot, RotateCcw, Trophy, Users } from "lucide-react"
 import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
+import { playMove } from "@/lib/game-sound"
 import { tr } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
@@ -145,6 +146,7 @@ export default function TicTacToeGame({ initialMode = "impossible" }: { initialM
 
     const next = [...board]
     next[idx] = turn
+    playMove()
     setBoard(next)
 
     const res = evaluateBoard(next)

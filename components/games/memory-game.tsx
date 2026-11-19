@@ -18,6 +18,7 @@ import {
 import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
+import { playMove, playScore } from "@/lib/game-sound"
 import { tr } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
@@ -119,6 +120,7 @@ export default function MemoryGame({ initialPairs = 8 }: { initialPairs?: 6 | 8 
 
     const nextCards = cards.map((c, i) => (i === index ? { ...c, flipped: true } : c))
     const nextSelected = [...selected, index]
+    playMove()
     setCards(nextCards)
     setSelected(nextSelected)
 
@@ -132,6 +134,7 @@ export default function MemoryGame({ initialPairs = 8 }: { initialPairs?: 6 | 8 
       const second = nextCards[secondIdx]
 
       if (first.symbolId === second.symbolId) {
+        playScore()
         const matchedDeck = nextCards.map((c, i) =>
           i === firstIdx || i === secondIdx ? { ...c, matched: true } : c,
         )

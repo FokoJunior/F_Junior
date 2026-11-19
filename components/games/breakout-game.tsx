@@ -7,6 +7,7 @@ import { Heart, Pause, Play, RotateCcw, Trophy } from "lucide-react"
 import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
+import { playCapture, playClick, playScore } from "@/lib/game-sound"
 import { tr } from "@/lib/i18n"
 
 type Status = "idle" | "playing" | "paused" | "over"
@@ -224,6 +225,7 @@ export default function BreakoutGame() {
         s.dx = Math.sin(angle) * speed
         s.dy = -Math.cos(angle) * speed
         s.ballY = paddleTop - BALL_R
+        playClick()
       }
 
       // Brick collisions
@@ -237,6 +239,7 @@ export default function BreakoutGame() {
         ) {
           b.alive = false
           s.dy = -s.dy
+          playScore()
           const pts = (ROWS - b.row) * 10
           s.score += pts
           setScore(s.score)
@@ -257,6 +260,7 @@ export default function BreakoutGame() {
 
       // Ball missed
       if (s.ballY - BALL_R > H) {
+        playCapture()
         s.lives -= 1
         setLives(s.lives)
         if (s.lives <= 0) {

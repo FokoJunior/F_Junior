@@ -1,9 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { Crown, Flag, Handshake, Power, RotateCcw, Sparkles, Trophy, XCircle } from "lucide-react"
 
+import { playDraw, playLose, playWin } from "@/lib/game-sound"
 import { cn } from "@/lib/utils"
 
 export type GameEndOutcome = "win" | "lose" | "draw" | "forfeit" | "ended" | "gameover"
@@ -75,8 +76,22 @@ export default function GameEndBanner({
   className,
 }: GameEndBannerProps) {
   const [showShower, setShowShower] = useState(false)
+  const prevShowRef = useRef(false)
 
   const celebrate = outcome === "win" || Boolean(isNewRecord)
+
+  useEffect(() => {
+    if (show && !prevShowRef.current) {
+      if (celebrate) {
+        playWin()
+      } else if (outcome === "lose" || outcome === "gameover") {
+        playLose()
+      } else {
+        playDraw()
+      }
+    }
+    prevShowRef.current = show
+  }, [celebrate, outcome, show])
 
   useEffect(() => {
     if (!show || !celebrate) {

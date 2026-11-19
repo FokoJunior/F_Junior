@@ -3,7 +3,44 @@
 import type { GameId } from "@/lib/games"
 import { cn } from "@/lib/utils"
 
+const REAL_GAME_COVERS: Partial<Record<GameId, string>> = {
+  chess: "/games/chess.jpg",
+  "duo-chess": "/games/chess.jpg",
+  ludo: "/games/ludo.jpg",
+  "duo-ludo": "/games/ludo.jpg",
+  tictactoe: "/games/tictactoe.jpg",
+  "duo-tictactoe": "/games/tictactoe.jpg",
+  reaction: "/games/reaction.jpg",
+  "duo-reaction": "/games/reaction.jpg",
+  connect4: "/games/connect4.jpg",
+  rps: "/games/rps.jpg",
+}
+
 export default function GameCover({ gameId, className }: { gameId: GameId; className?: string }) {
+  const realImage = REAL_GAME_COVERS[gameId]
+
+  if (realImage) {
+    return (
+      <div
+        className={cn(
+          "relative aspect-[16/9] w-full overflow-hidden rounded-md border border-border/80 bg-[#0d111a]",
+          className,
+        )}
+      >
+        <img
+          src={realImage}
+          alt=""
+          loading="lazy"
+          className="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0b0f17]/45 via-transparent to-transparent"
+        />
+      </div>
+    )
+  }
+
   return (
     <div
       className={cn(

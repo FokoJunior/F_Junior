@@ -6,6 +6,7 @@ import { Bomb, Flag, RotateCcw, Trophy } from "lucide-react"
 import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
+import { playCapture, playClick } from "@/lib/game-sound"
 import { tr } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
@@ -146,6 +147,7 @@ export default function MinesweeperGame() {
     }
 
     if (working[r][c].mine) {
+      playCapture()
       for (const row of working) {
         for (const cell of row) {
           if (cell.mine) cell.revealed = true
@@ -156,6 +158,7 @@ export default function MinesweeperGame() {
       return
     }
 
+    playClick()
     floodReveal(working, r, c)
     setBoard(working)
 

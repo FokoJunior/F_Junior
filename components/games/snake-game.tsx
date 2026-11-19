@@ -7,6 +7,7 @@ import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Pause, Play, RotateCcw, Trop
 import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
+import { playScore } from "@/lib/game-sound"
 import { tr } from "@/lib/i18n"
 
 type Point = { x: number; y: number }
@@ -296,6 +297,7 @@ export default function SnakeGame() {
 
       const nextSnake = [head, ...snake]
       if (willEat) {
+        playScore()
         foodRef.current = randomFood(nextSnake)
         const nextScore = nextSnake.length - 3
         setScore(nextScore)

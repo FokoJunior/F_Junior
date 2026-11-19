@@ -35,6 +35,7 @@ import GameEndBanner, { type GameEndOutcome } from "@/components/games/game-end-
 import LudoBoard from "@/components/games/ludo-board"
 import { useLanguage } from "@/components/language-provider"
 import { getPlayerId, looksLikeRoomCode, readScore, saveBestScore, setPlayerName } from "@/lib/games"
+import { playCapture, playClick, playDice, playMove, playScore } from "@/lib/game-sound"
 import { cn } from "@/lib/utils"
 
 interface DuoArenaProps {
@@ -211,6 +212,12 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
 
   const sendRoomAction = async (payload: Record<string, unknown>) => {
     if (!room) return
+    const act = payload.action
+    if (act === "ludo_roll") playDice()
+    else if (act === "c4_move") playCapture()
+    else if (act === "move" || act === "chess_move" || act === "ludo_move") playMove()
+    else if (act === "rps_pick" || act === "quiz_answer" || act === "reaction_submit") playScore()
+    else if (act === "rematch") playClick()
     try {
       const res = await fetch("/api/games/rooms", {
         method: "POST",

@@ -6,6 +6,7 @@ import { Eye, Hash, ImagePlus, RotateCcw, Trophy } from "lucide-react"
 import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
+import { playMove } from "@/lib/game-sound"
 import { tr } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
@@ -204,6 +205,7 @@ export default function PuzzleGame({ initialSize = 3 }: { initialSize?: GridSize
       if (!started) setStarted(true)
       const next = [...tiles]
       ;[next[tileIdx], next[emptyIdx]] = [next[emptyIdx], next[tileIdx]]
+      playMove()
       const nextMoves = moves + 1
       setTiles(next)
       setMoves(nextMoves)

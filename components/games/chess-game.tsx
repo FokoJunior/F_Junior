@@ -8,6 +8,7 @@ import ChessBoard from "@/components/games/chess-board"
 import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
+import { playCapture, playCheck, playMove } from "@/lib/game-sound"
 import { tr } from "@/lib/i18n"
 
 type Mode = "easy" | "normal" | "hard" | "pvp"
@@ -143,6 +144,13 @@ export default function ChessGame({ initialMode = "normal" }: { initialMode?: Mo
       try {
         const res = next.move({ from, to, promotion: "q" })
         if (!res) return
+        if (next.inCheck() && !next.isCheckmate()) {
+          playCheck()
+        } else if (res.captured) {
+          playCapture()
+        } else {
+          playMove()
+        }
         setHistory((prev) => [...prev, fen])
         setFen(next.fen())
         setLastMove({ from, to })
@@ -176,7 +184,12 @@ export default function ChessGame({ initialMode = "normal" }: { initialMode?: Mo
       if (move) {
         const next = new Chess(fen)
         try {
-          next.move({ from: move.from, to: move.to, promotion: "q" })
+          const res = next.move({ from: move.from, to: move.to, promotion: "q" })
+          if (res) {
+            if (next.inCheck() && !next.isCheckmate()) playCheck()
+            else if (res.captured) playCapture()
+            else playMove()
+          }
           setHistory((prev) => [...prev, fen])
           setFen(next.fen())
           setLastMove(move)

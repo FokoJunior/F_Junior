@@ -7,6 +7,7 @@ import GameEndBanner from "@/components/games/game-end-overlay"
 import LudoBoard from "@/components/games/ludo-board"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
+import { playCapture, playDice, playMove, playScore } from "@/lib/game-sound"
 import { tr } from "@/lib/i18n"
 import {
   applyLudoMove,
@@ -93,6 +94,7 @@ export default function LudoGame({ initialMode = "normal" }: { initialMode?: Mod
   const handleRoll = useCallback(() => {
     if (state.winner || state.hasRolled || rolling) return
     setRolling(true)
+    playDice()
     window.setTimeout(() => {
       const value = Math.floor(Math.random() * 6) + 1
       setState((prev) => {
@@ -128,6 +130,13 @@ export default function LudoGame({ initialMode = "normal" }: { initialMode?: Mod
               ? "IA"
               : "Joueur 2"
         const next = applyLudoMove(prev, prev.turn, tokenIdx, label)
+        const prevHome = prev.hostTokens.filter((p) => p === 56).length + prev.guestTokens.filter((p) => p === 56).length
+        const nextHome = next.hostTokens.filter((p) => p === 56).length + next.guestTokens.filter((p) => p === 56).length
+        const prevBase = prev.hostTokens.filter((p) => p === -1).length + prev.guestTokens.filter((p) => p === -1).length
+        const nextBase = next.hostTokens.filter((p) => p === -1).length + next.guestTokens.filter((p) => p === -1).length
+        if (nextHome > prevHome) playScore()
+        else if (nextBase > prevBase) playCapture()
+        else playMove()
         if (next.winner === "host" && isAi) {
           const nextTotal = (readScore(SCORE_KEY) ?? 0) + 1
           const { best } = saveBestScore(SCORE_KEY, nextTotal)
