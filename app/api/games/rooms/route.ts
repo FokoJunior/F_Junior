@@ -7,6 +7,12 @@ import { NextRequest, NextResponse } from "next/server"
 
 import { ensureGamesSchema, getSql, hasDatabase } from "@/lib/db"
 import {
+  applyDraughtsMove,
+  createInitialDraughtsState,
+  getLegalDraughtsMoves,
+  type DraughtsState,
+} from "@/lib/draughts"
+import {
   applyLudoMove,
   applyLudoRoll,
   createInitialLudoState,
@@ -17,7 +23,7 @@ import { pickQuizQuestions as pickBankQuizQuestions } from "@/lib/quiz-bank"
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-export type DuoGameType = "tictactoe" | "reaction" | "connect4" | "rps" | "quiz" | "chess" | "ludo"
+export type DuoGameType = "tictactoe" | "reaction" | "connect4" | "rps" | "quiz" | "chess" | "ludo" | "draughts"
 export type TttCell = "X" | "O" | null
 export type C4Cell = "R" | "Y" | null
 export type RpsChoice = "rock" | "paper" | "scissors"
@@ -105,6 +111,13 @@ export interface DuoRoom {
   chessWinner: "host" | "guest" | "draw" | null
   // Ludo 1v1
   ludoState: LudoState
+  // International Draughts 10x10 1v1
+  draughtsState: DraughtsState
+  draughtsWhiteSide: "host" | "guest"
+  draughtsWinner: "host" | "guest" | "draw" | null
+  // Consecutive missed turns counter (forfeit only at 4 consecutive timeouts)
+  hostMissedTurns: number
+  guestMissedTurns: number
   updatedAt: string
   createdAt: string
 }
@@ -116,7 +129,7 @@ const FALLBACK_FILE = path.join(os.tmpdir(), "fj-rooms.json")
 const MAX_ROOM_AGE_MS = 6 * 60 * 60 * 1000 // 6h
 const SPECTATOR_TTL_MS = 45 * 1000 // 45s
 
-const VALID_GAME_TYPES: DuoGameType[] = ["tictactoe", "reaction", "connect4", "rps", "quiz", "chess", "ludo"]
+const VALID_GAME_TYPES: DuoGameType[] = ["tictactoe", "reaction", "connect4", "rps", "quiz", "chess", "ludo", "draughts"]
 const INITIAL_CHESS_FEN = new Chess().fen()
 
 const TTT_LINES: [number, number, number][] = [
@@ -236,6 +249,11 @@ function normalizeRoom(room: DuoRoom): DuoRoom {
     chessLastMove: room.chessLastMove ?? null,
     chessWinner: room.chessWinner ?? null,
     ludoState: room.ludoState ?? createInitialLudoState("host"),
+    draughtsState: room.draughtsState ?? createInitialDraughtsState(),
+    draughtsWhiteSide: room.draughtsWhiteSide || "host",
+    draughtsWinner: room.draughtsWinner ?? null,
+    hostMissedTurns: Number(room.hostMissedTurns ?? 0),
+    guestMissedTurns: Number(room.guestMissedTurns ?? 0),
   }
 }
 
@@ -252,24 +270,53 @@ function applyTurnTimeoutIfNeeded(room: DuoRoom): boolean {
 
   const nowIso = new Date().toISOString()
 
+  const recordMissedTurn = (side: "host" | "guest"): { missed: number; forfeited: boolean; name: string; oppName: string } => {
+    const name = side === "host" ? room.host.name : room.guest!.name
+    const oppName = side === "host" ? room.guest!.name : room.host.name
+    if (side === "host") {
+      room.hostMissedTurns = (room.hostMissedTurns ?? 0) + 1
+    } else {
+      room.guestMissedTurns = (room.guestMissedTurns ?? 0) + 1
+    }
+    const missed = side === "host" ? room.hostMissedTurns : room.guestMissedTurns
+    addPlayerElapsed(room, side)
+    if (missed >= 4) {
+      room.abandonedBy = side
+      room.endReason = "forfeit"
+      room.status = "finished"
+      if (side === "host") room.guest!.wins += 1
+      else room.host.wins += 1
+      room.lastTimeoutNotice = `${name} a manqué 4 tours d'affilée — victoire par abandon pour ${oppName} !`
+      room.updatedAt = nowIso
+      return { missed, forfeited: true, name, oppName }
+    }
+    return { missed, forfeited: false, name, oppName }
+  }
+
   if (room.gameType === "tictactoe") {
-    const timedOutHost = room.turn === "X"
-    const timedOutName = timedOutHost ? room.host.name : room.guest.name
-    addPlayerElapsed(room, timedOutHost ? "host" : "guest")
-    room.turn = timedOutHost ? "O" : "X"
+    const timedOutSide: "host" | "guest" = room.turn === "X" ? "host" : "guest"
+    const res = recordMissedTurn(timedOutSide)
+    if (res.forfeited) {
+      room.winner = timedOutSide === "host" ? "O" : "X"
+      return true
+    }
+    room.turn = timedOutSide === "host" ? "O" : "X"
     room.turnStartedAt = nowIso
-    room.lastTimeoutNotice = `Temps écoulé pour ${timedOutName} — tour passé !`
+    room.lastTimeoutNotice = `Temps écoulé pour ${res.name} (${res.missed}/4) — tour passé à ${res.oppName} !`
     room.updatedAt = nowIso
     return true
   }
 
   if (room.gameType === "connect4") {
-    const timedOutHost = room.c4Turn === "R"
-    const timedOutName = timedOutHost ? room.host.name : room.guest.name
-    addPlayerElapsed(room, timedOutHost ? "host" : "guest")
-    room.c4Turn = timedOutHost ? "Y" : "R"
+    const timedOutSide: "host" | "guest" = room.c4Turn === "R" ? "host" : "guest"
+    const res = recordMissedTurn(timedOutSide)
+    if (res.forfeited) {
+      room.c4Winner = timedOutSide === "host" ? "Y" : "R"
+      return true
+    }
+    room.c4Turn = timedOutSide === "host" ? "Y" : "R"
     room.turnStartedAt = nowIso
-    room.lastTimeoutNotice = `Temps écoulé pour ${timedOutName} — tour passé !`
+    room.lastTimeoutNotice = `Temps écoulé pour ${res.name} (${res.missed}/4) — tour passé à ${res.oppName} !`
     room.updatedAt = nowIso
     return true
   }
@@ -308,31 +355,82 @@ function applyTurnTimeoutIfNeeded(room: DuoRoom): boolean {
       (chess.turn() === "b" && room.chessWhiteSide === "guest")
         ? "host"
         : "guest"
-    const winnerSide: "host" | "guest" = activeSide === "host" ? "guest" : "host"
-    addPlayerElapsed(room, activeSide)
-    room.abandonedBy = activeSide
-    room.endReason = "forfeit"
-    room.chessWinner = winnerSide
-    room.status = "finished"
-    if (winnerSide === "host") room.host.wins += 1
-    else room.guest.wins += 1
-    room.lastTimeoutNotice = `Temps écoulé pour ${activeSide === "host" ? room.host.name : room.guest.name} !`
+    const res = recordMissedTurn(activeSide)
+    if (res.forfeited) {
+      room.chessWinner = activeSide === "host" ? "guest" : "host"
+      return true
+    }
+    // Pass turn cleanly: if not in check flip FEN turn; if in check play a legal escape move
+    if (!chess.inCheck()) {
+      const parts = chess.fen().split(" ")
+      parts[1] = parts[1] === "w" ? "b" : "w"
+      parts[3] = "-"
+      try {
+        const flipped = new Chess(parts.join(" "))
+        room.chessFen = flipped.fen()
+      } catch {
+        const moves = chess.moves({ verbose: true })
+        if (moves.length > 0) {
+          chess.move(moves[0])
+          room.chessFen = chess.fen()
+        }
+      }
+    } else {
+      const moves = chess.moves({ verbose: true })
+      if (moves.length > 0) {
+        const chosen = moves[Math.floor(Math.random() * moves.length)]
+        chess.move(chosen)
+        room.chessFen = chess.fen()
+        room.chessLastMove = { from: chosen.from, to: chosen.to }
+      }
+    }
+    room.turnStartedAt = nowIso
+    room.lastTimeoutNotice = `Temps écoulé pour ${res.name} (${res.missed}/4) — tour passé à ${res.oppName} !`
     room.updatedAt = nowIso
     return true
   }
 
   if (room.gameType === "ludo") {
-    const timedOutHost = room.ludoState.turn === "host"
-    const timedOutName = timedOutHost ? room.host.name : room.guest.name
-    addPlayerElapsed(room, timedOutHost ? "host" : "guest")
+    const timedOutSide: "host" | "guest" = room.ludoState.turn
+    const res = recordMissedTurn(timedOutSide)
+    if (res.forfeited) {
+      room.ludoState = {
+        ...room.ludoState,
+        winner: timedOutSide === "host" ? "guest" : "host",
+        lastEvent: room.lastTimeoutNotice,
+      }
+      return true
+    }
     room.ludoState = {
       ...room.ludoState,
-      turn: timedOutHost ? "guest" : "host",
+      turn: timedOutSide === "host" ? "guest" : "host",
       hasRolled: false,
-      lastEvent: `Temps écoulé pour ${timedOutName} — tour passé !`,
+      lastEvent: `Temps écoulé pour ${res.name} (${res.missed}/4) — tour passé à ${res.oppName} !`,
     }
     room.turnStartedAt = nowIso
-    room.lastTimeoutNotice = `Temps écoulé pour ${timedOutName} — tour passé !`
+    room.lastTimeoutNotice = `Temps écoulé pour ${res.name} (${res.missed}/4) — tour passé à ${res.oppName} !`
+    room.updatedAt = nowIso
+    return true
+  }
+
+  if (room.gameType === "draughts") {
+    const timedOutSide: "host" | "guest" =
+      (room.draughtsState.turn === "w" && room.draughtsWhiteSide === "host") ||
+      (room.draughtsState.turn === "b" && room.draughtsWhiteSide === "guest")
+        ? "host"
+        : "guest"
+    const res = recordMissedTurn(timedOutSide)
+    if (res.forfeited) {
+      room.draughtsWinner = timedOutSide === "host" ? "guest" : "host"
+      return true
+    }
+    room.draughtsState = {
+      ...room.draughtsState,
+      turn: room.draughtsState.turn === "w" ? "b" : "w",
+      lastEvent: `Temps écoulé pour ${res.name} (${res.missed}/4) — tour passé à ${res.oppName} !`,
+    }
+    room.turnStartedAt = nowIso
+    room.lastTimeoutNotice = `Temps écoulé pour ${res.name} (${res.missed}/4) — tour passé à ${res.oppName} !`
     room.updatedAt = nowIso
     return true
   }
@@ -546,6 +644,11 @@ export async function POST(request: NextRequest) {
         chessLastMove: null,
         chessWinner: null,
         ludoState: createInitialLudoState("host"),
+        draughtsState: createInitialDraughtsState(),
+        draughtsWhiteSide: "host",
+        draughtsWinner: null,
+        hostMissedTurns: 0,
+        guestMissedTurns: 0,
         createdAt: now,
         updatedAt: now,
       }
@@ -685,7 +788,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Ce n'est pas votre tour" }, { status: 400 })
       }
 
-      addPlayerElapsed(room, symbol === "X" ? "host" : "guest")
+      const moveSide: "host" | "guest" = symbol === "X" ? "host" : "guest"
+      addPlayerElapsed(room, moveSide)
+      if (moveSide === "host") room.hostMissedTurns = 0
+      else room.guestMissedTurns = 0
       room.lastTimeoutNotice = null
       room.board[index] = symbol
       const res = evalTtt(room.board)
@@ -729,7 +835,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Colonne pleine" }, { status: 400 })
       }
 
-      addPlayerElapsed(room, disc === "R" ? "host" : "guest")
+      const dropSide: "host" | "guest" = disc === "R" ? "host" : "guest"
+      addPlayerElapsed(room, dropSide)
+      if (dropSide === "host") room.hostMissedTurns = 0
+      else room.guestMissedTurns = 0
       room.lastTimeoutNotice = null
       room.c4Board[targetIdx] = disc
       const res = evalC4(room.c4Board)
@@ -939,6 +1048,8 @@ export async function POST(request: NextRequest) {
       }
 
       addPlayerElapsed(room, isHostSide ? "host" : "guest")
+      if (isHostSide) room.hostMissedTurns = 0
+      else room.guestMissedTurns = 0
       room.lastTimeoutNotice = null
       room.chessFen = chess.fen()
       room.chessLastMove = { from, to }
@@ -977,6 +1088,8 @@ export async function POST(request: NextRequest) {
       const name = isHostSide ? room.host.name : room.guest.name
       room.ludoState = applyLudoRoll(room.ludoState, side, roll, name)
       room.lastTimeoutNotice = null
+      if (side === "host") room.hostMissedTurns = 0
+      else room.guestMissedTurns = 0
       if (!room.ludoState.hasRolled) {
         // No legal move -> turn passed automatically
         addPlayerElapsed(room, side)
@@ -1001,9 +1114,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Pion invalide" }, { status: 400 })
       }
 
+      if (room.ludoState.turn !== side || !room.ludoState.hasRolled) {
+        return NextResponse.json({ error: "Lancez d'abord le dé" }, { status: 400 })
+      }
       const name = isHostSide ? room.host.name : room.guest.name
       room.ludoState = applyLudoMove(room.ludoState, side, tokenIdx, name)
       addPlayerElapsed(room, side)
+      if (side === "host") room.hostMissedTurns = 0
+      else room.guestMissedTurns = 0
       room.lastTimeoutNotice = null
 
       if (room.ludoState.winner) {
@@ -1012,6 +1130,65 @@ export async function POST(request: NextRequest) {
         else room.guest.wins += 1
       }
 
+      room.updatedAt = now
+      await saveRoom(room)
+      return NextResponse.json({ room })
+    }
+
+    if (action === "draughts_move") {
+      if (room.gameType !== "draughts" || room.status !== "playing" || !room.guest) {
+        return NextResponse.json({ error: "Partie non active" }, { status: 400 })
+      }
+      const isHostSide = room.host.id === playerId
+      const isGuestSide = room.guest.id === playerId
+      if (!isHostSide && !isGuestSide) {
+        return NextResponse.json({ error: "Non autorisé" }, { status: 403 })
+      }
+      const myColor: "w" | "b" =
+        (isHostSide && room.draughtsWhiteSide === "host") || (isGuestSide && room.draughtsWhiteSide === "guest")
+          ? "w"
+          : "b"
+      if (room.draughtsState.turn !== myColor) {
+        return NextResponse.json({ error: "Ce n'est pas votre tour" }, { status: 400 })
+      }
+
+      const from = Array.isArray(body?.from) ? body.from : null
+      const to = Array.isArray(body?.to) ? body.to : null
+      if (!from || !to || from.length !== 2 || to.length !== 2) {
+        return NextResponse.json({ error: "Coup invalide" }, { status: 400 })
+      }
+
+      const legal = getLegalDraughtsMoves(room.draughtsState.board, myColor)
+      const matched = legal.find(
+        (m) => m.from[0] === Number(from[0]) && m.from[1] === Number(from[1]) && m.to[0] === Number(to[0]) && m.to[1] === Number(to[1]),
+      )
+      if (!matched) {
+        return NextResponse.json({ error: "Coup illégal (vérifiez la prise obligatoire)" }, { status: 400 })
+      }
+
+      const activeSide: "host" | "guest" = isHostSide ? "host" : "guest"
+      addPlayerElapsed(room, activeSide)
+      if (activeSide === "host") room.hostMissedTurns = 0
+      else room.guestMissedTurns = 0
+      room.lastTimeoutNotice = null
+
+      const nextState = applyDraughtsMove(room.draughtsState, matched)
+      room.draughtsState = nextState
+      if (nextState.winner) {
+        room.status = "finished"
+        if (nextState.winner === "draw") {
+          room.draughtsWinner = "draw"
+        } else {
+          const winnerSide: "host" | "guest" =
+            (nextState.winner === "w" && room.draughtsWhiteSide === "host") ||
+            (nextState.winner === "b" && room.draughtsWhiteSide === "guest")
+              ? "host"
+              : "guest"
+          room.draughtsWinner = winnerSide
+          if (winnerSide === "host") room.host.wins += 1
+          else room.guest.wins += 1
+        }
+      }
       room.updatedAt = now
       await saveRoom(room)
       return NextResponse.json({ room })
@@ -1033,6 +1210,8 @@ export async function POST(request: NextRequest) {
       room.abandonedBy = null
       room.endedBy = null
       room.endReason = null
+      room.hostMissedTurns = 0
+      room.guestMissedTurns = 0
       // Reset Tic-Tac-Toe
       room.board = Array(9).fill(null)
       room.starter = room.starter === "X" ? "O" : "X"
@@ -1071,6 +1250,10 @@ export async function POST(request: NextRequest) {
       room.chessWinner = null
       // Reset Ludo (alternate starter)
       room.ludoState = createInitialLudoState(room.ludoState.turn === "host" ? "guest" : "host")
+      // Reset International Draughts (swap White & Black)
+      room.draughtsState = createInitialDraughtsState()
+      room.draughtsWhiteSide = room.draughtsWhiteSide === "host" ? "guest" : "host"
+      room.draughtsWinner = null
 
       room.updatedAt = now
       await saveRoom(room)

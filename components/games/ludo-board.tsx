@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Dices, Star, Trophy } from "lucide-react"
 
 import LudoDice3D from "@/components/games/ludo-dice-3d"
@@ -34,8 +34,51 @@ export default function LudoBoard({
   hostLabel,
   guestLabel,
 }: LudoBoardProps) {
+  // --- Real-time "piloting": displayed token progress steps square-by-square toward the true state ---
+  const [shownHost, setShownHost] = useState<number[]>(state.hostTokens)
+  const [shownGuest, setShownGuest] = useState<number[]>(state.guestTokens)
+  const [remoteRolling, setRemoteRolling] = useState(false)
+  const prevRollSigRef = useRef<string>(`${state.dice}|${state.lastEvent}|${state.turn}`)
+
+  const stepToward = (shown: number[], target: number[]): number[] => {
+    let changed = false
+    const next = shown.map((p, i) => {
+      const t = target[i]
+      if (p === t) return p
+      changed = true
+      if (t < p || p === -1) return t // captured or leaving base: jump
+      return p + 1 // advance one square
+    })
+    return changed ? next : shown
+  }
+
+  const animating =
+    shownHost.some((p, i) => p !== state.hostTokens[i]) || shownGuest.some((p, i) => p !== state.guestTokens[i])
+
+  useEffect(() => {
+    if (!animating) return
+    const id = window.setInterval(() => {
+      setShownHost((s) => stepToward(s, state.hostTokens))
+      setShownGuest((s) => stepToward(s, state.guestTokens))
+    }, 110)
+    return () => window.clearInterval(id)
+  }, [animating, state.guestTokens, state.hostTokens])
+
+  // Opponent / remote dice roll animation (so the 3D dice also tumbles for the other player)
+  useEffect(() => {
+    const sig = `${state.dice}|${state.lastEvent}|${state.turn}`
+    if (sig !== prevRollSigRef.current && state.dice !== null && !rolling) {
+      setRemoteRolling(true)
+      const id = window.setTimeout(() => setRemoteRolling(false), 520)
+      prevRollSigRef.current = sig
+      return () => window.clearTimeout(id)
+    }
+    prevRollSigRef.current = sig
+  }, [rolling, state.dice, state.lastEvent, state.turn])
+
   const canControlTurn =
     !state.winner &&
+    !animating &&
     canInteractSide !== null &&
     (canInteractSide === "both" || canInteractSide === state.turn)
 
@@ -70,10 +113,10 @@ export default function LudoBoard({
       list.push({ side, idx, progress })
       map.set(key, list)
     }
-    state.hostTokens.forEach((p, idx) => add("host", idx, p))
-    state.guestTokens.forEach((p, idx) => add("guest", idx, p))
+    state.hostTokens.forEach((_, idx) => add("host", idx, shownHost[idx] ?? state.hostTokens[idx]))
+    state.guestTokens.forEach((_, idx) => add("guest", idx, shownGuest[idx] ?? state.guestTokens[idx]))
     return map
-  }, [state.guestTokens, state.hostTokens])
+  }, [shownGuest, shownHost, state.guestTokens, state.hostTokens])
 
   const hostFinished = state.hostTokens.filter((p) => p === 56).length
   const guestFinished = state.guestTokens.filter((p) => p === 56).length
@@ -101,7 +144,7 @@ export default function LudoBoard({
         <div className="flex items-center gap-3">
           <LudoDice3D
             value={state.dice}
-            rolling={rolling}
+            rolling={rolling || remoteRolling}
             canRoll={canControlTurn && !state.hasRolled}
             onRoll={onRoll}
             accent={state.turn}

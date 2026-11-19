@@ -46,6 +46,7 @@ import type { DuoGameType } from "@/app/api/games/rooms/route"
 import { useLanguage } from "@/components/language-provider"
 import BreakoutGame from "@/components/games/breakout-game"
 import ChessGame from "@/components/games/chess-game"
+import DraughtsGame from "@/components/games/draughts-game"
 import DuoArena from "@/components/games/duo-arena"
 import Game2048 from "@/components/games/game-2048"
 import GameCover from "@/components/games/game-cover"
@@ -119,6 +120,8 @@ const GAME_ICONS: Record<GameId, LucideIcon> = {
   "duo-reaction": Zap,
   "duo-chess": Crown,
   "duo-ludo": Dices,
+  draughts: Grid2x2,
+  "duo-draughts": Grid2x2,
 }
 
 const DUO_ID_TO_TYPE: Partial<Record<GameId, DuoGameType>> = {
@@ -129,6 +132,7 @@ const DUO_ID_TO_TYPE: Partial<Record<GameId, DuoGameType>> = {
   "duo-reaction": "reaction",
   "duo-chess": "chess",
   "duo-ludo": "ludo",
+  "duo-draughts": "draughts",
 }
 
 const DUO_TYPE_TO_ID: Record<DuoGameType, GameId> = {
@@ -139,6 +143,7 @@ const DUO_TYPE_TO_ID: Record<DuoGameType, GameId> = {
   reaction: "duo-reaction",
   chess: "duo-chess",
   ludo: "duo-ludo",
+  draughts: "duo-draughts",
 }
 
 export default function GamesHub() {
@@ -178,6 +183,8 @@ export default function GamesHub() {
     "duo-reaction": null,
     "duo-chess": null,
     "duo-ludo": null,
+    draughts: null,
+    "duo-draughts": null,
   })
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [loadingBoard, setLoadingBoard] = useState<boolean>(false)
@@ -214,6 +221,8 @@ export default function GamesHub() {
       "duo-reaction": null,
       "duo-chess": null,
       "duo-ludo": null,
+      draughts: null,
+      "duo-draughts": null,
     }
     for (const g of gamesList) {
       next[g.id] = readScore(g.scoreKey)
@@ -252,21 +261,29 @@ export default function GamesHub() {
     const params = new URLSearchParams(window.location.search)
     const roomParam = params.get("room")?.trim().toUpperCase()
     const gameParam = params.get("game")?.trim().toLowerCase() as GameId | null
+    const scrollToArenaSoon = () => {
+      window.setTimeout(() => {
+        const el = document.getElementById("game-arena")
+        el?.scrollIntoView({ behavior: "smooth", block: "start" })
+      }, 350)
+    }
     if (roomParam) {
       setInitialRoomCode(roomParam)
       setActiveRoomCode(roomParam)
-      setActiveId("connect4")
       fetch(`/api/games/rooms?code=${encodeURIComponent(roomParam)}`, { cache: "no-store" })
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           const gType = data?.room?.gameType as DuoGameType | undefined
-          if (gType && DUO_TYPE_TO_ID[gType]) {
-            setActiveId(DUO_TYPE_TO_ID[gType])
-          }
+          setActiveId(gType && DUO_TYPE_TO_ID[gType] ? DUO_TYPE_TO_ID[gType] : "connect4")
+          scrollToArenaSoon()
         })
-        .catch(() => {})
+        .catch(() => {
+          setActiveId("connect4")
+          scrollToArenaSoon()
+        })
     } else if (gameParam && gamesList.some((g) => g.id === gameParam)) {
       setActiveId(gameParam)
+      scrollToArenaSoon()
     }
 
     const onScoreUpdated = () => refreshRecords()
@@ -812,6 +829,13 @@ export default function GamesHub() {
                     )}
                     {activeId === "ludo" && (
                       <LudoGame
+                        initialMode={
+                          (launchConfig.difficulty as "easy" | "normal" | "hard" | "pvp" | undefined) ?? "normal"
+                        }
+                      />
+                    )}
+                    {activeId === "draughts" && (
+                      <DraughtsGame
                         initialMode={
                           (launchConfig.difficulty as "easy" | "normal" | "hard" | "pvp" | undefined) ?? "normal"
                         }

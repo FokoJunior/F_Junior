@@ -21,6 +21,8 @@ export type GameId =
   | "duo-reaction"
   | "duo-chess"
   | "duo-ludo"
+  | "draughts"
+  | "duo-draughts"
 export type GameCategory = "arcade" | "puzzle" | "strategy" | "speed" | "duo"
 
 export interface GameMeta {
@@ -1324,6 +1326,126 @@ export const gamesList: GameMeta[] = [
     scoreKey: "fj_game_best_duo_ludo",
     scoreUnit: "wins",
   },
+  {
+    id: "draughts",
+    category: "strategy",
+    title: {
+      fr: "Dames Internationales",
+      en: "International Draughts",
+      de: "Internationale Dame",
+      zh: "国际跳棋",
+    },
+    tagline: {
+      fr: "Damier 10×10 · IA & 2 joueurs",
+      en: "10×10 board · AI & 2 players",
+      de: "10×10 Brett · KI & 2 Spieler",
+      zh: "10×10 棋盘 · AI 与双人",
+    },
+    description: {
+      fr: "Les vraies règles FMJD : pions qui prennent en avant et en arrière, dames volantes, prise majoritaire obligatoire et rafles multiples. Affrontez l'IA (3 niveaux) ou un ami en local.",
+      en: "Official FMJD rules: men capture forwards and backwards, flying kings, mandatory majority capture and multi-jumps. Face the AI (3 levels) or a friend locally.",
+      de: "Offizielle FMJD-Regeln: Schlagen vorwärts und rückwärts, fliegende Damen, Mehrheitsschlagzwang und Mehrfachsprünge.",
+      zh: "遵循 FMJD 官方规则：兵可前后吃子、飞行王、必须多吃与连跳。可对战 AI（3 档难度）或本地双人。",
+    },
+    objective: {
+      fr: "Capturer ou bloquer tous les pions adverses sur le damier 10×10.",
+      en: "Capture or block all of your opponent's pieces on the 10×10 board.",
+      de: "Schlage oder blockiere alle gegnerischen Steine auf dem 10×10-Brett.",
+      zh: "吃掉或封锁对手在 10×10 棋盘上的所有棋子。",
+    },
+    howToPlay: [
+      {
+        fr: "Sélectionnez un pion jouable (les pions qui doivent prendre clignotent) puis touchez une case en surbrillance.",
+        en: "Select a movable piece (pieces that must capture pulse) then tap a highlighted square.",
+        de: "Wähle einen beweglichen Stein und tippe auf ein markiertes Feld.",
+        zh: "选择可走的棋子，再点击高亮的格子。",
+      },
+      {
+        fr: "La prise est obligatoire et vous devez toujours choisir la rafle qui capture le plus de pions (prise majoritaire).",
+        en: "Capturing is mandatory and you must take the sequence capturing the most pieces (majority rule).",
+        de: "Schlagen ist Pflicht, und es muss die Folge mit den meisten Steinen gewählt werden.",
+        zh: "吃子是强制的，且必须选择吃子最多的路线（多吃规则）。",
+      },
+      {
+        fr: "Un pion qui atteint la dernière rangée devient une dame volante qui se déplace et prend à distance en diagonale.",
+        en: "A man reaching the far row becomes a flying king that moves and captures along whole diagonals.",
+        de: "Ein Stein auf der letzten Reihe wird zur fliegenden Dame.",
+        zh: "到达底线的棋子升为飞行王，可沿对角线远距离移动与吃子。",
+      },
+    ],
+    tip: {
+      fr: "Gardez vos pions groupés au centre : un pion isolé sur le bord se fait souvent piéger par une rafle.",
+      en: "Keep your men grouped in the center: isolated edge pieces are often trapped by multi-jumps.",
+      de: "Halte deine Steine zentral zusammen — Einzelgänger werden oft abgeräumt.",
+      zh: "尽量让棋子集中在中心，孤立的边缘棋子常被连跳吃掉。",
+    },
+    shortcuts: ["Clic", "Toucher", "Retourner"],
+    controls: {
+      fr: "Clic / Toucher · Prise obligatoire",
+      en: "Click / Tap · Mandatory capture",
+      de: "Klick / Tippen · Schlagzwang",
+      zh: "点击 / 触控 · 强制吃子",
+    },
+    scoreKey: "fj_game_best_draughts",
+    scoreUnit: "wins",
+  },
+  {
+    id: "duo-draughts",
+    category: "duo",
+    title: {
+      fr: "Dames 1v1",
+      en: "Draughts 1v1",
+      de: "Dame 1v1",
+      zh: "国际跳棋 1v1",
+    },
+    tagline: {
+      fr: "Dames internationales en ligne",
+      en: "Online international draughts",
+      de: "Internationale Dame online",
+      zh: "在线国际跳棋 1v1",
+    },
+    description: {
+      fr: "Créez un salon privé, partagez le lien et affrontez un ami aux dames internationales 10×10 avec règles officielles validées côté serveur, chrono par tour, captures affichées et spectateurs.",
+      en: "Create a private room, share the link and challenge a friend at 10×10 international draughts with server-validated official rules, turn timer, captured pieces and spectators.",
+      de: "Erstelle einen privaten Raum und spiele internationale Dame 1v1 mit Timer und Zuschauern.",
+      zh: "创建私人房间并分享链接，与好友进行 10×10 国际跳棋对决，服务器校验规则，支持限时与观战。",
+    },
+    objective: {
+      fr: "Capturer ou bloquer tous les pions de votre adversaire en ligne.",
+      en: "Capture or block all of your online opponent's pieces.",
+      de: "Schlage oder blockiere alle Steine deines Online-Gegners.",
+      zh: "吃掉或封锁在线对手的所有棋子。",
+    },
+    howToPlay: [
+      {
+        fr: "Choisissez le temps de réflexion par tour, créez votre salon et partagez le lien.",
+        en: "Choose the turn thinking time, create your room and share the link.",
+        de: "Wähle das Zug-Zeitlimit, erstelle den Raum und teile den Link.",
+        zh: "选择每步限时，创建房间并分享链接。",
+      },
+      {
+        fr: "Jouez à tour de rôle : la prise majoritaire est obligatoire et vérifiée par le serveur.",
+        en: "Play in turns: majority capture is mandatory and checked by the server.",
+        de: "Abwechselnd ziehen: Mehrheitsschlagzwang wird serverseitig geprüft.",
+        zh: "轮流落子：多吃规则由服务器强制校验。",
+      },
+    ],
+    tip: {
+      fr: "4 tours manqués d'affilée entraînent l'abandon automatique de la partie.",
+      en: "Missing 4 turns in a row automatically forfeits the match.",
+      de: "4 verpasste Züge in Folge führen zur automatischen Aufgabe.",
+      zh: "连续错过 4 个回合将自动判负。",
+    },
+    shortcuts: ["Lien d'invitation", "Spectateurs", "Plein écran"],
+    controls: {
+      fr: "Lien d'invitation · Damier · Chrono",
+      en: "Invite link · Board · Turn clock",
+      de: "Einladungslink · Brett · Timer",
+      zh: "邀请链接 · 棋盘 · 限时",
+    },
+    scoreKey: "fj_game_best_duo_draughts",
+    scoreUnit: "wins",
+  },
 ]
 
 export const gamesCopy = {
@@ -1484,6 +1606,8 @@ const SCORE_KEY_TO_GAME: Record<string, GameId> = {
   fj_game_best_duo_reaction: "duo-reaction",
   fj_game_best_duo_chess: "duo-chess",
   fj_game_best_duo_ludo: "duo-ludo",
+  fj_game_best_draughts: "draughts",
+  fj_game_best_duo_draughts: "duo-draughts",
 }
 
 const pendingSubmitTimers: Partial<Record<GameId, number>> = {}

@@ -5,6 +5,7 @@ import { Chess } from "chess.js"
 import { ArrowUpDown, Bot, RotateCcw, Trophy, Undo2, Users } from "lucide-react"
 
 import ChessBoard from "@/components/games/chess-board"
+import { ChessCapturedBar } from "@/components/games/captured-pieces"
 import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
@@ -326,6 +327,14 @@ export default function ChessGame({ initialMode = "normal" }: { initialMode?: Mo
         allowedColor={mode === "pvp" ? "both" : "w"}
         lastMove={lastMove}
         onMove={applyMove}
+      />
+
+      {/* Captured pieces & material balance */}
+      <ChessCapturedBar
+        fen={fen}
+        whiteLabel={mode === "pvp" ? "Blancs" : language === "fr" ? "Vous" : "You"}
+        blackLabel={mode === "pvp" ? "Noirs" : "IA"}
+        className="max-w-[520px]"
       />
 
       {mode !== "pvp" && (

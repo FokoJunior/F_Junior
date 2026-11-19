@@ -44,6 +44,20 @@ export const UNIFIED_GAME_GROUPS: UnifiedGameGroup[] = [
     ],
   },
   {
+    key: "draughts",
+    primaryId: "draughts",
+    soloId: "draughts",
+    duoId: "duo-draughts",
+    categories: ["strategy", "duo"],
+    defaultDifficulty: "normal",
+    difficulties: [
+      { value: "easy", labelFr: "IA Facile", labelEn: "Easy AI", subFr: "Pour débuter", subEn: "Beginner" },
+      { value: "normal", labelFr: "IA Normale", labelEn: "Normal AI", subFr: "Équilibrée", subEn: "Balanced" },
+      { value: "hard", labelFr: "IA Difficile", labelEn: "Hard AI", subFr: "Minimax FMJD", subEn: "Deep FMJD" },
+      { value: "pvp", labelFr: "2 Joueurs local", labelEn: "2P Local", subFr: "Même écran", subEn: "Same screen" },
+    ],
+  },
+  {
     key: "ludo",
     primaryId: "ludo",
     soloId: "ludo",

@@ -12,10 +12,13 @@ import {
   Dices,
   Eye,
   Flag,
+  Grid2x2,
   Hand,
   Hash,
   HelpCircle,
   LogOut,
+  Maximize2,
+  Minimize2,
   Plus,
   Power,
   RotateCcw,
@@ -31,6 +34,8 @@ import {
 import type { DuoGameType, DuoRoom, RpsChoice } from "@/app/api/games/rooms/route"
 import { useConfirm } from "@/components/confirm-provider"
 import ChessBoard from "@/components/games/chess-board"
+import { ChessCapturedBar, DraughtsCapturedBar } from "@/components/games/captured-pieces"
+import DraughtsBoard from "@/components/games/draughts-board"
 import GameEndBanner, { type GameEndOutcome } from "@/components/games/game-end-overlay"
 import LudoBoard from "@/components/games/ludo-board"
 import { useLanguage } from "@/components/language-provider"
@@ -63,6 +68,7 @@ const DUO_MODES: {
   { id: "reaction", Icon: Zap, fr: "Duel Réflexe", en: "Reflex Duel", subFr: "3 manches · ms", subEn: "3 rounds · ms" },
   { id: "chess", Icon: Crown, fr: "Échecs 1v1", en: "Chess 1v1", subFr: "8×8 officiel", subEn: "Official 8×8" },
   { id: "ludo", Icon: Dices, fr: "Ludo 1v1", en: "Ludo 1v1", subFr: "Plateau 15×15", subEn: "15×15 board" },
+  { id: "draughts", Icon: Grid2x2, fr: "Dames 1v1", en: "Draughts 1v1", subFr: "Internationales 10×10", subEn: "International 10×10" },
 ]
 
 const RPS_LABELS: Record<RpsChoice, { emoji: string; fr: string; en: string }> = {
@@ -98,6 +104,15 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
   const rxTimerRef = useRef<number | null>(null)
   const rxStartRef = useRef<number>(0)
   const lastWinCountRef = useRef<number>(0)
+  const leftRoomRef = useRef(false)
+  const rootRef = useRef<HTMLDivElement | null>(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+
+  useEffect(() => {
+    const onFs = () => setIsFullscreen(Boolean(document.fullscreenElement))
+    document.addEventListener("fullscreenchange", onFs)
+    return () => document.removeEventListener("fullscreenchange", onFs)
+  }, [])
 
   useEffect(() => {
     setPlayerId(getPlayerId())
@@ -114,7 +129,7 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
 
   // Auto-reconnect seamlessly if the player (or spectator) accidentally refreshed during an active room
   useEffect(() => {
-    if (!playerId || !initialRoomCode || room) return
+    if (!playerId || !initialRoomCode || room || leftRoomRef.current) return
     const cleanCode = initialRoomCode.trim().toUpperCase()
     if (!cleanCode) return
     let cancelled = false
@@ -232,9 +247,9 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
         const data = await res.json()
         if (data.room) setRoom(data.room as DuoRoom)
       } catch {}
-    }, 1000)
+    }, room?.gameType === "ludo" || room?.gameType === "chess" || room?.gameType === "draughts" || room?.gameType === "connect4" ? 450 : 1000)
     return () => window.clearInterval(id)
-  }, [playerId, room?.code])
+  }, [playerId, room?.code, room?.gameType])
 
   // Track cumulative duo wins for leaderboard
   useEffect(() => {
@@ -257,8 +272,8 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
     if (!room) return
     const act = payload.action
     if (act === "ludo_roll") playDice()
-    else if (act === "c4_move") playCapture()
-    else if (act === "move" || act === "chess_move" || act === "ludo_move") playMove()
+    else if (act === "c4_drop") playCapture()
+    else if (act === "move" || act === "chess_move" || act === "ludo_move" || act === "draughts_move") playMove()
     else if (act === "rps_pick" || act === "quiz_answer" || act === "reaction_submit") playScore()
     else if (act === "rematch") playClick()
     try {
@@ -326,35 +341,50 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
   const handleEndMatch = async () => {
     if (!room) return
     const isPlayer = room.host.id === playerId || room.guest?.id === playerId
-    if (isPlayer) {
-      const ok = await confirm({
-        title: language === "fr" ? "Mettre fin à la partie ?" : "End the match?",
-        description:
-          room.status === "playing"
-            ? language === "fr"
-              ? "La manche en cours sera attribuée à votre adversaire et le salon sera clôturé."
-              : "The current round will be awarded to your opponent and the room will close."
-            : language === "fr"
-              ? "Le salon sera fermé pour tous les joueurs et spectateurs."
-              : "The room will be closed for all players and spectators.",
-        confirmLabel: language === "fr" ? "Mettre fin" : "End match",
-        cancelLabel: language === "fr" ? "Annuler" : "Cancel",
-        variant: "danger",
-      })
-      if (!ok) return
+    if (!isPlayer) {
       await sendRoomAction({ action: "end_match" })
-    } else {
-      await sendRoomAction({ action: "end_match" })
-      updateRoom(null)
+      handleLeaveLocal()
+      return
     }
+    // Match already over (finished / ended): leave immediately without any confirmation
+    if (room.status !== "playing") {
+      if (room.status !== "ended") await sendRoomAction({ action: "end_match" })
+      handleLeaveLocal()
+      return
+    }
+    const ok = await confirm({
+      title: language === "fr" ? "Quitter la partie ?" : "Leave the match?",
+      description:
+        language === "fr"
+          ? "La manche en cours sera attribuée à votre adversaire et le salon sera clôturé."
+          : "The current round will be awarded to your opponent and the room will close.",
+      confirmLabel: language === "fr" ? "Quitter" : "Leave",
+      cancelLabel: language === "fr" ? "Annuler" : "Cancel",
+      variant: "danger",
+    })
+    if (!ok) return
+    await sendRoomAction({ action: "end_match" })
+    handleLeaveLocal()
   }
 
   const handleLeaveLocal = () => {
+    leftRoomRef.current = true
     if (rxTimerRef.current !== null) window.clearTimeout(rxTimerRef.current)
     setRxPhase("idle")
     lastWinCountRef.current = 0
     setError(null)
     updateRoom(null)
+  }
+
+  const toggleFullscreen = () => {
+    if (typeof document === "undefined") return
+    const el = rootRef.current
+    if (!el) return
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {})
+    } else {
+      el.requestFullscreen?.().catch(() => {})
+    }
   }
 
   const shareUrl =
@@ -618,6 +648,8 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
   const chessTurnColor = chessInstance?.turn() ?? "w"
   const chessHostColor: "w" | "b" = room.chessWhiteSide === "host" ? "w" : "b"
   const chessGuestColor: "w" | "b" = room.chessWhiteSide === "guest" ? "w" : "b"
+  const draughtsHostColor: "w" | "b" = room.draughtsWhiteSide === "host" ? "w" : "b"
+  const draughtsGuestColor: "w" | "b" = room.draughtsWhiteSide === "guest" ? "w" : "b"
 
   const isHostTurnActive =
     room.status === "playing" &&
@@ -625,6 +657,7 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
       (room.gameType === "connect4" && room.c4Turn === "R") ||
       (room.gameType === "rps" && room.rpsHostChoice === null) ||
       (room.gameType === "chess" && chessTurnColor === chessHostColor) ||
+      (room.gameType === "draughts" && room.draughtsState.turn === draughtsHostColor) ||
       (room.gameType === "ludo" && room.ludoState.turn === "host"))
   const isGuestTurnActive =
     room.status === "playing" &&
@@ -632,6 +665,7 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
       (room.gameType === "connect4" && room.c4Turn === "Y") ||
       (room.gameType === "rps" && room.rpsGuestChoice === null) ||
       (room.gameType === "chess" && chessTurnColor === chessGuestColor) ||
+      (room.gameType === "draughts" && room.draughtsState.turn === draughtsGuestColor) ||
       (room.gameType === "ludo" && room.ludoState.turn === "guest"))
 
   const hostLiveMs = (room.hostElapsedMs || 0) + (isHostTurnActive ? liveTurnDelta : 0)
@@ -688,6 +722,8 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
       side = room.chessWinner
     } else if (room.gameType === "ludo") {
       side = room.ludoState.winner
+    } else if (room.gameType === "draughts") {
+      side = room.draughtsWinner
     }
 
     if (side === "draw") {
@@ -717,7 +753,13 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
   const winnerInfo = getWinnerInfo()
 
   return (
-    <div className="mx-auto flex w-full max-w-[640px] flex-col items-center gap-4 sm:gap-5">
+    <div
+      ref={rootRef}
+      className={cn(
+        "mx-auto flex w-full max-w-[640px] flex-col items-center gap-4 sm:gap-5",
+        isFullscreen && "max-w-none overflow-y-auto bg-background p-4 sm:p-8",
+      )}
+    >
       {/* Room top bar: Code, Total Timer, Spectators, Share & Actions */}
       <div className="flex w-full flex-wrap items-center justify-between gap-2 rounded-md border border-border bg-background px-3.5 py-2.5 sm:px-4">
         <div className="flex flex-wrap items-center gap-2">
@@ -750,6 +792,15 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
           <button type="button" onClick={nativeShare} className="btn btn-outline h-8 px-2.5 text-xs" aria-label="Partager">
             <Share2 className="h-3.5 w-3.5" />
           </button>
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className="btn btn-outline h-8 px-2.5 text-xs"
+            title={language === "fr" ? "Plein écran" : "Fullscreen"}
+            aria-label={language === "fr" ? "Plein écran" : "Fullscreen"}
+          >
+            {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+          </button>
           {!isSpectator && room.status === "playing" && (
             <button
               type="button"
@@ -765,9 +816,17 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
             type="button"
             onClick={isSpectator ? handleLeaveLocal : handleEndMatch}
             className="btn btn-outline h-8 px-2.5 text-xs hover:border-destructive hover:bg-destructive hover:text-destructive-foreground"
-            title={isSpectator ? "Quitter" : "Mettre fin à la partie"}
+            title={
+              isSpectator || room.status !== "playing"
+                ? language === "fr"
+                  ? "Quitter le salon"
+                  : "Leave room"
+                : language === "fr"
+                  ? "Quitter la partie"
+                  : "Leave match"
+            }
           >
-            {isSpectator ? <LogOut className="h-3.5 w-3.5" /> : <Power className="h-3.5 w-3.5" />}
+            {isSpectator || room.status !== "playing" ? <LogOut className="h-3.5 w-3.5" /> : <Power className="h-3.5 w-3.5" />}
           </button>
         </div>
       </div>
@@ -869,7 +928,7 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
       {room.status === "playing" &&
         room.turnLimitSec > 0 &&
         room.turnStartedAt &&
-        (room.gameType === "tictactoe" || room.gameType === "connect4" || room.gameType === "rps" || room.gameType === "chess" || room.gameType === "ludo") && (() => {
+        (room.gameType === "tictactoe" || room.gameType === "connect4" || room.gameType === "rps" || room.gameType === "chess" || room.gameType === "ludo" || room.gameType === "draughts") && (() => {
           const limitMs = room.turnLimitSec * 1000
           const remainingMs = Math.max(0, limitMs - liveTurnDelta)
           const pct = Math.max(0, Math.min(100, (remainingMs / limitMs) * 100))
@@ -951,30 +1010,70 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
             className="w-full max-w-[490px] rounded-lg border border-border bg-muted/50 p-2 sm:p-3.5"
             onMouseLeave={() => setHoverCol(null)}
           >
+            {/* One tall clickable button per column (reliable on desktop & touch) */}
             <div className="grid grid-cols-7 gap-1 sm:gap-2">
-              {room.c4Board.map((cell, idx) => {
-                const col = idx % 7
-                const isWin = room.c4WinLine?.includes(idx) ?? false
-                const canDrop = !isSpectator && room.status === "playing" && room.c4Turn === myC4Disc && room.c4Board[col] === null
+              {Array.from({ length: 7 }, (_, col) => {
+                const colFull = room.c4Board[col] !== null
+                const myTurn = !isSpectator && room.status === "playing" && room.c4Turn === myC4Disc
+                const canDrop = myTurn && !colFull
+                const ghostColor = room.c4Turn === "R" ? "bg-primary/45 border-primary/60" : "bg-amber-500/45 border-amber-500/60"
                 return (
                   <button
-                    key={idx}
+                    key={col}
                     type="button"
-                    onMouseEnter={() => setHoverCol(col)}
-                    onClick={() => canDrop && sendRoomAction({ action: "c4_drop", col })}
                     disabled={!canDrop}
-                    aria-label={`Col ${col + 1}`}
+                    onMouseEnter={() => setHoverCol(col)}
+                    onClick={() => {
+                      setHoverCol(null)
+                      sendRoomAction({ action: "c4_drop", col })
+                    }}
+                    aria-label={`Colonne ${col + 1}`}
                     className={cn(
-                      "aspect-square rounded-full border-2 transition-all duration-150",
-                      cell === "R" && "border-primary bg-primary shadow-sm",
-                      cell === "Y" && "border-amber-500 bg-amber-500 shadow-sm",
-                      cell === null &&
-                        (hoverCol === col && canDrop
-                          ? "border-primary/50 bg-primary/10"
-                          : "border-border bg-background/90"),
-                      isWin && "ring-4 ring-foreground/60 scale-105",
+                      "flex flex-col gap-1 rounded-md p-0.5 transition-colors sm:gap-2",
+                      canDrop && "cursor-pointer hover:bg-primary/10 active:bg-primary/20",
+                      canDrop && hoverCol === col && "bg-primary/10",
                     )}
-                  />
+                  >
+                    {/* Ghost preview disc */}
+                    <span
+                      className={cn(
+                        "aspect-square w-full rounded-full border-2 border-dashed transition-opacity",
+                        canDrop && hoverCol === col ? ghostColor : "border-transparent bg-transparent opacity-0",
+                      )}
+                    />
+                    {Array.from({ length: 6 }, (_, row) => {
+                      const idx = row * 7 + col
+                      const cell = room.c4Board[idx]
+                      const isWin = room.c4WinLine?.includes(idx) ?? false
+                      return (
+                        <span
+                          key={idx}
+                          className={cn(
+                            "relative block aspect-square w-full overflow-hidden rounded-full border-2 bg-background/90",
+                            cell === null && "border-border",
+                            cell === "R" && "border-primary",
+                            cell === "Y" && "border-amber-500",
+                            isWin && "z-10 ring-4 ring-foreground/60",
+                          )}
+                        >
+                          {cell && (
+                            <motion.span
+                              key={`${idx}-${cell}`}
+                              initial={{ y: `-${(row + 1) * 115}%`, opacity: 0.6 }}
+                              animate={{ y: 0, opacity: 1 }}
+                              transition={{ type: "spring", stiffness: 260, damping: 20, mass: 0.7 }}
+                              className={cn(
+                                "absolute inset-0 rounded-full shadow-[inset_0_2px_3px_rgba(255,255,255,0.55),inset_0_-3px_5px_rgba(0,0,0,0.3)]",
+                                cell === "R"
+                                  ? "bg-gradient-to-br from-sky-400 via-primary to-indigo-700"
+                                  : "bg-gradient-to-br from-yellow-300 via-amber-500 to-orange-600",
+                              )}
+                            />
+                          )}
+                        </span>
+                      )
+                    })}
+                  </button>
                 )
               })}
             </div>
@@ -1250,6 +1349,41 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
             allowedColor={isHost ? chessHostColor : isGuest ? chessGuestColor : "w"}
             lastMove={room.chessLastMove}
             onMove={(from, to) => sendRoomAction({ action: "chess_move", from, to })}
+          />
+          <ChessCapturedBar
+            fen={room.chessFen}
+            whiteLabel={room.chessWhiteSide === "host" ? room.host.name : room.guest?.name || "Blancs"}
+            blackLabel={room.chessWhiteSide === "host" ? room.guest?.name || "Noirs" : room.host.name}
+            className="max-w-[520px]"
+          />
+        </>
+      )}
+
+      {/* 8. INTERNATIONAL DRAUGHTS 1v1 */}
+      {room.status !== "waiting" && room.status !== "ended" && room.gameType === "draughts" && (
+        <>
+          {room.status === "playing" && (
+            <p className="font-serif text-xl sm:text-2xl">
+              {language === "fr"
+                ? `C'est au tour de ${isHostTurnActive ? room.host.name : room.guest?.name} (${room.draughtsState.turn === "w" ? "Blancs" : "Noirs"})`
+                : `${isHostTurnActive ? room.host.name : room.guest?.name}'s turn (${room.draughtsState.turn === "w" ? "White" : "Black"})`}
+            </p>
+          )}
+          <DraughtsBoard
+            state={room.draughtsState}
+            orientation={isGuest ? draughtsGuestColor : draughtsHostColor}
+            canInteractSide={
+              !isSpectator && room.status === "playing" ? (isHost ? draughtsHostColor : draughtsGuestColor) : null
+            }
+            onMove={(m) => sendRoomAction({ action: "draughts_move", from: m.from, to: m.to })}
+            whiteLabel={room.draughtsWhiteSide === "host" ? room.host.name : room.guest?.name || "Blancs"}
+            blackLabel={room.draughtsWhiteSide === "host" ? room.guest?.name || "Noirs" : room.host.name}
+          />
+          <DraughtsCapturedBar
+            board={room.draughtsState.board}
+            whiteLabel={room.draughtsWhiteSide === "host" ? room.host.name : room.guest?.name || "Blancs"}
+            blackLabel={room.draughtsWhiteSide === "host" ? room.guest?.name || "Noirs" : room.host.name}
+            className="max-w-[520px]"
           />
         </>
       )}

@@ -451,6 +451,42 @@ export default function GameCover({
           </g>
         )}
 
+        {(gameId === "draughts" || gameId === "duo-draughts") && (
+          <g transform="translate(88, 18)">
+            <rect width="144" height="144" rx="8" fill="#161d2b" stroke="#2c3a54" />
+            {[0, 1, 2, 3, 4].map((r) =>
+              [0, 1, 2, 3, 4].map((c) => (
+                <rect
+                  key={`${r}-${c}`}
+                  x={4 + c * 27.2}
+                  y={4 + r * 27.2}
+                  width="27.2"
+                  height="27.2"
+                  fill={(r + c) % 2 === 1 ? "#202a3c" : "#121826"}
+                />
+              )),
+            )}
+            {/* White pieces */}
+            <circle cx="45" cy="113" r="10" fill="#f8fafc" stroke="#94a3b8" strokeWidth="1.5" />
+            <circle cx="100" cy="113" r="10" fill="#f8fafc" stroke="#94a3b8" strokeWidth="1.5" />
+            {/* White king */}
+            <circle cx="72" cy="86" r="11" fill="#f8fafc" stroke="#eab308" strokeWidth="2" />
+            <text x="72" y="91" textAnchor="middle" fontSize="12" fill="#ca8a04">👑</text>
+            {/* Black pieces */}
+            <circle cx="45" cy="32" r="10" fill="#0f172a" stroke="#475569" strokeWidth="1.5" />
+            <circle cx="100" cy="32" r="10" fill="#0f172a" stroke="#475569" strokeWidth="1.5" />
+            <circle cx="72" cy="59" r="10" fill="#0f172a" stroke="#3b82f6" strokeWidth="2" />
+            {gameId === "duo-draughts" && (
+              <g>
+                <rect x="34" y="114" width="76" height="22" rx="11" fill="#2563eb" />
+                <text x="72" y="129" textAnchor="middle" fontFamily="monospace" fontSize="11" fontWeight="700" fill="#ffffff">
+                  1V1 LIVE
+                </text>
+              </g>
+            )}
+          </g>
+        )}
+
         {gameId === "duo-reaction" && (
           <g>
             <rect x="28" y="40" width="114" height="100" rx="10" fill="#1d4ed8" opacity="0.9" />
