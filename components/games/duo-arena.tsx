@@ -531,11 +531,13 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
   const isHostTurnActive =
     room.status === "playing" &&
     ((room.gameType === "tictactoe" && room.turn === "X") ||
-      (room.gameType === "connect4" && room.c4Turn === "R"))
+      (room.gameType === "connect4" && room.c4Turn === "R") ||
+      (room.gameType === "rps" && room.rpsHostChoice === null))
   const isGuestTurnActive =
     room.status === "playing" &&
     ((room.gameType === "tictactoe" && room.turn === "O") ||
-      (room.gameType === "connect4" && room.c4Turn === "Y"))
+      (room.gameType === "connect4" && room.c4Turn === "Y") ||
+      (room.gameType === "rps" && room.rpsGuestChoice === null))
 
   const hostLiveMs = (room.hostElapsedMs || 0) + (isHostTurnActive ? liveTurnDelta : 0)
   const guestLiveMs = (room.guestElapsedMs || 0) + (isGuestTurnActive ? liveTurnDelta : 0)
@@ -922,34 +924,56 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
       {/* 3. ROCK PAPER SCISSORS (CHIFOUMI) */}
       {room.status !== "waiting" && room.status !== "ended" && room.gameType === "rps" && (
         <div className="flex w-full flex-col items-center gap-4">
-          <div className="flex items-center gap-3 font-mono text-xs sm:text-sm">
-            <span className="rounded-full border border-border bg-background px-3 py-1">
-              {room.host.name} : <strong className="text-primary">{room.rpsHostScore}</strong>/{room.rpsTarget}
+          <div className="flex flex-wrap items-center justify-center gap-2.5 font-mono text-xs sm:text-sm">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1">
+              <span>
+                {room.host.name} : <strong className="text-primary">{room.rpsHostScore}</strong>/{room.rpsTarget}
+              </span>
+              {room.status === "playing" && (
+                <span className={room.rpsHostChoice ? "text-emerald-500" : "text-muted-foreground"}>
+                  {room.rpsHostChoice ? "✓ Prêt" : "⏳"}
+                </span>
+              )}
             </span>
             <span className="text-muted-foreground">vs</span>
-            <span className="rounded-full border border-border bg-background px-3 py-1">
-              {room.guest?.name} : <strong className="text-primary">{room.rpsGuestScore}</strong>/{room.rpsTarget}
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1">
+              <span>
+                {room.guest?.name} : <strong className="text-primary">{room.rpsGuestScore}</strong>/{room.rpsTarget}
+              </span>
+              {room.status === "playing" && (
+                <span className={room.rpsGuestChoice ? "text-emerald-500" : "text-muted-foreground"}>
+                  {room.rpsGuestChoice ? "✓ Prêt" : "⏳"}
+                </span>
+              )}
             </span>
           </div>
 
           {room.rpsLastRound && (
-            <div className="w-full rounded-md border border-border bg-background px-4 py-3 text-center">
-              <p className="eyebrow">{language === "fr" ? "Manche précédente" : "Previous round"}</p>
-              <p className="mt-1.5 text-base sm:text-lg">
-                {room.host.name} {RPS_LABELS[room.rpsLastRound.host].emoji} vs{" "}
-                {RPS_LABELS[room.rpsLastRound.guest].emoji} {room.guest?.name}
-                <span className="ml-2 font-mono text-xs text-primary">
-                  —{" "}
-                  {room.rpsLastRound.winner === "draw"
-                    ? language === "fr"
-                      ? "Égalité"
-                      : "Draw"
-                    : room.rpsLastRound.winner === "host"
-                      ? room.host.name
-                      : room.guest?.name}
-                </span>
+            <motion.div
+              key={`rps-res-${room.rpsRound}`}
+              initial={{ opacity: 0, scale: 0.94, y: 6 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 320, damping: 24 }}
+              className="w-full rounded-md border border-primary/30 bg-background px-4 py-3.5 text-center"
+            >
+              <p className="eyebrow text-primary">
+                {language === "fr" ? `Résultat manche ${room.rpsRound - 1}` : `Round ${room.rpsRound - 1} result`}
               </p>
-            </div>
+              <p className="mt-1.5 text-base sm:text-lg">
+                <strong>{room.host.name}</strong> {RPS_LABELS[room.rpsLastRound.host].emoji}{" "}
+                <span className="mx-1 text-muted-foreground">vs</span>{" "}
+                {RPS_LABELS[room.rpsLastRound.guest].emoji} <strong>{room.guest?.name}</strong>
+              </p>
+              <p className="mt-1 font-mono text-xs text-primary">
+                {room.rpsLastRound.winner === "draw"
+                  ? language === "fr"
+                    ? "Égalité — personne ne marque"
+                    : "Draw — no point"
+                  : language === "fr"
+                    ? `${room.rpsLastRound.winner === "host" ? room.host.name : room.guest?.name} remporte la manche (+1) !`
+                    : `${room.rpsLastRound.winner === "host" ? room.host.name : room.guest?.name} wins the round (+1)!`}
+              </p>
+            </motion.div>
           )}
 
           {room.status === "playing" && (

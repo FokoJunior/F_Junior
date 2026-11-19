@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { useTheme } from "next-themes"
 import {
   ArrowUpRight,
+  ChevronDown,
   Eye,
   EyeOff,
   FileText,
@@ -20,6 +21,7 @@ import {
   Moon,
   ShieldCheck,
   Sun,
+  Trophy,
   Users,
   X,
   type LucideIcon,
@@ -48,14 +50,22 @@ interface NavItem {
   label: string
   Icon: LucideIcon
   exact?: boolean
+  children?: { href: string; label: string; Icon: LucideIcon }[]
 }
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Vue d'ensemble", Icon: LayoutDashboard, exact: true },
   { href: "/admin/projets", label: "Projets", Icon: FolderKanban },
   { href: "/admin/blog", label: "Blog", Icon: FileText },
-  { href: "/admin/jeux", label: "Jeux & Scores", Icon: Gamepad2 },
-  { href: "/admin/joueurs", label: "Joueurs", Icon: Users },
+  {
+    href: "/admin/jeux",
+    label: "Jeux",
+    Icon: Gamepad2,
+    children: [
+      { href: "/admin/jeux", label: "Scores & Salons", Icon: Trophy },
+      { href: "/admin/joueurs", label: "Joueurs", Icon: Users },
+    ],
+  },
   { href: "/admin/messages", label: "Messages", Icon: Mail },
   { href: "/admin/medias", label: "Médias Blob", Icon: ImageIcon },
   { href: "/admin/securite", label: "Sécurité", Icon: ShieldCheck },
@@ -66,6 +76,9 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const { resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [gamesMenuOpen, setGamesMenuOpen] = useState(
+    () => Boolean(pathname?.startsWith("/admin/jeux") || pathname?.startsWith("/admin/joueurs")),
+  )
 
   // Auth state
   const [checking, setChecking] = useState(true)
@@ -94,6 +107,9 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     setMobileOpen(false)
+    if (pathname?.startsWith("/admin/jeux") || pathname?.startsWith("/admin/joueurs")) {
+      setGamesMenuOpen(true)
+    }
   }, [pathname])
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -128,9 +144,23 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   }
 
   const isDark = mounted && resolvedTheme === "dark"
-  const isActive = (item: NavItem) =>
-    item.exact ? pathname === item.href : pathname?.startsWith(item.href) ?? false
-  const currentItem = NAV_ITEMS.find((item) => isActive(item)) ?? NAV_ITEMS[0]
+  const isActive = (item: NavItem) => {
+    if (item.children) {
+      return item.children.some((c) => pathname?.startsWith(c.href))
+    }
+    return item.exact ? pathname === item.href : pathname?.startsWith(item.href) ?? false
+  }
+  const currentLabel = (() => {
+    for (const item of NAV_ITEMS) {
+      if (item.children) {
+        const sub = item.children.find((c) => pathname?.startsWith(c.href))
+        if (sub) return `${item.label} / ${sub.label}`
+      } else if (isActive(item)) {
+        return item.label
+      }
+    }
+    return NAV_ITEMS[0].label
+  })()
 
   if (checking) {
     return (

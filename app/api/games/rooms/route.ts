@@ -660,47 +660,69 @@ export async function POST(request: NextRequest) {
       if (choice !== "rock" && choice !== "paper" && choice !== "scissors") {
         return NextResponse.json({ error: "Choix invalide" }, { status: 400 })
       }
-      if (room.host.id === playerId) {
-        if (room.rpsHostChoice === null) {
-          room.rpsHostChoice = choice
-          addPlayerElapsed(room, "host")
-        }
-      } else if (room.guest.id === playerId) {
-        if (room.rpsGuestChoice === null) {
-          room.rpsGuestChoice = choice
-          addPlayerElapsed(room, "guest")
-        }
-      } else {
+      const isHostSide = room.host.id === playerId
+      const isGuestSide = room.guest.id === playerId
+      if (!isHostSide && !isGuestSide) {
         return NextResponse.json({ error: "Non membre" }, { status: 403 })
       }
 
-      if (room.rpsHostChoice && room.rpsGuestChoice) {
-        const roundWinner = evalRps(room.rpsHostChoice, room.rpsGuestChoice)
-        room.rpsLastRound = {
-          host: room.rpsHostChoice,
-          guest: room.rpsGuestChoice,
+      // Atomic JSONB update in Neon prevents simultaneous picks from overwriting each other
+      let latestRoom = room
+      if (hasDatabase()) {
+        try {
+          await ensureGamesSchema()
+          const sql = getSql()
+          const fieldPath = isHostSide ? "{rpsHostChoice}" : "{rpsGuestChoice}"
+          const updatedRows = await sql`
+            UPDATE game_rooms
+            SET
+              state = jsonb_set(state, ${fieldPath}::text[], to_jsonb(${choice}::text), true),
+              updated_at = NOW()
+            WHERE code = ${room.code}
+            RETURNING state
+          `
+          if (updatedRows.length > 0 && updatedRows[0].state) {
+            latestRoom = normalizeRoom(updatedRows[0].state as DuoRoom)
+          }
+        } catch (err) {
+          console.error("Atomic rps_pick error:", err)
+          if (isHostSide) latestRoom.rpsHostChoice = choice
+          else latestRoom.rpsGuestChoice = choice
+        }
+      } else {
+        if (isHostSide && latestRoom.rpsHostChoice === null) latestRoom.rpsHostChoice = choice
+        if (isGuestSide && latestRoom.rpsGuestChoice === null) latestRoom.rpsGuestChoice = choice
+      }
+
+      addPlayerElapsed(latestRoom, isHostSide ? "host" : "guest")
+
+      if (latestRoom.rpsHostChoice && latestRoom.rpsGuestChoice) {
+        const roundWinner = evalRps(latestRoom.rpsHostChoice, latestRoom.rpsGuestChoice)
+        latestRoom.rpsLastRound = {
+          host: latestRoom.rpsHostChoice,
+          guest: latestRoom.rpsGuestChoice,
           winner: roundWinner,
         }
-        if (roundWinner === "host") room.rpsHostScore += 1
-        if (roundWinner === "guest") room.rpsGuestScore += 1
+        if (roundWinner === "host") latestRoom.rpsHostScore += 1
+        if (roundWinner === "guest") latestRoom.rpsGuestScore += 1
 
-        room.rpsHostChoice = null
-        room.rpsGuestChoice = null
-        room.rpsRound += 1
+        latestRoom.rpsHostChoice = null
+        latestRoom.rpsGuestChoice = null
+        latestRoom.rpsRound += 1
 
-        if (room.rpsHostScore >= room.rpsTarget) {
-          room.rpsWinner = "host"
-          room.status = "finished"
-          room.host.wins += 1
-        } else if (room.rpsGuestScore >= room.rpsTarget) {
-          room.rpsWinner = "guest"
-          room.status = "finished"
-          room.guest.wins += 1
+        if (latestRoom.rpsHostScore >= latestRoom.rpsTarget) {
+          latestRoom.rpsWinner = "host"
+          latestRoom.status = "finished"
+          latestRoom.host.wins += 1
+        } else if (latestRoom.rpsGuestScore >= latestRoom.rpsTarget) {
+          latestRoom.rpsWinner = "guest"
+          latestRoom.status = "finished"
+          latestRoom.guest!.wins += 1
         }
       }
-      room.updatedAt = now
-      await saveRoom(room)
-      return NextResponse.json({ room: sanitizeRoomForPlayer(room, playerId) })
+      latestRoom.updatedAt = now
+      await saveRoom(latestRoom)
+      return NextResponse.json({ room: sanitizeRoomForPlayer(latestRoom, playerId) })
     }
 
     if (action === "quiz_answer") {
