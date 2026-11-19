@@ -11,6 +11,7 @@ interface LudoDice3DProps {
   canRoll: boolean
   onRoll: () => void
   accent?: "host" | "guest"
+  rollKey?: string | null
 }
 
 // Target cube angles so face 1..6 faces the player with a subtle realistic 3D perspective tilt
@@ -83,6 +84,7 @@ export default function LudoDice3D({
   canRoll,
   onRoll,
   accent = "host",
+  rollKey,
 }: LudoDice3DProps) {
   const displayFace = value && value >= 1 && value <= 6 ? value : 1
   const [rot, setRot] = useState<{ rx: number; ry: number }>(() => FACE_ANGLES[displayFace])
@@ -90,10 +92,13 @@ export default function LudoDice3D({
   const spinCountRef = useRef(0)
   const prevRollingRef = useRef(false)
   const prevValueRef = useRef<number | null>(value)
+  const prevRollKeyRef = useRef<string | null | undefined>(rollKey)
 
   useEffect(() => {
     const startedRolling = rolling && !prevRollingRef.current
-    const valueChanged = value !== null && value !== prevValueRef.current
+    const valueChanged =
+      value !== null &&
+      (value !== prevValueRef.current || (rollKey !== undefined && rollKey !== prevRollKeyRef.current))
 
     if (startedRolling) {
       // Launch mid-air spin immediately
@@ -117,12 +122,14 @@ export default function LudoDice3D({
       const id = window.setTimeout(() => setJumping(false), 520)
       prevRollingRef.current = rolling
       prevValueRef.current = value
+      prevRollKeyRef.current = rollKey
       return () => window.clearTimeout(id)
     }
 
     prevRollingRef.current = rolling
     prevValueRef.current = value
-  }, [displayFace, rolling, value])
+    prevRollKeyRef.current = rollKey
+  }, [displayFace, rollKey, rolling, value])
 
   const half = 26 // 52px / 2
 

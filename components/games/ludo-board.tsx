@@ -105,6 +105,7 @@ export default function LudoBoard({
             canRoll={canControlTurn && !state.hasRolled}
             onRoll={onRoll}
             accent={state.turn}
+            rollKey={state.lastEvent}
           />
 
           <button

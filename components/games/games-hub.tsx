@@ -31,7 +31,6 @@ import {
   Share2,
   Swords,
   Target,
-  Trash2,
   Trophy,
   User,
   Users,
@@ -336,6 +335,8 @@ export default function GamesHub() {
   }
 
   const selectGame = (id: GameId, difficulty?: string) => {
+    setInitialRoomCode(null)
+    setActiveRoomCode(null)
     setActiveId(id)
     setLaunchConfig((prev) => ({ difficulty, nonce: prev.nonce + 1 }))
     if (typeof window !== "undefined") {
@@ -346,7 +347,7 @@ export default function GamesHub() {
     }
     window.setTimeout(() => {
       arenaRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-    }, 60)
+    }, 80)
   }
 
   const openGameLauncher = (group: UnifiedGameGroup, preferredMode?: "solo" | "duo") => {
@@ -364,6 +365,11 @@ export default function GamesHub() {
     const clean = code.trim().toUpperCase()
     if (!clean) return
     setInitialRoomCode(clean)
+    const scrollToArena = () => {
+      window.setTimeout(() => {
+        arenaRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+      }, 100)
+    }
     fetch(`/api/games/rooms?code=${encodeURIComponent(clean)}`, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
@@ -373,9 +379,11 @@ export default function GamesHub() {
         } else {
           setActiveId("connect4")
         }
+        scrollToArena()
       })
       .catch(() => {
         setActiveId("connect4")
+        scrollToArena()
       })
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href)
@@ -383,7 +391,6 @@ export default function GamesHub() {
       url.searchParams.set("room", clean)
       window.history.replaceState({}, "", url.toString())
     }
-    arenaRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
   }, [])
 
   const handleRoomChange = useCallback((code: string | null) => {
@@ -473,17 +480,6 @@ export default function GamesHub() {
     }
   }
 
-  const clearAllRecords = () => {
-    try {
-      for (const g of gamesList) {
-        window.localStorage.removeItem(g.scoreKey)
-      }
-      window.localStorage.removeItem("fj_game_best_memory_6")
-      window.dispatchEvent(new CustomEvent("fj-game-score-updated"))
-    } catch {}
-  }
-
-  const hasAnyRecord = Object.values(records).some((v) => v !== null)
   const needsPseudo = hydrated && (!playerName || editingName)
 
   return (

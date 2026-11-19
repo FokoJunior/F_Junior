@@ -84,7 +84,8 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
   const [playerId, setPlayerId] = useState("")
   const [joinCode, setJoinCode] = useState(initialRoomCode ?? "")
   const [joinName, setJoinName] = useState(() => (playerName && !looksLikeRoomCode(playerName) ? playerName : ""))
-  const [turnLimitSec, setTurnLimitSec] = useState<number>(() => (gameType === "chess" ? 30 : 10))
+  const [turnLimitSec, setTurnLimitSec] = useState<number>(() => (gameType === "chess" ? 30 : gameType === "ludo" ? 15 : 10))
+  const [ludoRolling, setLudoRolling] = useState(false)
   const [room, setRoom] = useState<DuoRoom | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -1161,8 +1162,14 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
       {room.status !== "waiting" && room.status !== "ended" && room.gameType === "ludo" && (
         <LudoBoard
           state={room.ludoState}
-          canInteractSide={isHost ? "host" : isGuest ? "guest" : null}
-          onRoll={() => sendRoomAction({ action: "ludo_roll" })}
+          canInteractSide={room.status === "playing" ? (isHost ? "host" : isGuest ? "guest" : null) : null}
+          rolling={ludoRolling}
+          onRoll={async () => {
+            if (ludoRolling) return
+            setLudoRolling(true)
+            await sendRoomAction({ action: "ludo_roll" })
+            window.setTimeout(() => setLudoRolling(false), 380)
+          }}
           onMoveToken={(tokenIdx) => sendRoomAction({ action: "ludo_move", tokenIdx })}
           hostLabel={room.host.name}
           guestLabel={room.guest?.name || "Adversaire"}
