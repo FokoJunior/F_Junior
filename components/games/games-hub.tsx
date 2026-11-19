@@ -84,7 +84,15 @@ import {
   type LeaderboardEntry,
 } from "@/lib/games"
 import { tr } from "@/lib/i18n"
-import { isSoundEnabled, playClick, setSoundEnabled } from "@/lib/game-sound"
+import {
+  isAmbianceEnabled,
+  isSoundEnabled,
+  playClick,
+  setAmbianceEnabled,
+  setSoundEnabled,
+  startAmbiance,
+  stopAmbiance,
+} from "@/lib/game-sound"
 import { cn } from "@/lib/utils"
 
 type Filter = "all" | GameCategory
@@ -175,6 +183,7 @@ export default function GamesHub() {
   const [activeRoomCode, setActiveRoomCode] = useState<string | null>(null)
   const [sharedCopied, setSharedCopied] = useState<boolean>(false)
   const [soundOn, setSoundOn] = useState<boolean>(true)
+  const [ambianceOn, setAmbianceOn] = useState<boolean>(false)
   const [launchModalGroup, setLaunchModalGroup] = useState<UnifiedGameGroup | null>(null)
   const [launchInitialMode, setLaunchInitialMode] = useState<"solo" | "duo" | undefined>(undefined)
   const [launchConfig, setLaunchConfig] = useState<{ difficulty?: string; nonce: number }>({ nonce: 0 })
@@ -233,6 +242,7 @@ export default function GamesHub() {
     setPlayerAvatarState(getPlayerAvatar())
     setHydrated(true)
     setSoundOn(isSoundEnabled())
+    setAmbianceOn(isAmbianceEnabled())
     refreshRecords()
 
     // Read ?room=CODE or ?game=ID from URL
@@ -284,8 +294,18 @@ export default function GamesHub() {
   useEffect(() => {
     if (activeId) {
       fetchLeaderboard(activeId)
+      if (ambianceOn) startAmbiance()
+    } else {
+      stopAmbiance()
     }
-  }, [activeId, fetchLeaderboard])
+    return () => {
+      if (!activeId) stopAmbiance()
+    }
+  }, [activeId, ambianceOn, fetchLeaderboard])
+
+  useEffect(() => {
+    return () => stopAmbiance()
+  }, [])
 
   const filters: { value: Filter; label: string }[] = [
     { value: "all", label: t("all") },
@@ -495,7 +515,7 @@ export default function GamesHub() {
             </span>
           </div>
 
-          <div className="mt-8 grid gap-8 lg:mt-10 lg:grid-cols-12 lg:items-end">
+          <div className="mt-8 grid gap-8 lg:mt-10 lg:grid-cols-12 lg:items-center">
             <div className="lg:col-span-7">
               <h1 className="font-serif text-[clamp(3rem,10vw,8.5rem)] leading-[0.9] tracking-[-0.02em] text-white">
                 {tr(gamesCopy.title, language)}
@@ -648,6 +668,33 @@ export default function GamesHub() {
                     <Pencil className="h-3 w-3 opacity-60" />
                   </button>
                 )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !ambianceOn
+                    setAmbianceOn(next)
+                    setAmbianceEnabled(next)
+                  }}
+                  title={
+                    ambianceOn
+                      ? language === "fr"
+                        ? "Couper la musique d'ambiance"
+                        : "Stop ambient music"
+                      : language === "fr"
+                        ? "Activer la musique d'ambiance"
+                        : "Play ambient music"
+                  }
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 font-mono text-[11px] transition-colors sm:px-3 sm:text-xs",
+                    ambianceOn
+                      ? "border-primary/40 bg-primary/10 text-primary hover:border-primary"
+                      : "border-border bg-background text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <Music className={cn("h-3.5 w-3.5", ambianceOn && "animate-pulse")} />
+                  <span className="hidden sm:inline">{language === "fr" ? "Ambiance" : "Ambient"}</span>
+                </button>
 
                 <button
                   type="button"

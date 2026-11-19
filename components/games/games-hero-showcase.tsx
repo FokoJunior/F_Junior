@@ -90,21 +90,11 @@ export default function GamesHeroShowcase({
       transition={{ duration: 0.45, ease: "easeOut" }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      className="relative w-full overflow-hidden rounded-xl border border-white/15 bg-[#0d1322]/75 p-4 text-white shadow-2xl backdrop-blur-md sm:p-5"
+      className="relative w-full overflow-hidden rounded-xl border border-white/20 bg-transparent p-4 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_12px_40px_rgba(0,0,0,0.22)] backdrop-blur-[2px] sm:p-5"
     >
-      {/* Subtle animated ambient glow */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-primary/25 blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -bottom-12 -left-12 h-32 w-32 rounded-full bg-blue-400/15 blur-3xl"
-      />
-
       {/* Top multifunctional switcher */}
-      <div className="relative z-10 flex items-center justify-between gap-2 border-b border-white/10 pb-3">
-        <div className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-0.5">
+      <div className="relative z-10 flex items-center justify-between gap-2 border-b border-white/15 pb-3">
+        <div className="flex items-center gap-1 rounded-full border border-white/20 bg-transparent p-0.5">
           <button
             type="button"
             onClick={() => setTab("spotlight")}
@@ -133,7 +123,7 @@ export default function GamesHeroShowcase({
           type="button"
           onClick={handleSurpriseMe}
           title={language === "fr" ? "Lancer un jeu aléatoire" : "Play a random game"}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-white/80 transition-colors hover:border-primary/60 hover:bg-primary/20 hover:text-white"
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-transparent px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-white/85 transition-colors hover:border-primary/70 hover:bg-primary/15 hover:text-white"
         >
           <Shuffle className="h-3 w-3 text-primary" />
           <span className="hidden sm:inline">{language === "fr" ? "Aléatoire" : "Random"}</span>
@@ -155,20 +145,19 @@ export default function GamesHeroShowcase({
               {/* Visual Cover + Live Promo Badge */}
               <div
                 onClick={() => onSelectGame(current.id)}
-                className="group relative aspect-[16/9] w-full cursor-pointer overflow-hidden rounded-lg border border-white/15 bg-[#090d16]"
+                className="group relative aspect-[16/9] w-full cursor-pointer overflow-hidden rounded-lg border border-white/20 bg-transparent"
               >
                 <div className="h-full w-full transition-transform duration-500 group-hover:scale-105">
-                  <GameCover gameId={current.id} />
+                  <GameCover gameId={current.id} transparent />
                 </div>
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#090d16]/85 via-transparent to-transparent" />
 
                 <div className="absolute left-2.5 top-2.5 flex items-center gap-1.5">
                   <span
                     className={cn(
-                      "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider backdrop-blur-md",
+                      "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider",
                       isDuo
-                        ? "border border-primary/50 bg-primary/80 text-white"
-                        : "border border-white/20 bg-[#0b0f17]/70 text-white/90",
+                        ? "border border-primary/60 bg-primary/70 text-white"
+                        : "border border-white/25 bg-black/25 text-white/95",
                     )}
                   >
                     {isDuo ? <Users className="h-2.5 w-2.5" /> : <Gamepad2 className="h-2.5 w-2.5" />}
@@ -177,11 +166,11 @@ export default function GamesHeroShowcase({
                 </div>
 
                 <div className="absolute bottom-2.5 left-3 right-3 flex items-end justify-between gap-2">
-                  <div className="min-w-0">
+                  <div className="min-w-0 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
                     <p className="truncate font-serif text-xl leading-tight text-white sm:text-2xl">
                       {tr(current.title, language)}
                     </p>
-                    <p className="truncate font-mono text-[11px] text-white/75">
+                    <p className="truncate font-mono text-[11px] text-white/85">
                       {tr(current.tagline, language)}
                     </p>
                   </div>
@@ -256,21 +245,21 @@ export default function GamesHeroShowcase({
             >
               {/* Quick stats row */}
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-lg border border-white/10 bg-white/5 px-2 py-2.5">
+                <div className="rounded-lg border border-white/20 bg-transparent px-2 py-2.5">
                   <p className="font-mono text-lg font-bold tabular-nums text-white">{UNIFIED_GAME_GROUPS.length}</p>
-                  <p className="font-mono text-[9px] uppercase tracking-wider text-white/60">
+                  <p className="font-mono text-[9px] uppercase tracking-wider text-white/65">
                     {language === "fr" ? "Jeux" : "Games"}
                   </p>
                 </div>
-                <div className="rounded-lg border border-white/10 bg-white/5 px-2 py-2.5">
+                <div className="rounded-lg border border-white/20 bg-transparent px-2 py-2.5">
                   <p className="font-mono text-lg font-bold tabular-nums text-primary">
                     {UNIFIED_GAME_GROUPS.filter((g) => Boolean(g.duoId)).length}
                   </p>
-                  <p className="font-mono text-[9px] uppercase tracking-wider text-white/60">Duo 1v1</p>
+                  <p className="font-mono text-[9px] uppercase tracking-wider text-white/65">Duo 1v1</p>
                 </div>
-                <div className="rounded-lg border border-white/10 bg-white/5 px-2 py-2.5">
+                <div className="rounded-lg border border-white/20 bg-transparent px-2 py-2.5">
                   <p className="font-mono text-lg font-bold tabular-nums text-emerald-400">Live</p>
-                  <p className="font-mono text-[9px] uppercase tracking-wider text-white/60">
+                  <p className="font-mono text-[9px] uppercase tracking-wider text-white/65">
                     {language === "fr" ? "Classement" : "Ranks"}
                   </p>
                 </div>
@@ -278,7 +267,7 @@ export default function GamesHeroShowcase({
 
               {/* Quick join 1v1 room */}
               <form onSubmit={handleQuickJoinSubmit} className="space-y-1.5">
-                <label className="block font-mono text-[10px] uppercase tracking-wider text-white/70">
+                <label className="block font-mono text-[10px] uppercase tracking-wider text-white/75">
                   {language === "fr" ? "Rejoindre un salon 1v1 par code" : "Join a 1v1 room by code"}
                 </label>
                 <div className="flex gap-1.5">
@@ -288,12 +277,12 @@ export default function GamesHeroShowcase({
                     onChange={(e) => setRoomInput(e.target.value.toUpperCase())}
                     maxLength={8}
                     placeholder="EX: A7K9P2"
-                    className="h-9 flex-1 rounded-md border border-white/15 bg-white/5 px-3 font-mono text-xs uppercase tracking-widest text-white placeholder:text-white/35 focus:border-primary focus:outline-none"
+                    className="h-9 flex-1 rounded-md border border-white/20 bg-transparent px-3 font-mono text-xs uppercase tracking-widest text-white placeholder:text-white/45 focus:border-primary focus:outline-none"
                   />
                   <button
                     type="submit"
                     disabled={roomInput.trim().length < 4}
-                    className="h-9 rounded-md bg-primary px-3.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-white transition-opacity disabled:opacity-40"
+                    className="h-9 rounded-md bg-primary/90 px-3.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-white transition-opacity hover:bg-primary disabled:opacity-40"
                   >
                     {language === "fr" ? "Go" : "Join"}
                   </button>
@@ -302,7 +291,7 @@ export default function GamesHeroShowcase({
 
               {/* Featured quick-launch pills */}
               <div className="space-y-1.5">
-                <p className="font-mono text-[10px] uppercase tracking-wider text-white/60">
+                <p className="font-mono text-[10px] uppercase tracking-wider text-white/65">
                   {language === "fr" ? "Lancements populaires" : "Popular picks"}
                 </p>
                 <div className="grid grid-cols-2 gap-1.5">
@@ -314,7 +303,7 @@ export default function GamesHeroShowcase({
                         key={gid}
                         type="button"
                         onClick={() => onSelectGame(gid)}
-                        className="flex items-center justify-between rounded-md border border-white/10 bg-white/5 px-2.5 py-2 text-left text-xs text-white/90 transition-colors hover:border-primary/50 hover:bg-primary/15"
+                        className="flex items-center justify-between rounded-md border border-white/20 bg-transparent px-2.5 py-2 text-left text-xs text-white/95 transition-colors hover:border-primary/70 hover:bg-primary/15"
                       >
                         <span className="truncate font-medium">{tr(g.title, language)}</span>
                         <Play className="h-3 w-3 shrink-0 text-primary" />

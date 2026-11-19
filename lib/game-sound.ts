@@ -1,12 +1,15 @@
 "use client"
 
 const SOUND_KEY = "fj_game_sound_enabled"
+const AMBIANCE_KEY = "fj_game_ambiance_enabled"
 
 let audioCtx: AudioContext | null = null
+let ambianceTimer: number | null = null
+let ambianceActive = false
+let ambianceStep = 0
 
-function getCtx(): AudioContext | null {
+function getRawCtx(): AudioContext | null {
   if (typeof window === "undefined") return null
-  if (!isSoundEnabled()) return null
   try {
     if (!audioCtx) {
       const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
@@ -20,6 +23,11 @@ function getCtx(): AudioContext | null {
   } catch {
     return null
   }
+}
+
+function getCtx(): AudioContext | null {
+  if (!isSoundEnabled()) return null
+  return getRawCtx()
 }
 
 export function isSoundEnabled(): boolean {
@@ -184,4 +192,82 @@ export function playDraw(): void {
   if (!ctx) return
   tone(ctx, 440, 0, 0.16, "triangle", 0.12) // A4
   tone(ctx, 523.25, 0.14, 0.26, "triangle", 0.12) // C5
+}
+
+export function isAmbianceEnabled(): boolean {
+  if (typeof window === "undefined") return false
+  try {
+    return window.localStorage.getItem(AMBIANCE_KEY) === "1"
+  } catch {
+    return false
+  }
+}
+
+export function setAmbianceEnabled(enabled: boolean): void {
+  if (typeof window === "undefined") return
+  try {
+    window.localStorage.setItem(AMBIANCE_KEY, enabled ? "1" : "0")
+  } catch {}
+  if (enabled) startAmbiance()
+  else stopAmbiance()
+}
+
+// Warm chill lo-fi ambient chord progression (Cmaj9 -> Am9 -> Fmaj9 -> G6)
+const AMBIENT_CHORDS = [
+  [130.81, 196.0, 246.94, 293.66], // Cmaj9
+  [110.0, 164.81, 246.94, 261.63], // Am9
+  [87.31, 164.81, 220.0, 261.63], // Fmaj9
+  [98.0, 196.0, 246.94, 329.63], // G6
+]
+const SPARKLE_NOTES = [523.25, 587.33, 659.25, 783.99, 880.0]
+
+function playAmbientBar() {
+  if (!ambianceActive) return
+  const ctx = getRawCtx()
+  if (!ctx) return
+
+  const chord = AMBIENT_CHORDS[ambianceStep % AMBIENT_CHORDS.length]
+  const now = ctx.currentTime
+
+  // Soft low-pass filter for warm dreamy studio pad
+  const filter = ctx.createBiquadFilter()
+  filter.type = "lowpass"
+  filter.frequency.setValueAtTime(680, now)
+  filter.connect(ctx.destination)
+
+  for (const freq of chord) {
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = "sine"
+    osc.frequency.setValueAtTime(freq, now)
+    gain.gain.setValueAtTime(0.0001, now)
+    gain.gain.linearRampToValueAtTime(0.022, now + 1.1)
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 4.1)
+    osc.connect(gain)
+    gain.connect(filter)
+    osc.start(now)
+    osc.stop(now + 4.2)
+  }
+
+  // Gentle pentatonic sparkle note mid-bar
+  const sparkle = SPARKLE_NOTES[(ambianceStep * 2 + 1) % SPARKLE_NOTES.length]
+  tone(ctx, sparkle, 1.8, 1.3, "triangle", 0.018)
+
+  ambianceStep += 1
+}
+
+export function startAmbiance(): void {
+  if (typeof window === "undefined") return
+  if (ambianceActive) return
+  ambianceActive = true
+  playAmbientBar()
+  ambianceTimer = window.setInterval(playAmbientBar, 3800)
+}
+
+export function stopAmbiance(): void {
+  ambianceActive = false
+  if (ambianceTimer !== null && typeof window !== "undefined") {
+    window.clearInterval(ambianceTimer)
+    ambianceTimer = null
+  }
 }

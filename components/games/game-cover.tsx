@@ -16,14 +16,23 @@ const REAL_GAME_COVERS: Partial<Record<GameId, string>> = {
   rps: "/games/rps.jpg",
 }
 
-export default function GameCover({ gameId, className }: { gameId: GameId; className?: string }) {
+export default function GameCover({
+  gameId,
+  className,
+  transparent = false,
+}: {
+  gameId: GameId
+  className?: string
+  transparent?: boolean
+}) {
   const realImage = REAL_GAME_COVERS[gameId]
 
   if (realImage) {
     return (
       <div
         className={cn(
-          "relative aspect-[16/9] w-full overflow-hidden rounded-md border border-border/80 bg-[#0d111a]",
+          "relative aspect-[16/9] w-full overflow-hidden rounded-md",
+          transparent ? "bg-transparent" : "border border-border/80 bg-[#0d111a]",
           className,
         )}
       >
@@ -31,12 +40,17 @@ export default function GameCover({ gameId, className }: { gameId: GameId; class
           src={realImage}
           alt=""
           loading="lazy"
-          className="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+          className={cn(
+            "h-full w-full object-cover object-center transition-all duration-500 ease-out group-hover:scale-[1.05]",
+            transparent && "opacity-55 group-hover:opacity-75",
+          )}
         />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0b0f17]/45 via-transparent to-transparent"
-        />
+        {!transparent && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0b0f17]/45 via-transparent to-transparent"
+          />
+        )}
       </div>
     )
   }
@@ -44,13 +58,17 @@ export default function GameCover({ gameId, className }: { gameId: GameId; class
   return (
     <div
       className={cn(
-        "relative aspect-[16/9] w-full overflow-hidden rounded-md border border-border/80 bg-[#0d111a]",
+        "relative aspect-[16/9] w-full overflow-hidden rounded-md",
+        transparent ? "bg-transparent" : "border border-border/80 bg-[#0d111a]",
         className,
       )}
     >
       <svg
         viewBox="0 0 320 180"
-        className="h-full w-full transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+        className={cn(
+          "h-full w-full transition-all duration-500 ease-out group-hover:scale-[1.04]",
+          transparent && "opacity-75 group-hover:opacity-95",
+        )}
         aria-hidden
       >
         <defs>
@@ -59,7 +77,7 @@ export default function GameCover({ gameId, className }: { gameId: GameId; class
             <stop offset="100%" stopColor="#0d111a" stopOpacity="0" />
           </radialGradient>
         </defs>
-        <rect width="320" height="180" fill="#0d111a" />
+        {!transparent && <rect width="320" height="180" fill="#0d111a" />}
         <rect width="320" height="180" fill={`url(#glow-${gameId})`} />
 
         {gameId === "snake" && (
