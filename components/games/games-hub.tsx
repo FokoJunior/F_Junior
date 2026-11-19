@@ -220,6 +220,13 @@ export default function GamesHub() {
     }
 
     const onScoreUpdated = () => refreshRecords()
+    const onNameUpdated = (e: Event) => {
+      const nextName = (e as CustomEvent<string>).detail
+      if (typeof nextName === "string" && nextName.trim().length >= 2) {
+        setPlayerNameState(nextName.trim())
+        setNameInput(nextName.trim())
+      }
+    }
     const onLeaderboardUpdated = (e: Event) => {
       const detail = (e as CustomEvent<{ game: GameId; entries: LeaderboardEntry[] }>).detail
       if (detail && detail.game === activeId && Array.isArray(detail.entries)) {
@@ -228,9 +235,11 @@ export default function GamesHub() {
     }
 
     window.addEventListener("fj-game-score-updated", onScoreUpdated)
+    window.addEventListener("fj-player-name-updated", onNameUpdated)
     window.addEventListener("fj-leaderboard-updated", onLeaderboardUpdated)
     return () => {
       window.removeEventListener("fj-game-score-updated", onScoreUpdated)
+      window.removeEventListener("fj-player-name-updated", onNameUpdated)
       window.removeEventListener("fj-leaderboard-updated", onLeaderboardUpdated)
     }
   }, [activeId, refreshRecords])

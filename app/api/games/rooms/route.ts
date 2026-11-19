@@ -26,12 +26,28 @@ export interface DuoPlayer {
   wins: number
 }
 
+export interface DuoSpectator {
+  id: string
+  name: string
+  lastSeen: string
+}
+
 export interface DuoRoom {
   code: string
   gameType: DuoGameType
-  status: "waiting" | "playing" | "finished"
+  status: "waiting" | "playing" | "finished" | "ended"
   host: DuoPlayer
   guest: DuoPlayer | null
+  spectators: DuoSpectator[]
+  // Timers (ms)
+  matchStartedAt: string | null
+  turnStartedAt: string | null
+  hostElapsedMs: number
+  guestElapsedMs: number
+  // Forfeit / End tracking
+  abandonedBy: "host" | "guest" | null
+  endedBy: string | null
+  endReason: "forfeit" | "ended" | null
   // Tic-Tac-Toe
   board: TttCell[]
   turn: "X" | "O"
@@ -43,7 +59,7 @@ export interface DuoRoom {
   hostTimes: number[]
   guestTimes: number[]
   reactionWinner: "host" | "guest" | "draw" | null
-  // Connect 4 (7 cols x 6 rows = 42 cells, row 0 = top)
+  // Connect 4 (7 cols x 6 rows = 42 cells)
   c4Board: C4Cell[]
   c4Turn: "R" | "Y"
   c4Starter: "R" | "Y"
@@ -78,6 +94,7 @@ type RoomsStore = Record<string, DuoRoom>
 const PRIMARY_FILE = path.join(process.cwd(), "data", "rooms.json")
 const FALLBACK_FILE = path.join(os.tmpdir(), "fj-rooms.json")
 const MAX_ROOM_AGE_MS = 6 * 60 * 60 * 1000 // 6h
+const SPECTATOR_TTL_MS = 45 * 1000 // 45s
 
 const VALID_GAME_TYPES: DuoGameType[] = ["tictactoe", "reaction", "connect4", "rps", "quiz"]
 
@@ -232,6 +249,32 @@ function generateCode(existing: RoomsStore): string {
   return crypto.randomBytes(3).toString("hex").toUpperCase()
 }
 
+function normalizeRoom(room: DuoRoom): DuoRoom {
+  const now = Date.now()
+  const activeSpectators = Array.isArray(room.spectators)
+    ? room.spectators.filter((s) => now - new Date(s.lastSeen).getTime() <= SPECTATOR_TTL_MS)
+    : []
+  return {
+    ...room,
+    spectators: activeSpectators,
+    matchStartedAt: room.matchStartedAt ?? null,
+    turnStartedAt: room.turnStartedAt ?? null,
+    hostElapsedMs: Number(room.hostElapsedMs ?? 0),
+    guestElapsedMs: Number(room.guestElapsedMs ?? 0),
+    abandonedBy: room.abandonedBy ?? null,
+    endedBy: room.endedBy ?? null,
+    endReason: room.endReason ?? null,
+  }
+}
+
+function addPlayerElapsed(room: DuoRoom, side: "host" | "guest") {
+  if (!room.turnStartedAt) return
+  const delta = Math.max(0, Math.min(30 * 60 * 1000, Date.now() - new Date(room.turnStartedAt).getTime()))
+  if (side === "host") room.hostElapsedMs = (room.hostElapsedMs ?? 0) + delta
+  else room.guestElapsedMs = (room.guestElapsedMs ?? 0) + delta
+  room.turnStartedAt = new Date().toISOString()
+}
+
 async function readRooms(): Promise<RoomsStore> {
   let store: RoomsStore = {}
   for (const filePath of [PRIMARY_FILE, FALLBACK_FILE]) {
@@ -262,19 +305,6 @@ async function writeRooms(store: RoomsStore): Promise<void> {
   }
 }
 
-/** Hide opponent's secret RPS choice until both players have chosen. */
-function sanitizeRoomForPlayer(room: DuoRoom, playerId?: string | null): DuoRoom {
-  if (room.gameType !== "rps" || room.status !== "playing") return room
-  const bothChosen = room.rpsHostChoice !== null && room.rpsGuestChoice !== null
-  if (bothChosen) return room
-  return {
-    ...room,
-    rpsHostChoice: room.host.id === playerId ? room.rpsHostChoice : room.rpsHostChoice ? ("rock" as RpsChoice) : null,
-    rpsGuestChoice:
-      room.guest?.id === playerId ? room.rpsGuestChoice : room.rpsGuestChoice ? ("rock" as RpsChoice) : null,
-  }
-}
-
 async function getRoomByCode(code: string): Promise<DuoRoom | null> {
   if (hasDatabase()) {
     try {
@@ -288,7 +318,7 @@ async function getRoomByCode(code: string): Promise<DuoRoom | null> {
         LIMIT 1
       `
       if (rows.length > 0 && rows[0].state) {
-        return rows[0].state as DuoRoom
+        return normalizeRoom(rows[0].state as DuoRoom)
       }
       return null
     } catch (err) {
@@ -296,22 +326,22 @@ async function getRoomByCode(code: string): Promise<DuoRoom | null> {
     }
   }
   const store = await readRooms()
-  return store[code] ?? null
+  return store[code] ? normalizeRoom(store[code]) : null
 }
 
 async function saveRoom(room: DuoRoom): Promise<void> {
+  const clean = normalizeRoom(room)
   if (hasDatabase()) {
     try {
       await ensureGamesSchema()
       const sql = getSql()
-      const stateJson = JSON.stringify(room)
+      const stateJson = JSON.stringify(clean)
       await sql`
         INSERT INTO game_rooms (code, game_type, state, created_at, updated_at)
-        VALUES (${room.code}, ${room.gameType}, ${stateJson}::jsonb, NOW(), NOW())
+        VALUES (${clean.code}, ${clean.gameType}, ${stateJson}::jsonb, NOW(), NOW())
         ON CONFLICT (code) DO UPDATE
         SET state = EXCLUDED.state, updated_at = NOW()
       `
-      // Occasional cleanup of expired rooms
       if (Math.random() < 0.05) {
         await sql`DELETE FROM game_rooms WHERE updated_at < NOW() - INTERVAL '6 hours'`
       }
@@ -321,8 +351,20 @@ async function saveRoom(room: DuoRoom): Promise<void> {
     }
   }
   const store = await readRooms()
-  store[room.code] = room
+  store[clean.code] = clean
   await writeRooms(store)
+}
+
+function sanitizeRoomForPlayer(room: DuoRoom, playerId?: string | null): DuoRoom {
+  if (room.gameType !== "rps" || room.status !== "playing") return room
+  const bothChosen = room.rpsHostChoice !== null && room.rpsGuestChoice !== null
+  if (bothChosen) return room
+  return {
+    ...room,
+    rpsHostChoice: room.host.id === playerId ? room.rpsHostChoice : room.rpsHostChoice ? ("rock" as RpsChoice) : null,
+    rpsGuestChoice:
+      room.guest?.id === playerId ? room.rpsGuestChoice : room.rpsGuestChoice ? ("rock" as RpsChoice) : null,
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -335,6 +377,16 @@ export async function GET(request: NextRequest) {
   if (!room) {
     return NextResponse.json({ error: "Salon introuvable ou expiré" }, { status: 404 })
   }
+
+  // Heartbeat spectator presence if watching
+  if (playerId) {
+    const specIdx = room.spectators.findIndex((s) => s.id === playerId)
+    if (specIdx !== -1) {
+      room.spectators[specIdx].lastSeen = new Date().toISOString()
+      await saveRoom(room)
+    }
+  }
+
   return NextResponse.json({ room: sanitizeRoomForPlayer(room, playerId) })
 }
 
@@ -369,6 +421,14 @@ export async function POST(request: NextRequest) {
         status: "waiting",
         host: { id: playerId, name: playerName, wins: 0 },
         guest: null,
+        spectators: [],
+        matchStartedAt: null,
+        turnStartedAt: null,
+        hostElapsedMs: 0,
+        guestElapsedMs: 0,
+        abandonedBy: null,
+        endedBy: null,
+        endReason: null,
         board: Array(9).fill(null),
         turn: "X",
         starter: "X",
@@ -401,7 +461,7 @@ export async function POST(request: NextRequest) {
         updatedAt: now,
       }
       await saveRoom(room)
-      return NextResponse.json({ room })
+      return NextResponse.json({ room, role: "host" })
     }
 
     const code = typeof body?.code === "string" ? body.code.trim().toUpperCase() : ""
@@ -410,23 +470,112 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Salon introuvable ou expiré" }, { status: 404 })
     }
 
-    if (action === "join") {
-      if (playerName.length < 2) {
-        return NextResponse.json({ error: "Pseudo requis (2 caractères min.)" }, { status: 400 })
-      }
-      if (room.host.id === playerId) {
-        room.host.name = playerName
-      } else if (room.guest && room.guest.id === playerId) {
-        room.guest.name = playerName
-      } else if (!room.guest) {
-        room.guest = { id: playerId, name: playerName, wins: 0 }
-        room.status = "playing"
+    if (action === "spectate") {
+      const specName = playerName.length >= 2 ? playerName : "Spectateur"
+      const idx = room.spectators.findIndex((s) => s.id === playerId)
+      if (idx === -1) {
+        room.spectators.push({ id: playerId, name: specName, lastSeen: now })
       } else {
-        return NextResponse.json({ error: "Ce salon est déjà complet (2/2)" }, { status: 409 })
+        room.spectators[idx] = { id: playerId, name: specName, lastSeen: now }
       }
       room.updatedAt = now
       await saveRoom(room)
-      return NextResponse.json({ room: sanitizeRoomForPlayer(room, playerId) })
+      return NextResponse.json({ room: sanitizeRoomForPlayer(room, playerId), role: "spectator" })
+    }
+
+    if (action === "join") {
+      if (playerName.length < 2) {
+        return NextResponse.json({ error: "Veuillez entrer votre nom (2 caractères min.)" }, { status: 400 })
+      }
+      let role: "host" | "guest" | "spectator" = "guest"
+      if (room.host.id === playerId) {
+        room.host.name = playerName
+        role = "host"
+      } else if (room.guest && room.guest.id === playerId) {
+        room.guest.name = playerName
+        role = "guest"
+      } else if (!room.guest && room.status === "waiting") {
+        room.guest = { id: playerId, name: playerName, wins: 0 }
+        room.status = "playing"
+        room.matchStartedAt = now
+        room.turnStartedAt = now
+        room.hostElapsedMs = 0
+        room.guestElapsedMs = 0
+        role = "guest"
+      } else {
+        // Room already has 2 players -> join automatically as spectator!
+        const idx = room.spectators.findIndex((s) => s.id === playerId)
+        if (idx === -1) {
+          room.spectators.push({ id: playerId, name: playerName, lastSeen: now })
+        } else {
+          room.spectators[idx] = { id: playerId, name: playerName, lastSeen: now }
+        }
+        role = "spectator"
+      }
+      room.updatedAt = now
+      await saveRoom(room)
+      return NextResponse.json({ room: sanitizeRoomForPlayer(room, playerId), role })
+    }
+
+    if (action === "forfeit") {
+      if (room.status !== "playing" || !room.guest) {
+        return NextResponse.json({ error: "Aucune manche en cours" }, { status: 400 })
+      }
+      const isHost = room.host.id === playerId
+      const isGuest = room.guest.id === playerId
+      if (!isHost && !isGuest) {
+        return NextResponse.json({ error: "Action réservée aux joueurs" }, { status: 403 })
+      }
+
+      addPlayerElapsed(room, isHost ? "host" : "guest")
+      room.abandonedBy = isHost ? "host" : "guest"
+      room.endReason = "forfeit"
+      room.status = "finished"
+
+      if (isHost) {
+        room.guest.wins += 1
+        if (room.gameType === "tictactoe") room.winner = "O"
+        if (room.gameType === "connect4") room.c4Winner = "Y"
+        if (room.gameType === "rps") room.rpsWinner = "guest"
+        if (room.gameType === "quiz") room.quizWinner = "guest"
+        if (room.gameType === "reaction") room.reactionWinner = "guest"
+      } else {
+        room.host.wins += 1
+        if (room.gameType === "tictactoe") room.winner = "X"
+        if (room.gameType === "connect4") room.c4Winner = "R"
+        if (room.gameType === "rps") room.rpsWinner = "host"
+        if (room.gameType === "quiz") room.quizWinner = "host"
+        if (room.gameType === "reaction") room.reactionWinner = "host"
+      }
+
+      room.updatedAt = now
+      await saveRoom(room)
+      return NextResponse.json({ room })
+    }
+
+    if (action === "end_match") {
+      const isHost = room.host.id === playerId
+      const isGuest = room.guest?.id === playerId
+      if (!isHost && !isGuest) {
+        // Spectator leaving simply removes themselves from spectator list
+        room.spectators = room.spectators.filter((s) => s.id !== playerId)
+        room.updatedAt = now
+        await saveRoom(room)
+        return NextResponse.json({ room })
+      }
+
+      if (room.status === "playing" && room.guest) {
+        addPlayerElapsed(room, isHost ? "host" : "guest")
+        room.abandonedBy = isHost ? "host" : "guest"
+        if (isHost) room.guest.wins += 1
+        else room.host.wins += 1
+      }
+      room.status = "ended"
+      room.endedBy = isHost ? room.host.name : room.guest?.name || "Joueur"
+      room.endReason = "ended"
+      room.updatedAt = now
+      await saveRoom(room)
+      return NextResponse.json({ room })
     }
 
     if (action === "move") {
@@ -443,6 +592,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Ce n'est pas votre tour" }, { status: 400 })
       }
 
+      addPlayerElapsed(room, symbol === "X" ? "host" : "guest")
       room.board[index] = symbol
       const res = evalTtt(room.board)
       if (res.winner) {
@@ -473,7 +623,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Ce n'est pas votre tour" }, { status: 400 })
       }
 
-      // Find lowest empty row in column
       let targetIdx = -1
       for (let r = 5; r >= 0; r--) {
         const idx = r * 7 + col
@@ -486,6 +635,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Colonne pleine" }, { status: 400 })
       }
 
+      addPlayerElapsed(room, disc === "R" ? "host" : "guest")
       room.c4Board[targetIdx] = disc
       const res = evalC4(room.c4Board)
       if (res.winner) {
@@ -511,9 +661,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Choix invalide" }, { status: 400 })
       }
       if (room.host.id === playerId) {
-        if (room.rpsHostChoice === null) room.rpsHostChoice = choice
+        if (room.rpsHostChoice === null) {
+          room.rpsHostChoice = choice
+          addPlayerElapsed(room, "host")
+        }
       } else if (room.guest.id === playerId) {
-        if (room.rpsGuestChoice === null) room.rpsGuestChoice = choice
+        if (room.rpsGuestChoice === null) {
+          room.rpsGuestChoice = choice
+          addPlayerElapsed(room, "guest")
+        }
       } else {
         return NextResponse.json({ error: "Non membre" }, { status: 403 })
       }
@@ -561,12 +717,14 @@ export async function POST(request: NextRequest) {
           const q = room.quizQuestions[room.quizHostAnswers.length]
           room.quizHostAnswers.push(optionIdx)
           if (optionIdx === q.answer) room.quizHostScore += 1
+          addPlayerElapsed(room, "host")
         }
       } else if (room.guest.id === playerId) {
         if (room.quizGuestAnswers.length < total) {
           const q = room.quizQuestions[room.quizGuestAnswers.length]
           room.quizGuestAnswers.push(optionIdx)
           if (optionIdx === q.answer) room.quizGuestScore += 1
+          addPlayerElapsed(room, "guest")
         }
       } else {
         return NextResponse.json({ error: "Non membre" }, { status: 403 })
@@ -600,10 +758,12 @@ export async function POST(request: NextRequest) {
       if (room.host.id === playerId) {
         if (room.hostTimes.length < room.reactionTargetRounds) {
           room.hostTimes.push(ms)
+          room.hostElapsedMs = (room.hostElapsedMs ?? 0) + ms
         }
       } else if (room.guest.id === playerId) {
         if (room.guestTimes.length < room.reactionTargetRounds) {
           room.guestTimes.push(ms)
+          room.guestElapsedMs = (room.guestElapsedMs ?? 0) + ms
         }
       } else {
         return NextResponse.json({ error: "Non membre du salon" }, { status: 403 })
@@ -639,6 +799,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "En attente du 2e joueur" }, { status: 400 })
       }
       room.status = "playing"
+      room.matchStartedAt = now
+      room.turnStartedAt = now
+      room.hostElapsedMs = 0
+      room.guestElapsedMs = 0
+      room.abandonedBy = null
+      room.endedBy = null
+      room.endReason = null
       // Reset Tic-Tac-Toe
       room.board = Array(9).fill(null)
       room.starter = room.starter === "X" ? "O" : "X"
