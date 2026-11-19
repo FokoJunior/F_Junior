@@ -90,32 +90,32 @@ export default function GamesHeroShowcase({
       transition={{ duration: 0.45, ease: "easeOut" }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      className="relative w-full overflow-hidden rounded-xl border border-white/20 bg-transparent p-4 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_12px_40px_rgba(0,0,0,0.22)] backdrop-blur-[2px] sm:p-5"
+      className="relative w-full max-w-full min-w-0 overflow-hidden rounded-xl border border-white/20 bg-transparent p-3.5 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_12px_40px_rgba(0,0,0,0.22)] backdrop-blur-[2px] sm:p-5"
     >
       {/* Top multifunctional switcher */}
       <div className="relative z-10 flex items-center justify-between gap-2 border-b border-white/15 pb-3">
-        <div className="flex items-center gap-1 rounded-full border border-white/20 bg-transparent p-0.5">
+        <div className="flex min-w-0 items-center gap-0.5 rounded-full border border-white/20 bg-transparent p-0.5 sm:gap-1">
           <button
             type="button"
             onClick={() => setTab("spotlight")}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-wider transition-colors",
+              "inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider transition-colors sm:gap-1.5 sm:px-3",
               tab === "spotlight" ? "bg-white text-[#0b0f17] font-semibold" : "text-white/70 hover:text-white",
             )}
           >
-            <Flame className="h-3 w-3 text-primary" />
-            {language === "fr" ? "À l'affiche" : "Spotlight"}
+            <Flame className="h-3 w-3 shrink-0 text-primary" />
+            <span className="truncate">{language === "fr" ? "À l'affiche" : "Spotlight"}</span>
           </button>
           <button
             type="button"
             onClick={() => setTab("quick")}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-wider transition-colors",
+              "inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider transition-colors sm:gap-1.5 sm:px-3",
               tab === "quick" ? "bg-white text-[#0b0f17] font-semibold" : "text-white/70 hover:text-white",
             )}
           >
-            <Swords className="h-3 w-3 text-primary" />
-            {language === "fr" ? "Accès rapide" : "Quick play"}
+            <Swords className="h-3 w-3 shrink-0 text-primary" />
+            <span className="truncate">{language === "fr" ? "Accès rapide" : "Quick play"}</span>
           </button>
         </div>
 
@@ -123,7 +123,7 @@ export default function GamesHeroShowcase({
           type="button"
           onClick={handleSurpriseMe}
           title={language === "fr" ? "Lancer un jeu aléatoire" : "Play a random game"}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-transparent px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-white/85 transition-colors hover:border-primary/70 hover:bg-primary/15 hover:text-white"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-transparent px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-white/85 transition-colors hover:border-primary/70 hover:bg-primary/15 hover:text-white"
         >
           <Shuffle className="h-3 w-3 text-primary" />
           <span className="hidden sm:inline">{language === "fr" ? "Aléatoire" : "Random"}</span>

@@ -515,19 +515,19 @@ export default function GamesHub() {
             </span>
           </div>
 
-          <div className="mt-8 grid gap-8 lg:mt-10 lg:grid-cols-12 lg:items-center">
-            <div className="lg:col-span-7">
-              <h1 className="font-serif text-[clamp(3rem,10vw,8.5rem)] leading-[0.9] tracking-[-0.02em] text-white">
+          <div className="mt-8 grid gap-6 sm:gap-8 lg:mt-10 lg:grid-cols-12 lg:items-center">
+            <div className="min-w-0 lg:col-span-7">
+              <h1 className="font-serif text-[clamp(2.75rem,11vw,8.5rem)] leading-[0.9] tracking-[-0.02em] text-white">
                 {tr(gamesCopy.title, language)}
                 <span className="text-primary">.</span>
               </h1>
 
-              <p className="mt-6 max-w-2xl text-base leading-relaxed text-white/80 sm:mt-8 sm:text-lg md:text-xl">
+              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/80 sm:mt-8 sm:text-lg md:text-xl">
                 {tr(gamesCopy.intro, language)}
               </p>
 
               <div
-                className="-mx-4 mt-8 flex flex-nowrap gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:mt-10 sm:flex-wrap sm:overflow-visible sm:px-0"
+                className="mt-6 flex w-full flex-nowrap gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mt-10 sm:flex-wrap sm:overflow-visible"
                 role="group"
                 aria-label={tr(gamesCopy.selectGame, language)}
               >
@@ -555,7 +555,7 @@ export default function GamesHub() {
               </div>
             </div>
 
-            <div className="lg:col-span-5">
+            <div className="min-w-0 lg:col-span-5">
               <GamesHeroShowcase
                 onSelectGame={handleHeroSelectGame}
                 onQuickJoinRoom={handleQuickJoinRoom}
@@ -734,7 +734,7 @@ export default function GamesHub() {
             </div>
 
             {/* Horizontal swipeable unified game rail (no Solo/1v1 duplicates) */}
-            <div className="-mx-4 flex flex-nowrap items-center gap-1.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:px-0 lg:flex-wrap lg:overflow-visible lg:pb-0">
+            <div className="flex w-full min-w-0 flex-nowrap items-center gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:flex-wrap lg:overflow-visible lg:pb-0">
               {UNIFIED_GAME_GROUPS.map((grp) => {
                 const primary = getGameMeta(grp.primaryId)
                 const isGroupActive = activeId === grp.soloId || activeId === grp.duoId
@@ -759,7 +759,7 @@ export default function GamesHub() {
           {/* Arena Stage + Right Sidebar (Leaderboard & CCM) */}
           <div className="grid lg:grid-cols-12">
             {/* Playable Game Area (Mobile-first padding + ambient backdrop + 8 cols on desktop) */}
-            <div className="relative flex min-h-[380px] items-center justify-center overflow-hidden p-3.5 sm:min-h-[480px] sm:p-8 lg:col-span-8 lg:min-h-[540px] lg:p-10">
+            <div className="relative flex min-h-[380px] min-w-0 items-center justify-center overflow-hidden p-3 sm:min-h-[480px] sm:p-8 lg:col-span-8 lg:min-h-[540px] lg:p-10">
               {/* Ambient Studio Background Image */}
               <div aria-hidden className="pointer-events-none absolute inset-0">
                 <img
@@ -918,7 +918,7 @@ export default function GamesHub() {
             </div>
 
             {/* Right Sidebar: Leaderboard + How It Works (CCM) */}
-            <aside className="flex flex-col border-t border-border bg-background/40 lg:col-span-4 lg:border-l lg:border-t-0">
+            <aside className="flex min-w-0 flex-col border-t border-border bg-background/40 lg:col-span-4 lg:border-l lg:border-t-0">
               {/* Sidebar Tabs */}
               <div className="grid grid-cols-2 border-b border-border bg-card/50">
                 <button

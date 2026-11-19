@@ -233,7 +233,7 @@ export default function GameLaunchModal({
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ type: "spring", stiffness: 320, damping: 26 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-lg overflow-hidden rounded-xl border border-border bg-card shadow-2xl"
+            className="relative max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-xl border border-border bg-card shadow-2xl"
           >
             {/* Cover Banner */}
             <div className="relative aspect-[16/8] w-full overflow-hidden border-b border-border bg-muted">
