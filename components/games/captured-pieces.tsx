@@ -168,3 +168,80 @@ export function DraughtsCapturedBar({ board, whiteLabel, blackLabel, className }
     </div>
   )
 }
+
+/** Compact strip for a single player's captures in 1v1 Top/Bottom layout */
+export function ChessPlayerCaptures({
+  fen,
+  side,
+  className,
+}: {
+  fen: string
+  side: "w" | "b"
+  className?: string
+}) {
+  const { whiteLost, blackLost, advantage } = useMemo(() => computeChessCaptures(fen), [fen])
+  // Pieces captured BY 'w' are black pieces lost
+  const captured = side === "w" ? blackLost : whiteLost
+  const glyphs = side === "w" ? GLYPH_BLACK : GLYPH_WHITE
+  const lead = side === "w" ? (advantage > 0 ? advantage : 0) : advantage < 0 ? -advantage : 0
+
+  if (captured.length === 0 && lead === 0) return null
+
+  return (
+    <div className={cn("inline-flex items-center gap-1 font-mono text-xs", className)}>
+      <span className="flex flex-wrap items-center -space-x-0.5 text-base leading-none text-foreground/85">
+        {captured.map((t, i) => (
+          <span key={`${t}-${i}`}>{glyphs[t]}</span>
+        ))}
+      </span>
+      {lead > 0 && (
+        <span className="rounded-full bg-primary/15 px-1.5 py-0.5 font-mono text-[10px] font-bold text-primary">
+          +{lead}
+        </span>
+      )}
+    </div>
+  )
+}
+
+/** Compact strip for a single player's draughts captures in 1v1 Top/Bottom layout */
+export function DraughtsPlayerCaptures({
+  board,
+  side,
+  className,
+}: {
+  board: DraughtsPiece[][]
+  side: "w" | "b"
+  className?: string
+}) {
+  const counts = useMemo(() => countDraughtsPieces(board), [board])
+  // Discs captured BY 'w' are black discs lost
+  const taken = side === "w" ? 20 - counts.b : 20 - counts.w
+  const oppTaken = side === "w" ? 20 - counts.w : 20 - counts.b
+  const lead = taken - oppTaken
+
+  if (taken === 0 && lead <= 0) return null
+
+  return (
+    <div className={cn("inline-flex items-center gap-1 font-mono text-xs", className)}>
+      <span className="flex items-center -space-x-1">
+        {Array.from({ length: Math.min(taken, 8) }, (_, i) => (
+          <span
+            key={i}
+            className={cn(
+              "h-2.5 w-2.5 rounded-full border shadow-sm",
+              side === "w"
+                ? "border-amber-400/80 bg-slate-900"
+                : "border-slate-300 bg-white",
+            )}
+          />
+        ))}
+        {taken > 8 && <span className="ml-1 text-[10px] text-muted-foreground">+{taken - 8}</span>}
+      </span>
+      {lead > 0 && (
+        <span className="rounded-full bg-primary/15 px-1.5 py-0.5 font-mono text-[10px] font-bold text-primary">
+          +{lead}
+        </span>
+      )}
+    </div>
+  )
+}

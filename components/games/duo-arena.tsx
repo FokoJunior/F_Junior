@@ -34,7 +34,7 @@ import {
 import type { DuoGameType, DuoRoom, RpsChoice } from "@/app/api/games/rooms/route"
 import { useConfirm } from "@/components/confirm-provider"
 import ChessBoard from "@/components/games/chess-board"
-import { ChessCapturedBar, DraughtsCapturedBar } from "@/components/games/captured-pieces"
+import { ChessPlayerCaptures, DraughtsPlayerCaptures } from "@/components/games/captured-pieces"
 import DraughtsBoard from "@/components/games/draughts-board"
 import GameEndBanner, { type GameEndOutcome } from "@/components/games/game-end-overlay"
 import LudoBoard from "@/components/games/ludo-board"
@@ -752,6 +752,341 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
 
   const winnerInfo = getWinnerInfo()
 
+  // 1v1 Perspective:
+  // - Top card: Opponent (if guest, host is opponent; if host, guest is opponent; if spectator, guest)
+  // - Bottom card: You (if guest, guest is you; if host, host is you; if spectator, host)
+  const topPlayer = isGuest ? room.host : room.guest
+  const bottomPlayer = isGuest ? room.guest : room.host
+
+  const isTopMe = false
+  const isBottomMe = !isSpectator
+
+  const isTopHost = isGuest
+  const isBottomHost = !isGuest
+
+  const isTopTurnActive = isTopHost ? isHostTurnActive : isGuestTurnActive
+  const isBottomTurnActive = isBottomHost ? isHostTurnActive : isGuestTurnActive
+
+  const topLiveMs = isTopHost ? hostLiveMs : guestLiveMs
+  const bottomLiveMs = isBottomHost ? hostLiveMs : guestLiveMs
+
+  const topMissedTurns = isTopHost ? room.hostMissedTurns : room.guestMissedTurns
+  const bottomMissedTurns = isBottomHost ? room.hostMissedTurns : room.guestMissedTurns
+
+  // Turn thinking countdown calculation
+  const limitMs = room.turnLimitSec * 1000
+  const remainingMs = Math.max(0, limitMs - liveTurnDelta)
+  const countdownPct = Math.max(0, Math.min(100, (remainingMs / (limitMs || 1)) * 100))
+  const countdownSecsLeft = (remainingMs / 1000).toFixed(1)
+  const isCountdownUrgent = remainingMs <= 2000
+  const isCountdownWarn = !isCountdownUrgent && countdownPct <= 45
+
+  const getPlayerBadge = (isHostSide: boolean) => {
+    if (room.gameType === "connect4") {
+      const disc = isHostSide ? "R" : "Y"
+      return (
+        <span
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold",
+            disc === "R"
+              ? "border border-primary/30 bg-primary/15 text-primary"
+              : "border border-amber-400/30 bg-amber-400/15 text-amber-500",
+          )}
+        >
+          <span
+            className={cn(
+              "h-2.5 w-2.5 rounded-full shadow-sm",
+              disc === "R" ? "bg-primary" : "bg-amber-400",
+            )}
+          />
+          {disc === "R" ? (language === "fr" ? "Rouge" : "Red") : language === "fr" ? "Jaune" : "Yellow"}
+        </span>
+      )
+    }
+    if (room.gameType === "tictactoe") {
+      const sym = isHostSide ? "X" : "O"
+      return (
+        <span
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-xs font-bold border",
+            sym === "X"
+              ? "border-primary/40 bg-primary/15 text-primary"
+              : "border-border bg-card text-foreground",
+          )}
+        >
+          {sym}
+        </span>
+      )
+    }
+    if (room.gameType === "chess") {
+      const side = isHostSide ? chessHostColor : chessGuestColor
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2 py-0.5 font-mono text-[11px]">
+          <span className="text-base leading-none">{side === "w" ? "♔" : "♚"}</span>
+          <span className="text-[10px] uppercase">
+            {side === "w" ? (language === "fr" ? "Blancs" : "White") : language === "fr" ? "Noirs" : "Black"}
+          </span>
+        </span>
+      )
+    }
+    if (room.gameType === "draughts") {
+      const side = isHostSide ? draughtsHostColor : draughtsGuestColor
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2 py-0.5 font-mono text-[11px]">
+          <span
+            className={cn(
+              "h-2.5 w-2.5 rounded-full border shadow-sm",
+              side === "w" ? "border-slate-300 bg-white" : "border-amber-400/80 bg-slate-900",
+            )}
+          />
+          <span className="text-[10px] uppercase">
+            {side === "w" ? (language === "fr" ? "Blancs" : "White") : language === "fr" ? "Noirs" : "Black"}
+          </span>
+        </span>
+      )
+    }
+    if (room.gameType === "ludo") {
+      const side = isHostSide ? "host" : "guest"
+      return (
+        <span
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold border",
+            side === "host"
+              ? "border-blue-500/30 bg-blue-500/15 text-blue-500"
+              : "border-emerald-500/30 bg-emerald-500/15 text-emerald-500",
+          )}
+        >
+          <span
+            className={cn("h-2 w-2 rounded-full", side === "host" ? "bg-blue-500" : "bg-emerald-500")}
+          />
+          {side === "host" ? (language === "fr" ? "Bleus" : "Blue") : language === "fr" ? "Verts" : "Green"}
+        </span>
+      )
+    }
+    if (room.gameType === "rps") {
+      const score = isHostSide ? room.rpsHostScore : room.rpsGuestScore
+      const ready = isHostSide ? !!room.rpsHostChoice : !!room.rpsGuestChoice
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2 py-0.5 font-mono text-[11px]">
+          <span className="font-semibold text-primary">{score}</span>/{room.rpsTarget}
+          {room.status === "playing" && (
+            <span className={ready ? "text-emerald-500 font-bold" : "text-muted-foreground"}>
+              {ready ? "✓" : "⏳"}
+            </span>
+          )}
+        </span>
+      )
+    }
+    if (room.gameType === "quiz") {
+      const score = isHostSide ? room.quizHostScore : room.quizGuestScore
+      const answered = isHostSide ? room.quizHostAnswers.length : room.quizGuestAnswers.length
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2 py-0.5 font-mono text-[11px]">
+          <span className="font-semibold text-primary">{score}</span>/{room.quizQuestions.length} pts
+          <span className="text-muted-foreground">({answered} rép.)</span>
+        </span>
+      )
+    }
+    if (room.gameType === "reaction") {
+      const times = isHostSide ? room.hostTimes : room.guestTimes
+      const avgMs = avg(times)
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2 py-0.5 font-mono text-[11px]">
+          <span className="font-semibold text-primary">{avgMs !== null ? `${avgMs}ms` : "—"}</span>
+          <span className="text-muted-foreground">({times.length}/{room.reactionTargetRounds})</span>
+        </span>
+      )
+    }
+    return null
+  }
+
+  const getCapturesStrip = (isHostSide: boolean) => {
+    if (room.gameType === "chess") {
+      const side = isHostSide ? chessHostColor : chessGuestColor
+      return <ChessPlayerCaptures fen={room.chessFen} side={side} />
+    }
+    if (room.gameType === "draughts") {
+      const side = isHostSide ? draughtsHostColor : draughtsGuestColor
+      return <DraughtsPlayerCaptures board={room.draughtsState.board} side={side} />
+    }
+    return null
+  }
+
+  const renderPlayerCard = (
+    player: { id: string; name: string; wins: number } | null,
+    isMe: boolean,
+    isHostSide: boolean,
+    position: "top" | "bottom",
+  ) => {
+    const isTurnActive = isHostSide ? isHostTurnActive : isGuestTurnActive
+    const liveMs = isHostSide ? hostLiveMs : guestLiveMs
+    const missedTurns = isHostSide ? room.hostMissedTurns : room.guestMissedTurns
+    const gameBadge = getPlayerBadge(isHostSide)
+    const capturesStrip = getCapturesStrip(isHostSide)
+
+    const showCountdownBar =
+      isTurnActive &&
+      room.status === "playing" &&
+      room.turnLimitSec > 0 &&
+      (room.gameType === "tictactoe" ||
+        room.gameType === "connect4" ||
+        room.gameType === "rps" ||
+        room.gameType === "chess" ||
+        room.gameType === "ludo" ||
+        room.gameType === "draughts")
+
+    return (
+      <div
+        className={cn(
+          "w-full rounded-md border p-2.5 sm:p-3 transition-all duration-300",
+          isTurnActive
+            ? isMe
+              ? "border-primary bg-primary/10 shadow-[0_0_20px_rgba(59,130,246,0.18)] ring-2 ring-primary/40"
+              : "border-amber-500/80 bg-amber-500/10 shadow-[0_0_15px_rgba(245,158,11,0.15)] ring-1 ring-amber-500/30"
+            : "border-border bg-card/85",
+        )}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* Left: Avatar, Name, Role Tag, Badge, Captures */}
+          <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
+            <div
+              className={cn(
+                "relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-mono text-xs font-bold shadow-sm sm:h-9 sm:w-9",
+                isTurnActive
+                  ? isMe
+                    ? "bg-primary text-primary-foreground ring-2 ring-primary/50"
+                    : "bg-amber-500 text-white ring-2 ring-amber-500/50"
+                  : "bg-muted text-muted-foreground",
+              )}
+            >
+              {player ? player.name.slice(0, 2).toUpperCase() : "?"}
+              {isTurnActive && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5">
+                  <span
+                    className={cn(
+                      "absolute inline-flex h-full w-full animate-ping rounded-full opacity-75",
+                      isMe ? "bg-primary" : "bg-amber-400",
+                    )}
+                  />
+                  <span
+                    className={cn(
+                      "relative inline-flex h-2.5 w-2.5 rounded-full",
+                      isMe ? "bg-primary" : "bg-amber-500",
+                    )}
+                  />
+                </span>
+              )}
+            </div>
+
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="truncate text-sm font-semibold text-foreground sm:text-base">
+                  {player ? player.name : language === "fr" ? "En attente…" : "Waiting…"}
+                </span>
+                {isMe ? (
+                  <span className="rounded-full bg-primary/20 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-primary">
+                    {language === "fr" ? "VOUS" : "YOU"}
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-muted/80 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-muted-foreground">
+                    {isSpectator
+                      ? isHostSide
+                        ? "J1"
+                        : "J2"
+                      : language === "fr"
+                        ? "ADVERSAIRE"
+                        : "OPPONENT"}
+                  </span>
+                )}
+                {gameBadge}
+              </div>
+
+              {capturesStrip && <div className="mt-0.5">{capturesStrip}</div>}
+            </div>
+          </div>
+
+          {/* Right: Turn status badge, timer, and score */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {missedTurns > 0 && (
+              <span className="rounded-full border border-destructive/40 bg-destructive/15 px-2 py-0.5 font-mono text-[10px] text-destructive">
+                ⚠️ {missedTurns}/4 {language === "fr" ? "manqué" : "missed"}
+              </span>
+            )}
+
+            {room.status === "playing" && (
+              <>
+                {isTurnActive ? (
+                  isMe ? (
+                    <span className="inline-flex animate-pulse items-center gap-1 rounded-full border border-primary/50 bg-primary/20 px-2 py-0.5 font-mono text-[10px] font-bold text-primary sm:px-2.5 sm:text-[11px]">
+                      ⚡ {language === "fr" ? "À VOUS !" : "YOUR TURN!"}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/15 px-2 py-0.5 font-mono text-[10px] text-amber-500 sm:px-2.5 sm:text-[11px]">
+                      ⏳ {language === "fr" ? "Réfléchit…" : "Thinking…"}
+                    </span>
+                  )
+                ) : null}
+              </>
+            )}
+
+            {/* Live Clock for this player */}
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-xs tabular-nums",
+                isTurnActive
+                  ? isMe
+                    ? "border-primary/40 bg-primary/10 font-semibold text-primary"
+                    : "border-amber-500/40 bg-amber-500/10 font-semibold text-amber-500"
+                  : "border-border bg-background text-muted-foreground",
+              )}
+            >
+              <Clock className={cn("h-3 w-3", isTurnActive && (isMe ? "text-primary" : "text-amber-500"))} />
+              {fmtClock(liveMs)}
+            </span>
+
+            {/* Wins count */}
+            <span
+              className="inline-flex min-w-[32px] items-center justify-center rounded border border-border bg-background px-2 py-0.5 font-mono text-xs font-bold tabular-nums text-foreground"
+              title={language === "fr" ? "Victoires" : "Wins"}
+            >
+              {player?.wins ?? 0} {language === "fr" ? "vic." : "w"}
+            </span>
+          </div>
+        </div>
+
+        {/* Turn countdown bar attached directly to active player's card */}
+        {showCountdownBar && (
+          <div className="mt-2 space-y-1 border-t border-border/40 pt-1.5">
+            <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground">
+              <span>{language === "fr" ? "Temps de coup" : "Turn limit"}</span>
+              <span
+                className={cn(
+                  "font-bold tabular-nums",
+                  isCountdownUrgent
+                    ? "animate-pulse text-destructive"
+                    : isCountdownWarn
+                      ? "text-amber-500"
+                      : "text-primary",
+                )}
+              >
+                {countdownSecsLeft}s / {room.turnLimitSec}s
+              </span>
+            </div>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted/60">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-[width] duration-100",
+                  isCountdownUrgent ? "bg-destructive" : isCountdownWarn ? "bg-amber-500" : "bg-primary",
+                )}
+                style={{ width: `${countdownPct}%` }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div
       ref={rootRef}
@@ -844,55 +1179,6 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
         </div>
       )}
 
-      {/* Players Scoreboard with Per-Player Live Clocks */}
-      <div className="grid w-full grid-cols-2 gap-2.5 sm:gap-3">
-        <div
-          className={cn(
-            "rounded-md border p-3 transition-all sm:p-3.5",
-            isHostTurnActive ? "border-primary bg-primary/10 shadow-sm" : "border-border bg-background",
-          )}
-        >
-          <div className="flex items-center justify-between gap-2">
-            <span className="eyebrow inline-flex items-center gap-1.5 text-primary">
-              {room.gameType === "connect4" && <span className="h-2.5 w-2.5 rounded-full bg-primary" />}
-              {isHost ? (language === "fr" ? "Vous" : "You") : language === "fr" ? "Joueur 1" : "Player 1"}
-            </span>
-            <span className="font-mono text-lg font-semibold tabular-nums">{room.host.wins}</span>
-          </div>
-          <p className="mt-1 truncate font-medium">{room.host.name}</p>
-          <p className="mt-1 inline-flex items-center gap-1 font-mono text-[11px] tabular-nums text-muted-foreground">
-            <Clock className={cn("h-3 w-3", isHostTurnActive && "text-primary")} />
-            {fmtClock(hostLiveMs)}
-          </p>
-        </div>
-
-        <div
-          className={cn(
-            "rounded-md border p-3 transition-all sm:p-3.5",
-            isGuestTurnActive ? "border-amber-500 bg-amber-500/10 shadow-sm" : "border-border bg-background",
-          )}
-        >
-          <div className="flex items-center justify-between gap-2">
-            <span className="eyebrow inline-flex items-center gap-1.5">
-              {room.gameType === "connect4" && <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />}
-              {isGuest ? (language === "fr" ? "Vous" : "You") : language === "fr" ? "Joueur 2" : "Player 2"}
-            </span>
-            <span className="font-mono text-lg font-semibold tabular-nums">{room.guest?.wins ?? 0}</span>
-          </div>
-          <p className="mt-1 truncate font-medium">
-            {room.guest ? (
-              room.guest.name
-            ) : (
-              <span className="text-muted-foreground">{language === "fr" ? "En attente…" : "Waiting…"}</span>
-            )}
-          </p>
-          <p className="mt-1 inline-flex items-center gap-1 font-mono text-[11px] tabular-nums text-muted-foreground">
-            <Clock className={cn("h-3 w-3", isGuestTurnActive && "text-amber-500")} />
-            {fmtClock(guestLiveMs)}
-          </p>
-        </div>
-      </div>
-
       {/* Waiting for Guest */}
       {room.status === "waiting" && (
         <div className="flex w-full flex-col items-center gap-4 rounded-md border border-dashed border-primary/40 bg-primary/5 p-6 text-center sm:p-8">
@@ -924,52 +1210,15 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
         </div>
       )}
 
-      {/* TURN THINKING COUNTDOWN BAR (e.g. 4s / 10s / 15s / 30s) */}
-      {room.status === "playing" &&
-        room.turnLimitSec > 0 &&
-        room.turnStartedAt &&
-        (room.gameType === "tictactoe" || room.gameType === "connect4" || room.gameType === "rps" || room.gameType === "chess" || room.gameType === "ludo" || room.gameType === "draughts") && (() => {
-          const limitMs = room.turnLimitSec * 1000
-          const remainingMs = Math.max(0, limitMs - liveTurnDelta)
-          const pct = Math.max(0, Math.min(100, (remainingMs / limitMs) * 100))
-          const secsLeft = (remainingMs / 1000).toFixed(1)
-          const isUrgent = remainingMs <= 2000
-          const isWarn = !isUrgent && pct <= 45
-          return (
-            <div className="w-full space-y-1.5 rounded-md border border-border bg-background px-4 py-2.5">
-              <div className="flex items-center justify-between gap-2 font-mono text-xs">
-                <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-                  <Clock className={cn("h-3.5 w-3.5", isUrgent ? "animate-pulse text-destructive" : "text-primary")} />
-                  {language === "fr" ? "Temps de réflexion" : "Turn timer"}
-                </span>
-                <span
-                  className={cn(
-                    "font-semibold tabular-nums",
-                    isUrgent ? "text-destructive" : isWarn ? "text-amber-500" : "text-primary",
-                  )}
-                >
-                  {secsLeft}s / {room.turnLimitSec}s
-                </span>
-              </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className={cn(
-                    "h-full rounded-full transition-[width] duration-100",
-                    isUrgent ? "bg-destructive" : isWarn ? "bg-amber-500" : "bg-primary",
-                  )}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-            </div>
-          )
-        })()}
-
       {/* Timeout notice banner */}
       {room.lastTimeoutNotice && room.status === "playing" && (
         <div className="w-full rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-center font-mono text-xs text-amber-600 dark:text-amber-400">
           ⏱ {room.lastTimeoutNotice}
         </div>
       )}
+
+      {/* 1V1 SCREEN LAYOUT: TOP PLAYER (OPPONENT / FACING YOU) */}
+      {room.status !== "waiting" && renderPlayerCard(topPlayer, isTopMe, isTopHost, "top")}
 
       {/* VICTORY / FORFEIT / ENDED CELEBRATION BANNER WITH ANIMATION */}
       <GameEndBanner
@@ -997,19 +1246,10 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
 
       {/* 1. CONNECT 4 (PUISSANCE 4) */}
       {room.status !== "waiting" && room.status !== "ended" && room.gameType === "connect4" && (
-        <>
-          {room.status === "playing" && (
-            <p className="font-serif text-2xl">
-              {language === "fr"
-                ? `C'est au tour de ${room.c4Turn === "R" ? room.host.name : room.guest?.name}`
-                : `${room.c4Turn === "R" ? room.host.name : room.guest?.name}'s turn`}
-            </p>
-          )}
-
-          <div
-            className="w-full max-w-[490px] rounded-lg border border-border bg-muted/50 p-2 sm:p-3.5"
-            onMouseLeave={() => setHoverCol(null)}
-          >
+        <div
+          className="w-full max-w-[490px] rounded-lg border border-border bg-muted/50 p-2 sm:p-3.5"
+          onMouseLeave={() => setHoverCol(null)}
+        >
             {/* One tall clickable button per column (reliable on desktop & touch) */}
             <div className="grid grid-cols-7 gap-1 sm:gap-2">
               {Array.from({ length: 7 }, (_, col) => {
@@ -1078,47 +1318,36 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
               })}
             </div>
           </div>
-        </>
       )}
 
       {/* 2. TIC-TAC-TOE 1v1 */}
       {room.status !== "waiting" && room.status !== "ended" && room.gameType === "tictactoe" && (
-        <>
-          {room.status === "playing" && (
-            <p className="font-serif text-2xl">
-              {language === "fr"
-                ? `C'est au tour de ${room.turn === "X" ? room.host.name : room.guest?.name}`
-                : `${room.turn === "X" ? room.host.name : room.guest?.name}'s turn`}
-            </p>
-          )}
-
-          <div className="grid aspect-square w-full max-w-[400px] grid-cols-3 grid-rows-3 gap-3">
-            {room.board.map((cell, idx) => {
-              const isWin = room.winLine?.includes(idx) ?? false
-              const canPlay = !isSpectator && room.status === "playing" && room.turn === myTttSymbol && cell === null
-              return (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => canPlay && sendRoomAction({ action: "move", index: idx })}
-                  disabled={!canPlay}
-                  className={cn(
-                    "flex items-center justify-center rounded-md border font-serif text-5xl transition-all sm:text-6xl",
-                    isWin
-                      ? "border-primary bg-primary/15 text-primary scale-[1.02]"
-                      : canPlay
-                        ? "border-border bg-background hover:border-primary"
-                        : "border-border bg-background/60",
-                    cell === "X" && !isWin && "text-primary",
-                    cell === "O" && !isWin && "text-foreground",
-                  )}
-                >
-                  {cell}
-                </button>
-              )
-            })}
-          </div>
-        </>
+        <div className="grid aspect-square w-full max-w-[400px] grid-cols-3 grid-rows-3 gap-3">
+          {room.board.map((cell, idx) => {
+            const isWin = room.winLine?.includes(idx) ?? false
+            const canPlay = !isSpectator && room.status === "playing" && room.turn === myTttSymbol && cell === null
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => canPlay && sendRoomAction({ action: "move", index: idx })}
+                disabled={!canPlay}
+                className={cn(
+                  "flex items-center justify-center rounded-md border font-serif text-5xl transition-all sm:text-6xl",
+                  isWin
+                    ? "border-primary bg-primary/15 text-primary scale-[1.02]"
+                    : canPlay
+                      ? "border-border bg-background hover:border-primary"
+                      : "border-border bg-background/60",
+                  cell === "X" && !isWin && "text-primary",
+                  cell === "O" && !isWin && "text-foreground",
+                )}
+              >
+                {cell}
+              </button>
+            )
+          })}
+        </div>
       )}
 
       {/* 3. ROCK PAPER SCISSORS (CHIFOUMI) */}
@@ -1333,59 +1562,28 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
 
       {/* 6. CHESS 1v1 */}
       {room.status !== "waiting" && room.status !== "ended" && room.gameType === "chess" && chessInstance && (
-        <>
-          {room.status === "playing" && (
-            <p className="font-serif text-xl sm:text-2xl">
-              {language === "fr"
-                ? `C'est au tour de ${isHostTurnActive ? room.host.name : room.guest?.name} (${chessTurnColor === "w" ? "Blancs" : "Noirs"})${chessInstance.inCheck() ? " · Échec !" : ""}`
-                : `${isHostTurnActive ? room.host.name : room.guest?.name}'s turn (${chessTurnColor === "w" ? "White" : "Black"})${chessInstance.inCheck() ? " · Check!" : ""}`}
-            </p>
-          )}
-
-          <ChessBoard
-            fen={room.chessFen}
-            orientation={isGuest ? chessGuestColor : chessHostColor}
-            interactive={!isSpectator && room.status === "playing"}
-            allowedColor={isHost ? chessHostColor : isGuest ? chessGuestColor : "w"}
-            lastMove={room.chessLastMove}
-            onMove={(from, to) => sendRoomAction({ action: "chess_move", from, to })}
-          />
-          <ChessCapturedBar
-            fen={room.chessFen}
-            whiteLabel={room.chessWhiteSide === "host" ? room.host.name : room.guest?.name || "Blancs"}
-            blackLabel={room.chessWhiteSide === "host" ? room.guest?.name || "Noirs" : room.host.name}
-            className="max-w-[520px]"
-          />
-        </>
+        <ChessBoard
+          fen={room.chessFen}
+          orientation={isGuest ? chessGuestColor : chessHostColor}
+          interactive={!isSpectator && room.status === "playing"}
+          allowedColor={isHost ? chessHostColor : isGuest ? chessGuestColor : "w"}
+          lastMove={room.chessLastMove}
+          onMove={(from, to) => sendRoomAction({ action: "chess_move", from, to })}
+        />
       )}
 
       {/* 8. INTERNATIONAL DRAUGHTS 1v1 */}
       {room.status !== "waiting" && room.status !== "ended" && room.gameType === "draughts" && (
-        <>
-          {room.status === "playing" && (
-            <p className="font-serif text-xl sm:text-2xl">
-              {language === "fr"
-                ? `C'est au tour de ${isHostTurnActive ? room.host.name : room.guest?.name} (${room.draughtsState.turn === "w" ? "Blancs" : "Noirs"})`
-                : `${isHostTurnActive ? room.host.name : room.guest?.name}'s turn (${room.draughtsState.turn === "w" ? "White" : "Black"})`}
-            </p>
-          )}
-          <DraughtsBoard
-            state={room.draughtsState}
-            orientation={isGuest ? draughtsGuestColor : draughtsHostColor}
-            canInteractSide={
-              !isSpectator && room.status === "playing" ? (isHost ? draughtsHostColor : draughtsGuestColor) : null
-            }
-            onMove={(m) => sendRoomAction({ action: "draughts_move", from: m.from, to: m.to })}
-            whiteLabel={room.draughtsWhiteSide === "host" ? room.host.name : room.guest?.name || "Blancs"}
-            blackLabel={room.draughtsWhiteSide === "host" ? room.guest?.name || "Noirs" : room.host.name}
-          />
-          <DraughtsCapturedBar
-            board={room.draughtsState.board}
-            whiteLabel={room.draughtsWhiteSide === "host" ? room.host.name : room.guest?.name || "Blancs"}
-            blackLabel={room.draughtsWhiteSide === "host" ? room.guest?.name || "Noirs" : room.host.name}
-            className="max-w-[520px]"
-          />
-        </>
+        <DraughtsBoard
+          state={room.draughtsState}
+          orientation={isGuest ? draughtsGuestColor : draughtsHostColor}
+          canInteractSide={
+            !isSpectator && room.status === "playing" ? (isHost ? draughtsHostColor : draughtsGuestColor) : null
+          }
+          onMove={(m) => sendRoomAction({ action: "draughts_move", from: m.from, to: m.to })}
+          whiteLabel={room.draughtsWhiteSide === "host" ? room.host.name : room.guest?.name || "Blancs"}
+          blackLabel={room.draughtsWhiteSide === "host" ? room.guest?.name || "Noirs" : room.host.name}
+        />
       )}
 
       {/* 5. REACTION DUEL 1v1 */}
@@ -1462,6 +1660,9 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
           )}
         </>
       )}
+
+      {/* 1V1 SCREEN LAYOUT: BOTTOM PLAYER (YOU / ME) */}
+      {room.status !== "waiting" && renderPlayerCard(bottomPlayer, isBottomMe, isBottomHost, "bottom")}
     </div>
   )
 }
