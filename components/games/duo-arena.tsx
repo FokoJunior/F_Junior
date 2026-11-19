@@ -28,7 +28,7 @@ import {
 import type { DuoGameType, DuoRoom, RpsChoice } from "@/app/api/games/rooms/route"
 import { useConfirm } from "@/components/confirm-provider"
 import { useLanguage } from "@/components/language-provider"
-import { getPlayerId, readScore, saveBestScore, setPlayerName } from "@/lib/games"
+import { getPlayerId, looksLikeRoomCode, readScore, saveBestScore, setPlayerName } from "@/lib/games"
 import { cn } from "@/lib/utils"
 
 interface DuoArenaProps {
@@ -85,7 +85,7 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
   const confirm = useConfirm()
   const [playerId, setPlayerId] = useState("")
   const [joinCode, setJoinCode] = useState(initialRoomCode ?? "")
-  const [joinName, setJoinName] = useState(playerName || "")
+  const [joinName, setJoinName] = useState(() => (playerName && !looksLikeRoomCode(playerName) ? playerName : ""))
   const [room, setRoom] = useState<DuoRoom | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -107,7 +107,7 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
   }, [])
 
   useEffect(() => {
-    if (playerName && !joinName) {
+    if (playerName && !looksLikeRoomCode(playerName) && !joinName) {
       setJoinName(playerName)
     }
   }, [joinName, playerName])
@@ -138,8 +138,12 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
           setError(language === "fr" ? "Veuillez entrer votre nom avant d'entrer dans la partie." : "Please enter your name before joining.")
           return
         }
-        if (cleanName.toUpperCase() === cleanCode) {
-          setError(language === "fr" ? "Entrez votre prénom ou pseudo (pas le code du salon)." : "Please enter your name, not the room code.")
+        if (cleanName.toUpperCase() === cleanCode || looksLikeRoomCode(cleanName)) {
+          setError(
+            language === "fr"
+              ? "Ceci ressemble à un code de salon — entrez plutôt votre vrai prénom ou pseudo."
+              : "This looks like a room code — please enter your real name or nickname.",
+          )
           return
         }
         setPlayerName(cleanName)

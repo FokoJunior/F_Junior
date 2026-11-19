@@ -60,6 +60,7 @@ import {
   getPlayerAvatar,
   getPlayerId,
   getPlayerName,
+  looksLikeRoomCode,
   readScore,
   setPlayerAvatar,
   setPlayerName,
@@ -306,6 +307,15 @@ export default function GamesHub() {
 
   const handleSaveName = (e: React.FormEvent) => {
     e.preventDefault()
+    if (looksLikeRoomCode(nameInput)) {
+      setAvatarError(
+        language === "fr"
+          ? "Ceci ressemble à un code de salon — entrez plutôt votre prénom ou pseudo."
+          : "This looks like a room code — please enter your name or nickname.",
+      )
+      return
+    }
+    setAvatarError(null)
     const saved = setPlayerName(nameInput)
     if (saved.length < 2) return
     setPlayerNameState(saved)

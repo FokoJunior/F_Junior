@@ -1169,10 +1169,21 @@ const SCORE_KEY_TO_GAME: Record<string, GameId> = {
 
 const pendingSubmitTimers: Partial<Record<GameId, number>> = {}
 
+/** Detect accidental 6-char room codes like "U5PFJ3" typed as a player name. */
+export function looksLikeRoomCode(value: string): boolean {
+  const s = value.trim()
+  return /^[A-Z0-9]{6}$/.test(s) && /[A-Z]/.test(s) && /\d/.test(s)
+}
+
 export function getPlayerName(): string {
   if (typeof window === "undefined") return ""
   try {
-    return window.localStorage.getItem(PLAYER_NAME_KEY)?.trim() || ""
+    const raw = window.localStorage.getItem(PLAYER_NAME_KEY)?.trim() || ""
+    if (looksLikeRoomCode(raw)) {
+      window.localStorage.removeItem(PLAYER_NAME_KEY)
+      return ""
+    }
+    return raw
   } catch {
     return ""
   }
