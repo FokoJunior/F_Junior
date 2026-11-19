@@ -112,7 +112,7 @@ export default function LudoGame({ initialMode = "normal" }: { initialMode?: Mod
         return applyLudoRoll(prev, prev.turn, value, label)
       })
       setRolling(false)
-    }, 260)
+    }, 520)
   }, [language, mode, rolling, state.hasRolled, state.winner])
 
   const handleMoveToken = useCallback(

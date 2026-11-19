@@ -1173,17 +1173,6 @@ export default function GamesHub() {
                 {language === "fr" ? "Catalogue des jeux" : "Game catalog"}
               </h2>
             </div>
-
-            {hasAnyRecord && (
-              <button
-                type="button"
-                onClick={clearAllRecords}
-                className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground transition-colors hover:text-destructive"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                {tr(gamesCopy.resetScores, language)}
-              </button>
-            )}
           </div>
 
           <motion.ul layout className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

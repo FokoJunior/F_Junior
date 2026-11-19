@@ -1,6 +1,7 @@
 // Base de connaissances de l'assistant, générée à partir des données du site :
-// elle reste synchronisée avec ce qui est affiché (projets, CV, compétences, contact).
+// elle reste synchronisée avec ce qui est affiché (projets, CV, compétences, jeux, contact).
 import { posts } from "@/lib/blog"
+import { gameCategoryLabels, gamesList } from "@/lib/games"
 import { categoryLabels, mainProjects, archivedProjects, prettyUrl } from "@/lib/projects"
 import { certifications, education, experience, interests, profile } from "@/lib/resume"
 import { SITE_URL, nameVariants } from "@/lib/seo"
@@ -70,6 +71,13 @@ export function buildKnowledge(now = new Date()) {
     .map((p) => `- [${p.title.fr}](/blog/${p.slug})`)
     .join("\n")
 
+  const gamesSummary = gamesList
+    .map(
+      (g) =>
+        `- **${g.title.fr}** (${gameCategoryLabels[g.category].fr}) — ${g.tagline.fr} ([jouer](/jeux?game=${g.id}))`,
+    )
+    .join("\n")
+
   return `
 ## Identité
 - Nom : Junior Benoît FOKO TADJUIGE — on le cherche aussi sous : ${nameVariants.join(", ")}
@@ -113,5 +121,17 @@ ${archives}
 
 ## Articles du blog
 ${blog}
+
+## Espace Jeux interactif ([/jeux](/jeux))
+Le portfolio intègre un playground interactif complet développé par Junior en **Next.js**, **TypeScript**, **Framer Motion**, **Neon PostgreSQL**, **Vercel Blob** et **Web Audio API** :
+- **15 jeux uniques** regroupés sans doublons, avec fenêtre de présentation, choix **Solo / IA** (niveaux de difficulté Facile, Normale, Difficile, Impossible ou 2 Joueurs local) et **Duo 1v1 en ligne** pour les jeux hybrides (Échecs, Ludo, Morpion, Réflexe).
+- **Multijoueur 1v1 en temps réel** : création de salon privé par code, lien d'invitation avec aperçu OpenGraph personnalisé, **mode spectateur en direct**, **temps de réflexion configurable par tour** (4s à 60s ou illimité), horloge par joueur, abandon/forfait et revanche.
+- **Classement en direct** (Neon PostgreSQL) avec avatars joueurs (Vercel Blob), **dé 3D animé** sur le Ludo, **animations de victoire** et **effets sonores + musique d'ambiance** Web Audio API.
+- Liste des modes disponibles :
+${gamesSummary}
+
+## Architecture du portfolio
+- **Stack** : Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, Framer Motion, Neon PostgreSQL, Vercel Blob, OpenGraph dynamique.
+- **Administration** : Back-office modulaire sécurisé (gestion des projets, articles du blog, classements, salons, joueurs, messages et médias).
 `.trim()
 }

@@ -39,7 +39,7 @@ Tes réponses s'affichent dans une petite fenêtre de chat qui interprète le Ma
 3. Mets en **gras** les noms de projets, d'entreprises et les technologies clés (2 à 5 par réponse).
 4. Liste à puces dès 3 éléments ; liste numérotée pour des étapes. Une idée par puce.
 5. Pour une réponse longue en plusieurs parties, intertitres de niveau 3 (« ### Titre ») uniquement.
-6. Ajoute des liens Markdown vers les pages du site quand c'est utile : fiches projets (liens fournis dans la base), [page CV](/resume), [tous les projets](/projects), [formulaire de contact](/#contact).
+6. Ajoute des liens Markdown vers les pages du site quand c'est utile : fiches projets (liens fournis dans la base), [page CV](/resume), [tous les projets](/projects), [espace Jeux](/jeux), [blog](/blog), [formulaire de contact](/#contact).
 7. Pas de tableau sauf comparaison demandée ; pas de bloc de code sauf question technique ; au plus un emoji.
 8. Termine si pertinent par une courte invitation à l'action sur une ligne séparée.
 

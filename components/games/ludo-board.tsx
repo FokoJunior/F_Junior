@@ -3,6 +3,7 @@
 import { useMemo } from "react"
 import { Dices, Star, Trophy } from "lucide-react"
 
+import LudoDice3D from "@/components/games/ludo-dice-3d"
 import {
   getLegalLudoMoves,
   HOME_STRETCH_COORDS,
@@ -23,8 +24,6 @@ interface LudoBoardProps {
   hostLabel: string
   guestLabel: string
 }
-
-const DICE_FACES = ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"]
 
 export default function LudoBoard({
   state,
@@ -100,17 +99,13 @@ export default function LudoBoard({
         </div>
 
         <div className="flex items-center gap-3">
-          {state.dice !== null && (
-            <span
-              className={cn(
-                "grid h-11 w-11 place-items-center rounded-md border border-border bg-card text-3xl leading-none shadow-sm",
-                rolling && "animate-bounce",
-              )}
-              aria-label={`Dé : ${state.dice}`}
-            >
-              {DICE_FACES[state.dice]}
-            </span>
-          )}
+          <LudoDice3D
+            value={state.dice}
+            rolling={rolling}
+            canRoll={canControlTurn && !state.hasRolled}
+            onRoll={onRoll}
+            accent={state.turn}
+          />
 
           <button
             type="button"
@@ -119,7 +114,7 @@ export default function LudoBoard({
             className="btn btn-solid h-10 px-4 text-xs"
           >
             <Dices className={cn("h-4 w-4", rolling && "animate-spin")} />
-            Lancer le dé
+            {rolling ? "Lancer…" : "Lancer le dé"}
           </button>
         </div>
       </div>
@@ -184,12 +179,12 @@ export default function LudoBoard({
                           style={{ transform: `translate(${offset}px, ${-offset}px)` }}
                           aria-label={`${tok.side} pion ${tok.idx + 1}`}
                           className={cn(
-                            "absolute h-[72%] w-[72%] rounded-full border-2 shadow-sm transition-transform",
+                            "absolute h-[76%] w-[76%] rounded-full border-2 transition-all duration-200",
                             tok.side === "host"
-                              ? "border-white bg-primary"
-                              : "border-slate-950 bg-amber-400",
+                              ? "border-white/90 bg-gradient-to-br from-sky-400 via-blue-600 to-indigo-800 shadow-[inset_0_2px_3px_rgba(255,255,255,0.65),0_3px_5px_rgba(0,0,0,0.45)]"
+                              : "border-amber-100/90 bg-gradient-to-br from-yellow-300 via-amber-500 to-orange-700 shadow-[inset_0_2px_3px_rgba(255,255,255,0.7),0_3px_5px_rgba(0,0,0,0.45)]",
                             isMovable &&
-                              "z-20 scale-110 cursor-pointer ring-2 ring-foreground animate-pulse",
+                              "z-20 scale-115 cursor-pointer ring-2 ring-white animate-bounce",
                           )}
                         />
                       )
