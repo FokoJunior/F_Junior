@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { Bot, Gauge, Play, Sparkles, Swords, Users, X } from "lucide-react"
+import { Bot, Check, Gauge, Play, Share2, Sparkles, Swords, Users, X } from "lucide-react"
 
 import GameCover from "@/components/games/game-cover"
 import { useLanguage } from "@/components/language-provider"
@@ -204,6 +204,7 @@ export default function GameLaunchModal({
   const { language } = useLanguage()
   const [playMode, setPlayMode] = useState<"solo" | "duo">("solo")
   const [difficulty, setDifficulty] = useState<string>("")
+  const [copied, setCopied] = useState<boolean>(false)
 
   useEffect(() => {
     if (!group) return
@@ -233,6 +234,26 @@ export default function GameLaunchModal({
     : null
   const meta = targetId ? getGameMeta(targetId) : null
   const hasBothModes = Boolean(group?.soloId && group?.duoId)
+
+  const handleShare = async () => {
+    if (typeof window === "undefined" || !targetId || !meta) return
+    const shareUrl = `${window.location.origin}/jeux?game=${targetId}`
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share({
+          title: `F_Junior — ${tr(meta.title, language)}`,
+          text: language === "fr" ? `Viens jouer à ${tr(meta.title, language)} !` : `Come play ${tr(meta.title, language)}!`,
+          url: shareUrl,
+        })
+        return
+      } catch {}
+    }
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 2000)
+    } catch {}
+  }
 
   const handleConfirm = () => {
     if (!targetId) return
@@ -403,20 +424,39 @@ export default function GameLaunchModal({
               )}
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
-                <button type="button" onClick={onClose} className="btn btn-outline h-10 px-4 text-xs">
-                  {language === "fr" ? "Annuler" : "Cancel"}
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4">
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="btn btn-outline h-10 px-3.5 text-xs text-muted-foreground hover:border-primary hover:text-foreground"
+                >
+                  {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Share2 className="h-3.5 w-3.5 text-primary" />}
+                  <span>
+                    {copied
+                      ? language === "fr"
+                        ? "Lien copié !"
+                        : "Link copied!"
+                      : language === "fr"
+                        ? "Partager le lien"
+                        : "Share game link"}
+                  </span>
                 </button>
-                <button type="button" onClick={handleConfirm} className="btn btn-solid h-10 px-6 text-xs">
-                  <Play className="h-3.5 w-3.5 fill-current" />
-                  {playMode === "duo"
-                    ? language === "fr"
-                      ? "Ouvrir le salon 1v1"
-                      : "Open 1v1 Lobby"
-                    : language === "fr"
-                      ? "Lancer la partie"
-                      : "Start game"}
-                </button>
+
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={onClose} className="btn btn-outline h-10 px-4 text-xs">
+                    {language === "fr" ? "Annuler" : "Cancel"}
+                  </button>
+                  <button type="button" onClick={handleConfirm} className="btn btn-solid h-10 px-6 text-xs">
+                    <Play className="h-3.5 w-3.5 fill-current" />
+                    {playMode === "duo"
+                      ? language === "fr"
+                        ? "Ouvrir le salon 1v1"
+                        : "Open 1v1 Lobby"
+                      : language === "fr"
+                        ? "Lancer la partie"
+                        : "Start game"}
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>

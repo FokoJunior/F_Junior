@@ -191,6 +191,7 @@ export default function GamesHub() {
   const [initialRoomCode, setInitialRoomCode] = useState<string | null>(null)
   const [activeRoomCode, setActiveRoomCode] = useState<string | null>(null)
   const [sharedCopied, setSharedCopied] = useState<boolean>(false)
+  const [copiedCardId, setCopiedCardId] = useState<string | null>(null)
   const [soundOn, setSoundOn] = useState<boolean>(true)
   const [ambianceOn, setAmbianceOn] = useState<boolean>(false)
   const [launchModalGroup, setLaunchModalGroup] = useState<UnifiedGameGroup | null>(null)
@@ -444,6 +445,28 @@ export default function GamesHub() {
       await navigator.clipboard.writeText(shareUrl)
       setSharedCopied(true)
       window.setTimeout(() => setSharedCopied(false), 2000)
+    } catch {}
+  }
+
+  const shareGameById = async (id: GameId, title: string, e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    if (typeof window === "undefined") return
+    const shareUrl = `${window.location.origin}/jeux?game=${id}`
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share({
+          title: `F_Junior — ${title}`,
+          text: language === "fr" ? `Viens jouer à ${title} sur F_Junior Games !` : `Come play ${title} on F_Junior Games!`,
+          url: shareUrl,
+        })
+        return
+      } catch {}
+    }
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopiedCardId(id)
+      playClick()
+      window.setTimeout(() => setCopiedCardId(null), 2000)
     } catch {}
   }
 
@@ -1281,17 +1304,33 @@ export default function GamesHub() {
                             : tr(gamesCopy.noRecord, language)}
                         </span>
 
-                        <span
-                          className={cn(
-                            "inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs uppercase tracking-wider transition-colors",
-                            isSelected
-                              ? "bg-primary text-primary-foreground"
-                              : "border border-border text-foreground group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground",
-                          )}
-                        >
-                          <Play className="h-3 w-3" />
-                          {isSelected ? tr(gamesCopy.playing, language) : tr(gamesCopy.play, language)}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={(e) => shareGameById(game.id, tr(game.title, language), e)}
+                            title={language === "fr" ? "Partager le lien de ce jeu" : "Share game link"}
+                            aria-label={language === "fr" ? "Partager le lien de ce jeu" : "Share game link"}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-background/80 text-muted-foreground transition-all hover:border-primary hover:text-primary active:scale-95"
+                          >
+                            {copiedCardId === game.id ? (
+                              <Check className="h-3.5 w-3.5 text-emerald-500" />
+                            ) : (
+                              <Share2 className="h-3.5 w-3.5" />
+                            )}
+                          </button>
+
+                          <span
+                            className={cn(
+                              "inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs uppercase tracking-wider transition-colors",
+                              isSelected
+                                ? "bg-primary text-primary-foreground"
+                                : "border border-border text-foreground group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground",
+                            )}
+                          >
+                            <Play className="h-3 w-3" />
+                            {isSelected ? tr(gamesCopy.playing, language) : tr(gamesCopy.play, language)}
+                          </span>
+                        </div>
                       </div>
                     </button>
                   </motion.li>
