@@ -34,12 +34,14 @@ const VALID_GAMES: GameId[] = [
   "simon",
   "puzzle",
   "chess",
+  "ludo",
   "connect4",
   "duo-tictactoe",
   "rps",
   "quiz",
   "duo-reaction",
   "duo-chess",
+  "duo-ludo",
 ]
 
 const LOWER_IS_BETTER: Record<GameId, boolean> = {
@@ -54,12 +56,14 @@ const LOWER_IS_BETTER: Record<GameId, boolean> = {
   simon: false,
   puzzle: true,
   chess: false,
+  ludo: false,
   connect4: false,
   "duo-tictactoe": false,
   rps: false,
   quiz: false,
   "duo-reaction": false,
   "duo-chess": false,
+  "duo-ludo": false,
 }
 
 const SCORE_BOUNDS: Record<GameId, { min: number; max: number }> = {
@@ -74,12 +78,14 @@ const SCORE_BOUNDS: Record<GameId, { min: number; max: number }> = {
   simon: { min: 1, max: 200 },
   puzzle: { min: 5, max: 2_000 },
   chess: { min: 1, max: 10_000 },
+  ludo: { min: 1, max: 10_000 },
   connect4: { min: 1, max: 10_000 },
   "duo-tictactoe": { min: 1, max: 10_000 },
   rps: { min: 1, max: 10_000 },
   quiz: { min: 1, max: 10_000 },
   "duo-reaction": { min: 1, max: 10_000 },
   "duo-chess": { min: 1, max: 10_000 },
+  "duo-ludo": { min: 1, max: 10_000 },
 }
 
 const PRIMARY_FILE = path.join(process.cwd(), "data", "leaderboard.json")
@@ -98,12 +104,14 @@ function emptyStore(): StoreData {
     simon: [],
     puzzle: [],
     chess: [],
+    ludo: [],
     connect4: [],
     "duo-tictactoe": [],
     rps: [],
     quiz: [],
     "duo-reaction": [],
     "duo-chess": [],
+    "duo-ludo": [],
   }
 }
 

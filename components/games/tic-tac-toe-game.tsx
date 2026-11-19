@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Bot, RotateCcw, Trophy, Users } from "lucide-react"
 
+import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
 import { tr } from "@/lib/i18n"
@@ -92,9 +93,9 @@ function pickBestMove(board: Cell[], mode: Mode): number {
   return bestMoves[Math.floor(Math.random() * bestMoves.length)]
 }
 
-export default function TicTacToeGame() {
+export default function TicTacToeGame({ initialMode = "impossible" }: { initialMode?: Mode } = {}) {
   const { language } = useLanguage()
-  const [mode, setMode] = useState<Mode>("impossible")
+  const [mode, setMode] = useState<Mode>(initialMode)
   const [board, setBoard] = useState<Cell[]>(Array(9).fill(null))
   const [turn, setTurn] = useState<"X" | "O">("X")
   const [scores, setScores] = useState({ x: 0, draws: 0, o: 0 })
@@ -239,8 +240,31 @@ export default function TicTacToeGame() {
         </div>
       </div>
 
+      {/* End of game animation */}
+      <GameEndBanner
+        show={Boolean(winner)}
+        outcome={
+          winner === "draw"
+            ? "draw"
+            : winner === "X" || mode === "pvp"
+              ? "win"
+              : "lose"
+        }
+        title={statusText}
+        subtitle={
+          winner === "draw"
+            ? language === "fr"
+              ? "Match serré — essayez encore !"
+              : "Close match — try again!"
+            : `${scores.x} — ${scores.o}`
+        }
+        primaryActionLabel={tr(gamesCopy.restart, language)}
+        onPrimaryAction={resetBoard}
+        className="max-w-[440px]"
+      />
+
       {/* Status */}
-      <p className="font-serif text-2xl">{statusText}</p>
+      {!winner && <p className="font-serif text-2xl">{statusText}</p>}
 
       {/* 3x3 Grid */}
       <div className="grid aspect-square w-full max-w-[420px] grid-cols-3 grid-rows-3 gap-3">

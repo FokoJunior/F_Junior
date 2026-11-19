@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { AnimatePresence, motion } from "framer-motion"
+import { motion } from "framer-motion"
 import { Chess } from "chess.js"
 import {
   Check,
@@ -9,6 +9,7 @@ import {
   Clock,
   Copy,
   Crown,
+  Dices,
   Eye,
   Flag,
   Hand,
@@ -30,6 +31,8 @@ import {
 import type { DuoGameType, DuoRoom, RpsChoice } from "@/app/api/games/rooms/route"
 import { useConfirm } from "@/components/confirm-provider"
 import ChessBoard from "@/components/games/chess-board"
+import GameEndBanner, { type GameEndOutcome } from "@/components/games/game-end-overlay"
+import LudoBoard from "@/components/games/ludo-board"
 import { useLanguage } from "@/components/language-provider"
 import { getPlayerId, looksLikeRoomCode, readScore, saveBestScore, setPlayerName } from "@/lib/games"
 import { cn } from "@/lib/utils"
@@ -58,6 +61,7 @@ const DUO_MODES: {
   { id: "quiz", Icon: HelpCircle, fr: "Quiz Dev 1v1", en: "Dev Quiz 1v1", subFr: "5 questions", subEn: "5 questions" },
   { id: "reaction", Icon: Zap, fr: "Duel Réflexe", en: "Reflex Duel", subFr: "3 manches · ms", subEn: "3 rounds · ms" },
   { id: "chess", Icon: Crown, fr: "Échecs 1v1", en: "Chess 1v1", subFr: "8×8 officiel", subEn: "Official 8×8" },
+  { id: "ludo", Icon: Dices, fr: "Ludo 1v1", en: "Ludo 1v1", subFr: "Plateau 15×15", subEn: "15×15 board" },
 ]
 
 const RPS_LABELS: Record<RpsChoice, { emoji: string; fr: string; en: string }> = {
@@ -65,17 +69,6 @@ const RPS_LABELS: Record<RpsChoice, { emoji: string; fr: string; en: string }> =
   paper: { emoji: "📄", fr: "Feuille", en: "Paper" },
   scissors: { emoji: "✂️", fr: "Ciseaux", en: "Scissors" },
 }
-
-const BURST_PARTICLES = [
-  { x: -120, y: -70, color: "#3b82f6" },
-  { x: -75, y: -110, color: "#f59e0b" },
-  { x: -25, y: -125, color: "#10b981" },
-  { x: 30, y: -120, color: "#60a5fa" },
-  { x: 85, y: -105, color: "#f97316" },
-  { x: 125, y: -65, color: "#8b5cf6" },
-  { x: -100, y: 40, color: "#38bdf8" },
-  { x: 105, y: 45, color: "#fbbf24" },
-]
 
 function fmtClock(ms: number): string {
   const totalSec = Math.max(0, Math.floor(ms / 1000))
@@ -459,7 +452,7 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
                 {language === "fr" ? "01 · Créer un salon" : "01 · Create a room"}
               </p>
 
-              {(gameType === "tictactoe" || gameType === "connect4" || gameType === "rps" || gameType === "chess") && (
+              {(gameType === "tictactoe" || gameType === "connect4" || gameType === "rps" || gameType === "chess" || gameType === "ludo") && (
                 <div className="mb-4">
                   <p className="eyebrow mb-2 inline-flex items-center gap-1.5 text-foreground">
                     <Clock className="h-3.5 w-3.5 text-primary" />
@@ -581,13 +574,15 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
     ((room.gameType === "tictactoe" && room.turn === "X") ||
       (room.gameType === "connect4" && room.c4Turn === "R") ||
       (room.gameType === "rps" && room.rpsHostChoice === null) ||
-      (room.gameType === "chess" && chessTurnColor === chessHostColor))
+      (room.gameType === "chess" && chessTurnColor === chessHostColor) ||
+      (room.gameType === "ludo" && room.ludoState.turn === "host"))
   const isGuestTurnActive =
     room.status === "playing" &&
     ((room.gameType === "tictactoe" && room.turn === "O") ||
       (room.gameType === "connect4" && room.c4Turn === "Y") ||
       (room.gameType === "rps" && room.rpsGuestChoice === null) ||
-      (room.gameType === "chess" && chessTurnColor === chessGuestColor))
+      (room.gameType === "chess" && chessTurnColor === chessGuestColor) ||
+      (room.gameType === "ludo" && room.ludoState.turn === "guest"))
 
   const hostLiveMs = (room.hostElapsedMs || 0) + (isHostTurnActive ? liveTurnDelta : 0)
   const guestLiveMs = (room.guestElapsedMs || 0) + (isGuestTurnActive ? liveTurnDelta : 0)
@@ -641,6 +636,8 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
       side = room.reactionWinner
     } else if (room.gameType === "chess") {
       side = room.chessWinner
+    } else if (room.gameType === "ludo") {
+      side = room.ludoState.winner
     }
 
     if (side === "draw") {
@@ -822,7 +819,7 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
       {room.status === "playing" &&
         room.turnLimitSec > 0 &&
         room.turnStartedAt &&
-        (room.gameType === "tictactoe" || room.gameType === "connect4" || room.gameType === "rps" || room.gameType === "chess") && (() => {
+        (room.gameType === "tictactoe" || room.gameType === "connect4" || room.gameType === "rps" || room.gameType === "chess" || room.gameType === "ludo") && (() => {
           const limitMs = room.turnLimitSec * 1000
           const remainingMs = Math.max(0, limitMs - liveTurnDelta)
           const pct = Math.max(0, Math.min(100, (remainingMs / limitMs) * 100))
@@ -866,73 +863,28 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
       )}
 
       {/* VICTORY / FORFEIT / ENDED CELEBRATION BANNER WITH ANIMATION */}
-      <AnimatePresence>
-        {winnerInfo && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 12 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 280, damping: 22 }}
-            className={cn(
-              "relative flex w-full flex-col items-center gap-3 overflow-hidden rounded-md border p-6 text-center",
-              room.status === "ended"
-                ? "border-border bg-card"
-                : winnerInfo.isWin
-                  ? "border-primary/50 bg-primary/10"
-                  : "border-amber-500/40 bg-amber-500/10",
-            )}
-          >
-            {/* Animated confetti / sparkle burst */}
-            {winnerInfo.isWin && (
-              <div aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                {BURST_PARTICLES.map((p, idx) => (
-                  <motion.span
-                    key={idx}
-                    initial={{ x: 0, y: 0, scale: 0, opacity: 1 }}
-                    animate={{ x: p.x, y: p.y, scale: [0, 1.3, 0.8], opacity: [1, 1, 0] }}
-                    transition={{ duration: 1.1, delay: idx * 0.04, ease: "easeOut" }}
-                    className="absolute h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: p.color }}
-                  />
-                ))}
-              </div>
-            )}
-
-            <motion.div
-              initial={{ rotate: -15, scale: 0.6 }}
-              animate={{ rotate: 0, scale: 1 }}
-              transition={{ type: "spring", stiffness: 320, damping: 16 }}
-              className="grid h-12 w-12 place-items-center rounded-full bg-primary/15 text-primary"
-            >
-              {room.status === "ended" ? (
-                <Power className="h-6 w-6" />
-              ) : room.endReason === "forfeit" ? (
-                <Flag className="h-6 w-6" />
-              ) : winnerInfo.isWin ? (
-                <Trophy className="h-6 w-6" />
-              ) : (
-                <Sparkles className="h-6 w-6" />
-              )}
-            </motion.div>
-
-            <h4 className="font-serif text-3xl leading-tight">{winnerInfo.title}</h4>
-            <p className="font-mono text-xs text-muted-foreground">{winnerInfo.subtitle}</p>
-
-            <div className="mt-1 flex flex-wrap justify-center gap-2">
-              {!isSpectator && room.status === "finished" && (
-                <button type="button" onClick={handleRematch} className="btn btn-solid h-10 px-5">
-                  <RotateCcw className="h-4 w-4" />
-                  {language === "fr" ? "Revanche" : "Rematch"}
-                </button>
-              )}
-              <button type="button" onClick={handleLeaveLocal} className="btn btn-outline h-10 px-5">
-                <LogOut className="h-4 w-4" />
-                {language === "fr" ? "Retour au lobby" : "Back to lobby"}
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <GameEndBanner
+        show={Boolean(winnerInfo)}
+        outcome={
+          (room.status === "ended"
+            ? "ended"
+            : room.endReason === "forfeit"
+              ? winnerInfo?.isWin
+                ? "win"
+                : "forfeit"
+              : winnerInfo?.isDraw
+                ? "draw"
+                : winnerInfo?.isWin
+                  ? "win"
+                  : "lose") as GameEndOutcome
+        }
+        title={winnerInfo?.title ?? ""}
+        subtitle={winnerInfo?.subtitle}
+        primaryActionLabel={!isSpectator && room.status === "finished" ? (language === "fr" ? "Revanche" : "Rematch") : undefined}
+        onPrimaryAction={!isSpectator && room.status === "finished" ? handleRematch : undefined}
+        secondaryActionLabel={language === "fr" ? "Retour au lobby" : "Back to lobby"}
+        onSecondaryAction={handleLeaveLocal}
+      />
 
       {/* 1. CONNECT 4 (PUISSANCE 4) */}
       {room.status !== "waiting" && room.status !== "ended" && room.gameType === "connect4" && (
@@ -1196,6 +1148,18 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
             })()
           )}
         </div>
+      )}
+
+      {/* 7. LUDO 1v1 */}
+      {room.status !== "waiting" && room.status !== "ended" && room.gameType === "ludo" && (
+        <LudoBoard
+          state={room.ludoState}
+          canInteractSide={isHost ? "host" : isGuest ? "guest" : null}
+          onRoll={() => sendRoomAction({ action: "ludo_roll" })}
+          onMoveToken={(tokenIdx) => sendRoomAction({ action: "ludo_move", tokenIdx })}
+          hostLabel={room.host.name}
+          guestLabel={room.guest?.name || "Adversaire"}
+        />
       )}
 
       {/* 6. CHESS 1v1 */}

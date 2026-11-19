@@ -6,11 +6,13 @@ import {
   ArrowLeft,
   Bomb,
   BookOpen,
+  Bot,
   Brain,
   Camera,
   Check,
   CircleDot,
   Crown,
+  Dices,
   Gamepad2,
   Grid2x2,
   Hand,
@@ -27,6 +29,7 @@ import {
   Play,
   RefreshCw,
   Share2,
+  Swords,
   Target,
   Trash2,
   Trophy,
@@ -45,6 +48,14 @@ import ChessGame from "@/components/games/chess-game"
 import DuoArena from "@/components/games/duo-arena"
 import Game2048 from "@/components/games/game-2048"
 import GameCover from "@/components/games/game-cover"
+import GameLaunchModal, {
+  findGroupByGameId,
+  getGameMeta,
+  UNIFIED_GAME_GROUPS,
+  type UnifiedGameGroup,
+} from "@/components/games/game-launch-modal"
+import GamesHeroShowcase from "@/components/games/games-hero-showcase"
+import LudoGame from "@/components/games/ludo-game"
 import MemoryGame from "@/components/games/memory-game"
 import MinesweeperGame from "@/components/games/minesweeper-game"
 import PuzzleGame from "@/components/games/puzzle-game"
@@ -88,12 +99,14 @@ const GAME_ICONS: Record<GameId, LucideIcon> = {
   simon: Music,
   puzzle: ImageIcon,
   chess: Crown,
+  ludo: Dices,
   connect4: CircleDot,
   "duo-tictactoe": Users,
   rps: Hand,
   quiz: HelpCircle,
   "duo-reaction": Zap,
   "duo-chess": Crown,
+  "duo-ludo": Dices,
 }
 
 const DUO_ID_TO_TYPE: Partial<Record<GameId, DuoGameType>> = {
@@ -103,6 +116,7 @@ const DUO_ID_TO_TYPE: Partial<Record<GameId, DuoGameType>> = {
   quiz: "quiz",
   "duo-reaction": "reaction",
   "duo-chess": "chess",
+  "duo-ludo": "ludo",
 }
 
 const DUO_TYPE_TO_ID: Record<DuoGameType, GameId> = {
@@ -112,6 +126,7 @@ const DUO_TYPE_TO_ID: Record<DuoGameType, GameId> = {
   quiz: "quiz",
   reaction: "duo-reaction",
   chess: "duo-chess",
+  ludo: "duo-ludo",
 }
 
 export default function GamesHub() {
@@ -142,18 +157,23 @@ export default function GamesHub() {
     simon: null,
     puzzle: null,
     chess: null,
+    ludo: null,
     connect4: null,
     "duo-tictactoe": null,
     rps: null,
     quiz: null,
     "duo-reaction": null,
     "duo-chess": null,
+    "duo-ludo": null,
   })
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [loadingBoard, setLoadingBoard] = useState<boolean>(false)
   const [initialRoomCode, setInitialRoomCode] = useState<string | null>(null)
   const [activeRoomCode, setActiveRoomCode] = useState<string | null>(null)
   const [sharedCopied, setSharedCopied] = useState<boolean>(false)
+  const [launchModalGroup, setLaunchModalGroup] = useState<UnifiedGameGroup | null>(null)
+  const [launchInitialMode, setLaunchInitialMode] = useState<"solo" | "duo" | undefined>(undefined)
+  const [launchConfig, setLaunchConfig] = useState<{ difficulty?: string; nonce: number }>({ nonce: 0 })
 
   const arenaRef = useRef<HTMLElement | null>(null)
 
@@ -170,12 +190,14 @@ export default function GamesHub() {
       simon: null,
       puzzle: null,
       chess: null,
+      ludo: null,
       connect4: null,
       "duo-tictactoe": null,
       rps: null,
       quiz: null,
       "duo-reaction": null,
       "duo-chess": null,
+      "duo-ludo": null,
     }
     for (const g of gamesList) {
       next[g.id] = readScore(g.scoreKey)
@@ -266,12 +288,17 @@ export default function GamesHub() {
     })),
   ]
 
-  const count = (f: Filter) => gamesList.filter((g) => f === "all" || g.category === f).length
-  const visibleGames = gamesList.filter((g) => filter === "all" || g.category === filter)
+  const count = (f: Filter) =>
+    UNIFIED_GAME_GROUPS.filter((g) => f === "all" || g.categories.includes(f)).length
+  const visibleGroups = UNIFIED_GAME_GROUPS.filter(
+    (g) => filter === "all" || g.categories.includes(filter),
+  )
   const activeGame = gamesList.find((g) => g.id === activeId) ?? gamesList[0]
+  const activeGroup = findGroupByGameId(activeId)
 
-  const selectGame = (id: GameId) => {
+  const selectGame = (id: GameId, difficulty?: string) => {
     setActiveId(id)
+    setLaunchConfig((prev) => ({ difficulty, nonce: prev.nonce + 1 }))
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href)
       url.searchParams.delete("room")
@@ -280,6 +307,43 @@ export default function GamesHub() {
     }
     arenaRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
   }
+
+  const openGameLauncher = (group: UnifiedGameGroup, preferredMode?: "solo" | "duo") => {
+    setLaunchInitialMode(preferredMode ?? (filter === "duo" && group.duoId ? "duo" : undefined))
+    setLaunchModalGroup(group)
+  }
+
+  const handleHeroSelectGame = (id: GameId) => {
+    const grp = findGroupByGameId(id)
+    const isDuoId = grp.duoId === id && grp.soloId !== id
+    openGameLauncher(grp, isDuoId ? "duo" : "solo")
+  }
+
+  const handleQuickJoinRoom = useCallback((code: string) => {
+    const clean = code.trim().toUpperCase()
+    if (!clean) return
+    setInitialRoomCode(clean)
+    fetch(`/api/games/rooms?code=${encodeURIComponent(clean)}`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        const gType = data?.room?.gameType as DuoGameType | undefined
+        if (gType && DUO_TYPE_TO_ID[gType]) {
+          setActiveId(DUO_TYPE_TO_ID[gType])
+        } else {
+          setActiveId("connect4")
+        }
+      })
+      .catch(() => {
+        setActiveId("connect4")
+      })
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href)
+      url.searchParams.delete("game")
+      url.searchParams.set("room", clean)
+      window.history.replaceState({}, "", url.toString())
+    }
+    arenaRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }, [])
 
   const handleRoomChange = useCallback((code: string | null) => {
     setActiveRoomCode(code)
@@ -408,41 +472,61 @@ export default function GamesHub() {
             </span>
           </div>
 
-          <h1 className="mt-10 font-serif text-[clamp(3rem,10vw,9rem)] leading-[0.9] tracking-[-0.02em] text-white">
-            {tr(gamesCopy.title, language)}
-            <span className="text-primary">.</span>
-          </h1>
+          <div className="mt-8 grid gap-8 lg:mt-10 lg:grid-cols-12 lg:items-end">
+            <div className="lg:col-span-7">
+              <h1 className="font-serif text-[clamp(3rem,10vw,8.5rem)] leading-[0.9] tracking-[-0.02em] text-white">
+                {tr(gamesCopy.title, language)}
+                <span className="text-primary">.</span>
+              </h1>
 
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-white/80 sm:mt-8 sm:text-lg md:text-xl">
-            {tr(gamesCopy.intro, language)}
-          </p>
+              <p className="mt-6 max-w-2xl text-base leading-relaxed text-white/80 sm:mt-8 sm:text-lg md:text-xl">
+                {tr(gamesCopy.intro, language)}
+              </p>
 
-          <div
-            className="-mx-4 mt-8 flex flex-nowrap gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:mt-10 sm:flex-wrap sm:overflow-visible sm:px-0"
-            role="group"
-            aria-label={tr(gamesCopy.selectGame, language)}
-          >
-            {filters.map((f) => {
-              const active = filter === f.value
-              return (
-                <button
-                  key={f.value}
-                  type="button"
-                  onClick={() => setFilter(f.value)}
-                  data-active={active}
-                  aria-pressed={active}
-                  className={cn(
-                    "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3.5 font-mono text-[0.72rem] uppercase tracking-wider backdrop-blur-sm transition-colors",
-                    active
-                      ? "border-white bg-white text-[#0b0f17]"
-                      : "border-white/25 bg-[#0b0f17]/45 text-white/85 hover:border-white/60 hover:text-white",
-                  )}
-                >
-                  {f.label}
-                  <span className="opacity-65">{count(f.value)}</span>
-                </button>
-              )
-            })}
+              <div
+                className="-mx-4 mt-8 flex flex-nowrap gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:mt-10 sm:flex-wrap sm:overflow-visible sm:px-0"
+                role="group"
+                aria-label={tr(gamesCopy.selectGame, language)}
+              >
+                {filters.map((f) => {
+                  const active = filter === f.value
+                  return (
+                    <button
+                      key={f.value}
+                      type="button"
+                      onClick={() => setFilter(f.value)}
+                      data-active={active}
+                      aria-pressed={active}
+                      className={cn(
+                        "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3.5 font-mono text-[0.72rem] uppercase tracking-wider backdrop-blur-sm transition-colors",
+                        active
+                          ? "border-white bg-white text-[#0b0f17]"
+                          : "border-white/25 bg-[#0b0f17]/45 text-white/85 hover:border-white/60 hover:text-white",
+                      )}
+                    >
+                      {f.label}
+                      <span className="opacity-65">{count(f.value)}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="lg:col-span-5">
+              <GamesHeroShowcase
+                onSelectGame={handleHeroSelectGame}
+                onQuickJoinRoom={handleQuickJoinRoom}
+                topLeader={
+                  leaderboard[0]
+                    ? {
+                        playerName: leaderboard[0].name,
+                        score: leaderboard[0].score,
+                        gameTitle: tr(activeGame.title, language),
+                      }
+                    : null
+                }
+              />
+            </div>
           </div>
         </div>
       </header>
@@ -466,6 +550,37 @@ export default function GamesHub() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
+                {activeGroup.soloId && activeGroup.duoId && (
+                  <div className="inline-flex items-center rounded-full border border-border bg-background p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => selectGame(activeGroup.soloId!)}
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider transition-colors",
+                        activeId === activeGroup.soloId
+                          ? "bg-primary text-primary-foreground font-semibold"
+                          : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      <Bot className="h-3 w-3" />
+                      Solo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => selectGame(activeGroup.duoId!)}
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider transition-colors",
+                        activeId === activeGroup.duoId
+                          ? "bg-primary text-primary-foreground font-semibold"
+                          : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      <Swords className="h-3 w-3" />
+                      1v1
+                    </button>
+                  </div>
+                )}
+
                 {playerName && (
                   <button
                     type="button"
@@ -506,27 +621,26 @@ export default function GamesHub() {
               </div>
             </div>
 
-            {/* Horizontal swipeable game rail on mobile, clean wrap on desktop */}
+            {/* Horizontal swipeable unified game rail (no Solo/1v1 duplicates) */}
             <div className="-mx-4 flex flex-nowrap items-center gap-1.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:px-0 lg:flex-wrap lg:overflow-visible lg:pb-0">
-              {gamesList.map((g) => (
-                <button
-                  key={g.id}
-                  type="button"
-                  onClick={() => {
-                    setActiveId(g.id)
-                    if (typeof window !== "undefined") {
-                      const url = new URL(window.location.href)
-                      url.searchParams.delete("room")
-                      url.searchParams.set("game", g.id)
-                      window.history.replaceState({}, "", url.toString())
-                    }
-                  }}
-                  data-active={activeId === g.id}
-                  className="chip shrink-0"
-                >
-                  {tr(g.title, language)}
-                </button>
-              ))}
+              {UNIFIED_GAME_GROUPS.map((grp) => {
+                const primary = getGameMeta(grp.primaryId)
+                const isGroupActive = activeId === grp.soloId || activeId === grp.duoId
+                return (
+                  <button
+                    key={grp.key}
+                    type="button"
+                    onClick={() => openGameLauncher(grp)}
+                    data-active={isGroupActive}
+                    className="chip shrink-0"
+                  >
+                    {tr(primary.title, language)}
+                    {grp.soloId && grp.duoId && (
+                      <span className="ml-0.5 text-[9px] opacity-65">· 1v1</span>
+                    )}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
@@ -547,7 +661,7 @@ export default function GamesHub() {
               <div className="relative z-10 w-full">
                 <AnimatePresence mode="wait">
                   <motion.div
-                    key={activeId}
+                    key={`${activeId}-${launchConfig.nonce}`}
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -12 }}
@@ -555,15 +669,42 @@ export default function GamesHub() {
                   >
                     {activeId === "snake" && <SnakeGame />}
                     {activeId === "2048" && <Game2048 />}
-                    {activeId === "tictactoe" && <TicTacToeGame />}
-                    {activeId === "memory" && <MemoryGame />}
+                    {activeId === "tictactoe" && (
+                      <TicTacToeGame
+                        initialMode={
+                          (launchConfig.difficulty as "impossible" | "normal" | "pvp" | undefined) ?? "impossible"
+                        }
+                      />
+                    )}
+                    {activeId === "memory" && (
+                      <MemoryGame
+                        initialPairs={launchConfig.difficulty === "6" ? 6 : 8}
+                      />
+                    )}
                     {activeId === "reaction" && <ReactionGame />}
                     {activeId === "breakout" && <BreakoutGame />}
                     {activeId === "minesweeper" && <MinesweeperGame />}
                     {activeId === "typing" && <TypingGame />}
                     {activeId === "simon" && <SimonGame />}
-                    {activeId === "puzzle" && <PuzzleGame />}
-                    {activeId === "chess" && <ChessGame />}
+                    {activeId === "puzzle" && (
+                      <PuzzleGame
+                        initialSize={launchConfig.difficulty === "4" ? 4 : 3}
+                      />
+                    )}
+                    {activeId === "chess" && (
+                      <ChessGame
+                        initialMode={
+                          (launchConfig.difficulty as "easy" | "normal" | "hard" | "pvp" | undefined) ?? "normal"
+                        }
+                      />
+                    )}
+                    {activeId === "ludo" && (
+                      <LudoGame
+                        initialMode={
+                          (launchConfig.difficulty as "easy" | "normal" | "hard" | "pvp" | undefined) ?? "normal"
+                        }
+                      />
+                    )}
                     {DUO_ID_TO_TYPE[activeId] && (
                       <DuoArena
                         key={activeId}
@@ -933,16 +1074,26 @@ export default function GamesHub() {
 
           <motion.ul layout className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <AnimatePresence mode="popLayout">
-              {visibleGames.map((game) => {
-                const index = gamesList.indexOf(game)
+              {visibleGroups.map((grp, idx) => {
+                const displayId = filter === "duo" && grp.duoId ? grp.duoId : grp.primaryId
+                const game = getGameMeta(displayId)
                 const Icon = GAME_ICONS[game.id]
-                const isSelected = activeId === game.id
-                const best = records[game.id]
+                const isSelected = activeId === grp.soloId || activeId === grp.duoId
+                const hasBoth = Boolean(grp.soloId && grp.duoId)
+                const soloBest = grp.soloId ? records[grp.soloId] : null
+                const duoBest = grp.duoId ? records[grp.duoId] : null
+                const best = filter === "duo" && grp.duoId ? duoBest : soloBest ?? duoBest
+                const bestUnit =
+                  filter === "duo" && grp.duoId
+                    ? getGameMeta(grp.duoId).scoreUnit
+                    : soloBest !== null && grp.soloId
+                      ? getGameMeta(grp.soloId).scoreUnit
+                      : game.scoreUnit
 
                 return (
                   <motion.li
                     layout
-                    key={game.id}
+                    key={grp.key}
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.96 }}
@@ -950,7 +1101,7 @@ export default function GamesHub() {
                   >
                     <button
                       type="button"
-                      onClick={() => selectGame(game.id)}
+                      onClick={() => openGameLauncher(grp)}
                       data-cursor={tr(gamesCopy.play, language)}
                       className={cn(
                         "group flex h-full w-full flex-col justify-between overflow-hidden rounded-md border p-4 text-left transition-all duration-300 sm:p-5",
@@ -962,11 +1113,22 @@ export default function GamesHub() {
                       <div>
                         <GameCover gameId={game.id} />
 
-                        <div className="mt-4 flex items-center justify-between gap-3">
+                        <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
                           <span className="eyebrow inline-flex items-center gap-1.5">
                             <Icon className="h-3.5 w-3.5 text-primary" />
-                            {String(index + 1).padStart(2, "0")} · {tr(gameCategoryLabels[game.category], language)}
+                            {String(idx + 1).padStart(2, "0")} · {tr(gameCategoryLabels[game.category], language)}
                           </span>
+                          {hasBoth ? (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-primary/35 bg-primary/10 px-2 py-0.5 font-mono text-[10px] font-medium text-primary">
+                              <Users className="h-2.5 w-2.5" />
+                              Solo & 1v1
+                            </span>
+                          ) : grp.duoId && !grp.soloId ? (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-primary/35 bg-primary/10 px-2 py-0.5 font-mono text-[10px] font-medium text-primary">
+                              <Swords className="h-2.5 w-2.5" />
+                              1v1 Live
+                            </span>
+                          ) : null}
                         </div>
 
                         <h3 className="mt-2 font-serif text-3xl leading-tight transition-colors group-hover:text-primary">
@@ -981,7 +1143,7 @@ export default function GamesHub() {
                         <span className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
                           <Trophy className="h-3.5 w-3.5 text-primary" />
                           {best !== null
-                            ? formatScore(best, game.scoreUnit, language)
+                            ? formatScore(best, bestUnit, language)
                             : tr(gamesCopy.noRecord, language)}
                         </span>
 
@@ -1005,6 +1167,17 @@ export default function GamesHub() {
           </motion.ul>
         </div>
       </section>
+
+      {/* Brief Presentation + Solo/1v1 + Difficulty Picker Modal */}
+      <GameLaunchModal
+        group={launchModalGroup}
+        initialPlayMode={launchInitialMode}
+        onClose={() => setLaunchModalGroup(null)}
+        onLaunch={(gameId, difficulty) => {
+          setLaunchModalGroup(null)
+          selectGame(gameId, difficulty)
+        }}
+      />
     </>
   )
 }

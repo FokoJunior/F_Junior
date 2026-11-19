@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { Bomb, Flag, RotateCcw, Trophy } from "lucide-react"
 
+import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
 import { tr } from "@/lib/i18n"
@@ -247,29 +248,23 @@ export default function MinesweeperGame() {
         </div>
       </div>
 
-      {(status === "won" || status === "lost") && (
-        <div className="flex flex-col items-center gap-2.5 rounded-md border border-border bg-background px-6 py-4 text-center">
-          <p className="font-serif text-2xl">
-            {status === "won"
-              ? language === "fr"
-                ? `Zone déminée en ${seconds} s ! 🎉`
-                : `Board cleared in ${seconds}s! 🎉`
-              : language === "fr"
-                ? "Boum ! Vous avez touché une mine."
-                : "Boom! You hit a mine."}
-          </p>
-          {status === "won" && isNewBest && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 font-mono text-xs text-primary">
-              <Trophy className="h-3.5 w-3.5" />
-              {tr(gamesCopy.newRecord, language)}
-            </span>
-          )}
-          <button type="button" onClick={restart} className="btn btn-solid h-9 px-5">
-            <RotateCcw className="h-3.5 w-3.5" />
-            {tr(gamesCopy.restart, language)}
-          </button>
-        </div>
-      )}
+      <GameEndBanner
+        show={status === "won" || status === "lost"}
+        outcome={status === "won" ? "win" : "lose"}
+        title={
+          status === "won"
+            ? language === "fr"
+              ? `Zone déminée en ${seconds} s !`
+              : `Board cleared in ${seconds}s!`
+            : language === "fr"
+              ? "Boum ! Vous avez touché une mine."
+              : "Boom! You hit a mine."
+        }
+        isNewRecord={status === "won" && isNewBest}
+        primaryActionLabel={tr(gamesCopy.restart, language)}
+        onPrimaryAction={restart}
+        className="max-w-[460px]"
+      />
     </div>
   )
 }

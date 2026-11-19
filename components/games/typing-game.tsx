@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { RotateCcw, Trophy } from "lucide-react"
 
+import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
 import { tr } from "@/lib/i18n"
@@ -181,23 +182,19 @@ export default function TypingGame() {
         </button>
       </div>
 
-      {finished && (
-        <div className="flex w-full flex-col items-center gap-3 rounded-md border border-primary/30 bg-primary/5 p-5 text-center">
-          <p className="font-serif text-3xl">
-            {stats.wpm} {language === "fr" ? "mots / min" : "WPM"} · {stats.accuracy}%
-          </p>
-          {isNewBest && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 font-mono text-xs text-primary">
-              <Trophy className="h-3.5 w-3.5" />
-              {tr(gamesCopy.newRecord, language)}
-            </span>
-          )}
-          <button type="button" onClick={restart} className="btn btn-solid h-10 px-5">
-            <RotateCcw className="h-4 w-4" />
-            {tr(gamesCopy.restart, language)}
-          </button>
-        </div>
-      )}
+      <GameEndBanner
+        show={finished}
+        outcome="win"
+        title={`${stats.wpm} ${language === "fr" ? "mots / min" : "WPM"} · ${stats.accuracy}%`}
+        subtitle={
+          language === "fr"
+            ? "Session de 30 secondes terminée !"
+            : "30-second typing session completed!"
+        }
+        isNewRecord={isNewBest}
+        primaryActionLabel={tr(gamesCopy.restart, language)}
+        onPrimaryAction={restart}
+      />
     </div>
   )
 }

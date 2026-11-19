@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { RotateCcw, Trophy, Undo2 } from "lucide-react"
 
+import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
 import { tr } from "@/lib/i18n"
@@ -298,30 +299,38 @@ export default function Game2048() {
         </div>
 
         {(won && !keepPlaying) && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-md bg-background/85 p-6 text-center backdrop-blur-sm">
-            <p className="eyebrow text-primary">2048 !</p>
-            <p className="font-serif text-4xl">
-              {language === "fr" ? "Victoire !" : language === "de" ? "Gewonnen!" : language === "zh" ? "恭喜通关！" : "You win!"}
-            </p>
-            <div className="flex flex-wrap justify-center gap-2">
-              <button type="button" onClick={() => setKeepPlaying(true)} className="btn btn-solid">
-                {tr(gamesCopy.resume, language)}
-              </button>
-              <button type="button" onClick={restart} className="btn btn-outline">
-                {tr(gamesCopy.restart, language)}
-              </button>
-            </div>
+          <div className="absolute inset-0 flex items-center justify-center rounded-md bg-background/85 p-4 backdrop-blur-sm">
+            <GameEndBanner
+              show={won && !keepPlaying}
+              outcome="win"
+              title={
+                language === "fr"
+                  ? "2048 — Victoire !"
+                  : language === "de"
+                    ? "2048 — Gewonnen!"
+                    : language === "zh"
+                      ? "2048 — 恭喜通关！"
+                      : "2048 — You win!"
+              }
+              subtitle={`${score} pts`}
+              primaryActionLabel={tr(gamesCopy.resume, language)}
+              onPrimaryAction={() => setKeepPlaying(true)}
+              secondaryActionLabel={tr(gamesCopy.restart, language)}
+              onSecondaryAction={restart}
+            />
           </div>
         )}
 
         {gameOver && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-md bg-background/85 p-6 text-center backdrop-blur-sm">
-            <p className="eyebrow text-destructive">{tr(gamesCopy.gameOver, language)}</p>
-            <p className="font-serif text-4xl tabular-nums">{score} pts</p>
-            <button type="button" onClick={restart} className="btn btn-solid">
-              <RotateCcw className="h-4 w-4" />
-              {tr(gamesCopy.restart, language)}
-            </button>
+          <div className="absolute inset-0 flex items-center justify-center rounded-md bg-background/85 p-4 backdrop-blur-sm">
+            <GameEndBanner
+              show={gameOver}
+              outcome="gameover"
+              title={`${score} pts`}
+              subtitle={tr(gamesCopy.gameOver, language)}
+              primaryActionLabel={tr(gamesCopy.restart, language)}
+              onPrimaryAction={restart}
+            />
           </div>
         )}
       </div>

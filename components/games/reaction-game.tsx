@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { RotateCcw, Trophy, Zap } from "lucide-react"
 
+import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
 import { tr } from "@/lib/i18n"
@@ -190,6 +191,16 @@ export default function ReactionGame() {
           </>
         )}
       </button>
+
+      {/* Animated celebration when a new reaction record is beaten */}
+      <GameEndBanner
+        show={phase === "result" && isNewBest && lastMs !== null}
+        outcome="win"
+        title={lastMs !== null ? `${lastMs} ms — ${rating(lastMs)}` : ""}
+        subtitle={language === "fr" ? "Réflexe éclair ! Vous venez de battre votre record." : "Lightning reflex! You just beat your personal best."}
+        isNewRecord
+        className="max-w-[640px]"
+      />
 
       {/* Recent attempts */}
       {attempts.length > 0 && (

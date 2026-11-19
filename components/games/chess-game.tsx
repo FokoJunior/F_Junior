@@ -5,6 +5,7 @@ import { Chess } from "chess.js"
 import { ArrowUpDown, Bot, RotateCcw, Trophy, Undo2, Users } from "lucide-react"
 
 import ChessBoard from "@/components/games/chess-board"
+import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
 import { tr } from "@/lib/i18n"
@@ -109,9 +110,9 @@ function pickAiMove(fen: string, level: "easy" | "normal" | "hard"): { from: str
   return { from: pick.from, to: pick.to }
 }
 
-export default function ChessGame() {
+export default function ChessGame({ initialMode = "normal" }: { initialMode?: Mode } = {}) {
   const { language } = useLanguage()
-  const [mode, setMode] = useState<Mode>("normal")
+  const [mode, setMode] = useState<Mode>(initialMode)
   const [fen, setFen] = useState<string>(() => new Chess().fen())
   const [history, setHistory] = useState<string[]>([])
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null)
@@ -225,6 +226,31 @@ export default function ChessGame() {
           </button>
         ))}
       </div>
+
+      {/* End of game animation */}
+      <GameEndBanner
+        show={gameOver}
+        outcome={
+          chess.isCheckmate()
+            ? mode === "pvp" || turn === "b"
+              ? "win"
+              : "lose"
+            : "draw"
+        }
+        title={statusText}
+        subtitle={
+          chess.isCheckmate()
+            ? language === "fr"
+              ? `Partie terminée en ${history.length} coups.`
+              : `Finished in ${history.length} moves.`
+            : language === "fr"
+              ? "Aucun camp ne l'emporte — belle bataille !"
+              : "Neither side wins — great battle!"
+        }
+        primaryActionLabel={tr(gamesCopy.restart, language)}
+        onPrimaryAction={() => restart(mode)}
+        className="max-w-[520px]"
+      />
 
       {/* Status + Controls */}
       <div className="flex w-full max-w-[520px] flex-wrap items-center justify-between gap-2">

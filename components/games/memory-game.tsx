@@ -15,6 +15,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 
+import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
 import { tr } from "@/lib/i18n"
@@ -68,10 +69,10 @@ function buildDeck(pairCount: 6 | 8): CardItem[] {
   }))
 }
 
-export default function MemoryGame() {
+export default function MemoryGame({ initialPairs = 8 }: { initialPairs?: 6 | 8 } = {}) {
   const { language } = useLanguage()
-  const [pairs, setPairs] = useState<6 | 8>(8)
-  const [cards, setCards] = useState<CardItem[]>(() => buildDeck(8))
+  const [pairs, setPairs] = useState<6 | 8>(initialPairs)
+  const [cards, setCards] = useState<CardItem[]>(() => buildDeck(initialPairs))
   const [selected, setSelected] = useState<number[]>([])
   const [locked, setLocked] = useState(false)
   const [moves, setMoves] = useState(0)
@@ -247,28 +248,20 @@ export default function MemoryGame() {
           })}
         </div>
 
-        {completed && (
-          <div className="mt-6 flex flex-col items-center gap-3 rounded-md border border-primary/30 bg-primary/5 p-5 text-center">
-            <p className="font-serif text-3xl">
-              {language === "fr"
-                ? `Bravo ! Terminé en ${moves} coups`
-                : `Well done! Finished in ${moves} moves`}
-            </p>
-            <p className="font-mono text-xs text-muted-foreground">
-              {language === "fr" ? `Temps : ${formatTime(seconds)}` : `Time: ${formatTime(seconds)}`}
-            </p>
-            {isNewBest && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 font-mono text-xs text-primary">
-                <Trophy className="h-3.5 w-3.5" />
-                {tr(gamesCopy.newRecord, language)}
-              </span>
-            )}
-            <button type="button" onClick={() => restart(pairs)} className="btn btn-solid mt-1 h-10 px-5">
-              <RotateCcw className="h-4 w-4" />
-              {tr(gamesCopy.restart, language)}
-            </button>
-          </div>
-        )}
+        <GameEndBanner
+          show={completed}
+          outcome="win"
+          title={
+            language === "fr"
+              ? `Bravo ! Terminé en ${moves} coups`
+              : `Well done! Finished in ${moves} moves`
+          }
+          subtitle={language === "fr" ? `Temps : ${formatTime(seconds)}` : `Time: ${formatTime(seconds)}`}
+          isNewRecord={isNewBest}
+          primaryActionLabel={tr(gamesCopy.restart, language)}
+          onPrimaryAction={() => restart(pairs)}
+          className="mt-6"
+        />
       </div>
     </div>
   )

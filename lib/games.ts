@@ -12,12 +12,14 @@ export type GameId =
   | "simon"
   | "puzzle"
   | "chess"
+  | "ludo"
   | "connect4"
   | "duo-tictactoe"
   | "rps"
   | "quiz"
   | "duo-reaction"
   | "duo-chess"
+  | "duo-ludo"
 export type GameCategory = "arcade" | "puzzle" | "strategy" | "speed" | "duo"
 
 export interface GameMeta {
@@ -761,6 +763,69 @@ export const gamesList: GameMeta[] = [
     scoreUnit: "wins",
   },
   {
+    id: "ludo",
+    category: "strategy",
+    title: {
+      fr: "Ludo",
+      en: "Ludo",
+      de: "Ludo",
+      zh: "飞行棋",
+    },
+    tagline: {
+      fr: "Plateau 15×15 · IA & 2 joueurs",
+      en: "15×15 board · AI & 2 players",
+      de: "15×15 Brett · KI & 2 Spieler",
+      zh: "15×15 棋盘 · AI 与双人",
+    },
+    description: {
+      fr: "Le célèbre jeu de plateau africain et international : lancez le dé, sortez vos 4 pions sur un 6, capturez les pions adverses et rentrez à la maison avant l'IA.",
+      en: "The beloved classic board game: roll the dice, bring out your 4 tokens on a 6, capture opponents, and race all 4 home before the AI.",
+      de: "Das beliebte Brettspiel: Würfle eine 6, bringe alle 4 Steine ins Ziel und schlage gegnerische Steine.",
+      zh: "经典桌游：掷出 6 点起飞，撞击对手棋子送回基地，率先将 4 颗棋子送入终点。",
+    },
+    objective: {
+      fr: "Être le premier à faire rentrer ses 4 pions dans la maison centrale.",
+      en: "Be the first player to get all 4 tokens into the center home.",
+      de: "Bringe als Erster alle 4 Steine ins zentrale Ziel.",
+      zh: "率先将全部 4 颗棋子送入中心终点获胜。",
+    },
+    howToPlay: [
+      {
+        fr: "Cliquez sur Lancer le dé. Il faut faire un 6 pour sortir un pion de votre base.",
+        en: "Click Roll dice. Roll a 6 to bring a token out of your base yard.",
+        de: "Würfle eine 6, um einen Stein aus dem Startfeld zu bringen.",
+        zh: "点击掷骰子，掷出 6 点即可让基地里的棋子出发。",
+      },
+      {
+        fr: "Les pions déplaçables clignotent : cliquez sur celui que vous souhaitez avancer.",
+        en: "Movable tokens pulse — tap the one you want to advance.",
+        de: "Bewegliche Steine blinken — klicke den gewünschten Stein an.",
+        zh: "可移动的棋子会闪烁提示，点击即可前进。",
+      },
+      {
+        fr: "Faire un 6, capturer un pion adverse (hors cases étoile ★) ou rentrer un pion offre un tour bonus !",
+        en: "Rolling a 6, capturing an opponent (outside ★ safe squares), or reaching home grants a bonus roll!",
+        de: "Eine 6, ein Schlag (außerhalb der ★-Felder) oder das Erreichen des Ziels gibt einen Bonuswurf!",
+        zh: "掷出 6 点、击落对手（非 ★ 安全格）或抵达终点均可获得额外掷骰机会！",
+      },
+    ],
+    tip: {
+      fr: "Stationnez vos pions sur les cases étoile ★ pour les protéger des captures adverses.",
+      en: "Park your tokens on ★ star squares to protect them from being captured.",
+      de: "Nutze die ★-Sterne als sichere Schutzfelder.",
+      zh: "尽量让棋子停留在 ★ 星形安全格上，避免被对手撞回基地。",
+    },
+    shortcuts: ["Lancer le dé", "Clic sur pion"],
+    controls: {
+      fr: "Clic / Toucher · Dé & pions",
+      en: "Click / Tap · Dice & tokens",
+      de: "Klicken / Tippen · Würfel & Steine",
+      zh: "点击 / 触控 · 掷骰与走棋",
+    },
+    scoreKey: "fj_game_best_ludo",
+    scoreUnit: "wins",
+  },
+  {
     id: "connect4",
     category: "duo",
     title: {
@@ -1138,14 +1203,77 @@ export const gamesList: GameMeta[] = [
     scoreKey: "fj_game_best_duo_chess",
     scoreUnit: "wins",
   },
+  {
+    id: "duo-ludo",
+    category: "duo",
+    title: {
+      fr: "Ludo 1v1",
+      en: "Ludo 1v1",
+      de: "Ludo 1v1",
+      zh: "飞行棋 1v1",
+    },
+    tagline: {
+      fr: "Ludo en ligne · Dé & Captures",
+      en: "Online Ludo · Dice & Captures",
+      de: "Online-Ludo · Würfel & Schlagen",
+      zh: "在线飞行棋 · 1v1 对战",
+    },
+    description: {
+      fr: "Créez un salon Ludo privé, partagez le lien à votre ami et affrontez-vous en ligne sur un plateau 15×15 avec dé côté serveur, captures, chrono et spectateurs.",
+      en: "Create a private Ludo room, share the link with a friend, and battle online on a 15×15 board with server-side dice, captures, turn timer, and spectators.",
+      de: "Erstelle einen privaten Ludo-Raum, teile den Link und spielt online 1v1 mit Timer und Zuschauern.",
+      zh: "创建私人飞行棋房间并分享链接，与好友在线进行 15×15 棋盘 1v1 对决，支持限时与观战。",
+    },
+    objective: {
+      fr: "Rentrer vos 4 pions à la maison avant votre adversaire en ligne.",
+      en: "Get all 4 tokens home before your online opponent.",
+      de: "Bringe alle 4 Steine vor deinem Online-Gegner ins Ziel.",
+      zh: "抢在在线对手之前将全部 4 颗棋子送达终点。",
+    },
+    howToPlay: [
+      {
+        fr: "Choisissez le temps de réflexion par tour, créez votre salon et partagez le lien à votre ami.",
+        en: "Choose the turn thinking time, create your room, and share the link with your friend.",
+        de: "Wähle das Zug-Zeitlimit, erstelle den Raum und teile den Link.",
+        zh: "选择每步限时，创建房间并将链接分享给好友。",
+      },
+      {
+        fr: "À votre tour, lancez le dé puis touchez un pion lumineux pour le déplacer (6 pour sortir de la base).",
+        en: "On your turn, roll the dice and tap a glowing token to move (roll 6 to exit base).",
+        de: "Würfle, wenn du dran bist, und klicke auf einen blinkenden Stein.",
+        zh: "轮到你时点击掷骰子并选择闪烁的棋子移动（掷出 6 点起飞）。",
+      },
+      {
+        fr: "Chaque capture hors case étoile ★ renvoie le pion adverse à sa base et vous offre un tour bonus !",
+        en: "Capturing outside ★ safe squares sends the opponent's token back to base and grants a bonus roll!",
+        de: "Schlagen außerhalb der ★-Felder schickt den Gegner zurück und gibt einen Bonuswurf!",
+        zh: "在非 ★ 安全格撞击对手棋子会将其送回基地并奖励额外回合！",
+      },
+    ],
+    tip: {
+      fr: "Faites sortir plusieurs pions dès que vous obtenez des 6 pour garder toujours un coup tactique disponible.",
+      en: "Bring multiple tokens out early on 6s so you always have tactical options.",
+      de: "Bringe früh mehrere Steine ins Spiel für mehr taktische Optionen.",
+      zh: "掷出 6 点时尽早派出多颗棋子，这样每步都有更多战术选择。",
+    },
+    shortcuts: ["Lien d'invitation", "Lancer le dé", "Spectateurs"],
+    controls: {
+      fr: "Lien d'invitation · Dé & pions · Chrono",
+      en: "Invite link · Dice & tokens · Turn clock",
+      de: "Einladungslink · Würfel & Steine · Timer",
+      zh: "邀请链接 · 掷骰与走棋 · 限时",
+    },
+    scoreKey: "fj_game_best_duo_ludo",
+    scoreUnit: "wins",
+  },
 ]
 
 export const gamesCopy = {
   eyebrow: {
-    fr: "Playground — 17 jeux jouables (11 Solo · 6 Duo 1v1)",
-    en: "Playground — 17 playable games (11 Solo · 6 Online Duo)",
-    de: "Playground — 17 spielbare Spiele (11 Solo · 6 Online-Duo)",
-    zh: "游乐场 — 17 款可玩游戏（11 单人 · 6 在线双人）",
+    fr: "Playground — 19 jeux jouables (12 Solo · 7 Duo 1v1)",
+    en: "Playground — 19 playable games (12 Solo · 7 Online Duo)",
+    de: "Playground — 19 spielbare Spiele (12 Solo · 7 Online-Duo)",
+    zh: "游乐场 — 19 款可玩游戏（12 单人 · 7 在线双人）",
   },
   title: {
     fr: "Jeux",
@@ -1289,12 +1417,14 @@ const SCORE_KEY_TO_GAME: Record<string, GameId> = {
   fj_game_best_simon: "simon",
   fj_game_best_puzzle: "puzzle",
   fj_game_best_chess: "chess",
+  fj_game_best_ludo: "ludo",
   fj_game_best_connect4: "connect4",
   fj_game_best_duo_tictactoe: "duo-tictactoe",
   fj_game_best_rps: "rps",
   fj_game_best_quiz: "quiz",
   fj_game_best_duo_reaction: "duo-reaction",
   fj_game_best_duo_chess: "duo-chess",
+  fj_game_best_duo_ludo: "duo-ludo",
 }
 
 const pendingSubmitTimers: Partial<Record<GameId, number>> = {}

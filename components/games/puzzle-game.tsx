@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Eye, Hash, ImagePlus, RotateCcw, Trophy } from "lucide-react"
 
+import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
 import { tr } from "@/lib/i18n"
@@ -133,12 +134,12 @@ function shuffleSolvable(size: GridSize): number[] {
   return tiles
 }
 
-export default function PuzzleGame() {
+export default function PuzzleGame({ initialSize = 3 }: { initialSize?: GridSize } = {}) {
   const { language } = useLanguage()
-  const [size, setSize] = useState<GridSize>(3)
+  const [size, setSize] = useState<GridSize>(initialSize)
   const [imageSrc, setImageSrc] = useState<string>(PRESETS[0].src)
   const [customLabel, setCustomLabel] = useState<string | null>(null)
-  const [tiles, setTiles] = useState<number[]>(() => shuffleSolvable(3))
+  const [tiles, setTiles] = useState<number[]>(() => shuffleSolvable(initialSize))
   const [moves, setMoves] = useState(0)
   const [seconds, setSeconds] = useState(0)
   const [started, setStarted] = useState(false)
@@ -415,23 +416,16 @@ export default function PuzzleGame() {
         )}
 
         {solved && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/80 p-6 text-center backdrop-blur-sm">
-            <p className="eyebrow text-primary">
-              {language === "fr" ? "Puzzle complété ! 🎉" : "Puzzle solved! 🎉"}
-            </p>
-            <p className="font-serif text-3xl sm:text-4xl">
-              {moves} {language === "fr" ? "coups" : "moves"} · {formatTime(seconds)}
-            </p>
-            {isNewBest && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 font-mono text-xs text-primary">
-                <Trophy className="h-3.5 w-3.5" />
-                {tr(gamesCopy.newRecord, language)}
-              </span>
-            )}
-            <button type="button" onClick={() => restart(size)} className="btn btn-solid mt-1">
-              <RotateCcw className="h-4 w-4" />
-              {tr(gamesCopy.restart, language)}
-            </button>
+          <div className="absolute inset-0 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm">
+            <GameEndBanner
+              show={solved}
+              outcome="win"
+              title={language === "fr" ? "Puzzle complété !" : "Puzzle solved!"}
+              subtitle={`${moves} ${language === "fr" ? "coups" : "moves"} · ${formatTime(seconds)}`}
+              isNewRecord={isNewBest}
+              primaryActionLabel={tr(gamesCopy.restart, language)}
+              onPrimaryAction={() => restart(size)}
+            />
           </div>
         )}
       </div>

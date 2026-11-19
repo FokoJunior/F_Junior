@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { useTheme } from "next-themes"
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Pause, Play, RotateCcw, Trophy } from "lucide-react"
 
+import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
 import { tr } from "@/lib/i18n"
@@ -404,20 +405,16 @@ export default function SnakeGame() {
             )}
 
             {status === "over" && (
-              <>
-                <p className="eyebrow text-destructive">{tr(gamesCopy.gameOver, language)}</p>
-                <p className="font-serif text-4xl tabular-nums">{score} pts</p>
-                {isNewBest && score > 0 && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 font-mono text-xs text-primary">
-                    <Trophy className="h-3.5 w-3.5" />
-                    {tr(gamesCopy.newRecord, language)}
-                  </span>
-                )}
-                <button type="button" onClick={() => resetGame(true)} className="btn btn-solid">
-                  <RotateCcw className="h-4 w-4" />
-                  {tr(gamesCopy.restart, language)}
-                </button>
-              </>
+              <GameEndBanner
+                show={status === "over"}
+                outcome={isNewBest && score > 0 ? "win" : "gameover"}
+                title={`${score} pts`}
+                subtitle={tr(gamesCopy.gameOver, language)}
+                isNewRecord={isNewBest && score > 0}
+                primaryActionLabel={tr(gamesCopy.restart, language)}
+                onPrimaryAction={() => resetGame(true)}
+                className="max-w-sm"
+              />
             )}
           </div>
         )}

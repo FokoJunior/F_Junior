@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Play, RotateCcw, Trophy, Volume2, VolumeX } from "lucide-react"
 
+import GameEndBanner from "@/components/games/game-end-overlay"
 import { useLanguage } from "@/components/language-provider"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
 import { tr } from "@/lib/i18n"
@@ -213,24 +214,26 @@ export default function SimonGame() {
           </button>
         ))}
 
-        {(phase === "idle" || phase === "over") && (
+        {phase === "idle" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-xl bg-background/80 p-6 text-center backdrop-blur-sm">
-            {phase === "over" && (
-              <>
-                <p className="eyebrow text-destructive">{tr(gamesCopy.gameOver, language)}</p>
-                <p className="font-serif text-4xl tabular-nums">{score} pts</p>
-                {isNewBest && score > 0 && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 font-mono text-xs text-primary">
-                    <Trophy className="h-3.5 w-3.5" />
-                    {tr(gamesCopy.newRecord, language)}
-                  </span>
-                )}
-              </>
-            )}
             <button type="button" onClick={startGame} className="btn btn-solid">
               <Play className="h-4 w-4" />
-              {phase === "over" ? tr(gamesCopy.restart, language) : tr(gamesCopy.start, language)}
+              {tr(gamesCopy.start, language)}
             </button>
+          </div>
+        )}
+
+        {phase === "over" && (
+          <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-background/80 p-4 backdrop-blur-sm">
+            <GameEndBanner
+              show={phase === "over"}
+              outcome={isNewBest && score > 0 ? "win" : "gameover"}
+              title={`${score} pts`}
+              subtitle={tr(gamesCopy.gameOver, language)}
+              isNewRecord={isNewBest && score > 0}
+              primaryActionLabel={tr(gamesCopy.restart, language)}
+              onPrimaryAction={startGame}
+            />
           </div>
         )}
       </div>

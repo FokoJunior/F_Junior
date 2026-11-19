@@ -5,7 +5,7 @@ import { gamesList, type GameId } from "@/lib/games"
 import { SITE_URL, breadcrumb, jsonLdGraph, personId } from "@/lib/seo"
 
 const defaultDescription =
-  "15 mini-jeux interactifs sur le portfolio de Foko Junior (F_Junior) : Snake, 2048, Puzzle Photo, Casse-Briques, Démineur, Dactylo Dev, Simon et 5 jeux Duo 1v1 en ligne."
+  `${gamesList.length} mini-jeux interactifs sur le portfolio de Foko Junior (F_Junior) : Échecs, Ludo, Snake, 2048, Puzzle Photo, Casse-Briques, Démineur, Dactylo Dev, Simon et 7 jeux Duo 1v1 en ligne.`
 
 export async function generateMetadata({
   searchParams,

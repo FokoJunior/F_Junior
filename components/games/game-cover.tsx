@@ -335,6 +335,32 @@ export default function GameCover({ gameId, className }: { gameId: GameId; class
           </g>
         )}
 
+        {(gameId === "ludo" || gameId === "duo-ludo") && (
+          <g transform="translate(88, 18)">
+            <rect width="144" height="144" rx="10" fill="#161d2b" stroke="#2c3a54" />
+            <rect x="8" y="8" width="52" height="52" rx="6" fill="#1e293b" />
+            <rect x="84" y="8" width="52" height="52" rx="6" fill="#f59e0b" opacity="0.35" stroke="#f59e0b" />
+            <rect x="8" y="84" width="52" height="52" rx="6" fill="#2563eb" opacity="0.35" stroke="#60a5fa" />
+            <rect x="84" y="84" width="52" height="52" rx="6" fill="#1e293b" />
+            <circle cx="24" cy="100" r="7" fill="#3b82f6" stroke="#ffffff" strokeWidth="1.5" />
+            <circle cx="44" cy="120" r="7" fill="#3b82f6" stroke="#ffffff" strokeWidth="1.5" />
+            <circle cx="100" cy="24" r="7" fill="#fbbf24" stroke="#0f172a" strokeWidth="1.5" />
+            <circle cx="120" cy="44" r="7" fill="#fbbf24" stroke="#0f172a" strokeWidth="1.5" />
+            <rect x="58" y="58" width="28" height="28" rx="6" fill="#ffffff" />
+            <text x="72" y="79" textAnchor="middle" fontSize="22" fill="#0f172a">
+              ⚅
+            </text>
+            {gameId === "duo-ludo" && (
+              <g>
+                <rect x="34" y="114" width="76" height="22" rx="11" fill="#2563eb" />
+                <text x="72" y="129" textAnchor="middle" fontFamily="monospace" fontSize="11" fontWeight="700" fill="#ffffff">
+                  1V1 LIVE
+                </text>
+              </g>
+            )}
+          </g>
+        )}
+
         {(gameId === "chess" || gameId === "duo-chess") && (
           <g transform="translate(88, 18)">
             <rect width="144" height="144" rx="8" fill="#161d2b" stroke="#2c3a54" />

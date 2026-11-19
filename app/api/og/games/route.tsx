@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     ? `DÉFI 1V1 EN LIGNE · SALON ${roomParam}`
     : game
       ? `${gameCategoryLabels[game.category].fr.toUpperCase()} · ${game.tagline.fr.toUpperCase()}`
-      : "PLAYGROUND · 15 JEUX SOLO & DUO 1V1"
+      : `PLAYGROUND · ${gamesList.length} JEUX SOLO & DUO 1V1`
 
   const title = roomParam
     ? `Salon ${roomParam}`
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     ? "Tu es invité à un duel 1v1 en direct ! Ouvre le lien pour rejoindre la partie immédiatement."
     : game
       ? game.description.fr
-      : "Snake, 2048, Puzzle Photo, Casse-Briques, Puissance 4, Chifoumi, Quiz Dev & plus — avec classement en direct."
+      : "Échecs, Ludo, Snake, 2048, Puzzle Photo, Puissance 4, Chifoumi, Quiz Dev & plus — avec classement en direct."
 
   const cta = roomParam ? "REJOINDRE LE DUEL →" : game ? `JOUER À ${game.title.fr.toUpperCase()} →` : "JOUER MAINTENANT →"
 
@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
           {/* Bottom bar */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 18, fontSize: 20, color: "#94a3b8" }}>
-              <span>15 jeux gratuits</span>
+              <span>{gamesList.length} jeux gratuits</span>
               <span>·</span>
               <span>Solo & Duo 1v1</span>
               <span>·</span>

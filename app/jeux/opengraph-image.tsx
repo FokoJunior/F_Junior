@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises"
 import { join } from "node:path"
 import { ImageResponse } from "next/og"
 
-export const alt = "Jeux — Foko Junior (F_Junior) · 15 mini-jeux Solo & Duo 1v1"
+export const alt = "Jeux — Foko Junior (F_Junior) · 19 mini-jeux Solo & Duo 1v1"
 export const size = { width: 1200, height: 630 }
 export const contentType = "image/png"
 
@@ -69,7 +69,7 @@ export default async function JeuxOpengraphImage() {
                 color: "#93c5fd",
               }}
             >
-              15 JEUX SOLO & DUO 1V1
+              19 JEUX SOLO & DUO 1V1
             </div>
           </div>
 
@@ -79,7 +79,7 @@ export default async function JeuxOpengraphImage() {
               <span style={{ color: "#3b82f6" }}>.</span>
             </div>
             <div style={{ marginTop: 24, fontSize: 28, lineHeight: 1.4, color: "#cbd5e1" }}>
-              Snake, 2048, Puzzle Photo, Casse-Briques, Puissance 4, Chifoumi, Quiz Dev &amp; duels 1v1 en ligne.
+              Échecs, Ludo, Snake, 2048, Puzzle Photo, Puissance 4, Chifoumi, Quiz Dev &amp; duels 1v1 en ligne.
             </div>
           </div>
 
