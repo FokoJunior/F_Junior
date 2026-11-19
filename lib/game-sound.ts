@@ -121,6 +121,49 @@ export function playCheck(): void {
   tone(ctx, 880, 0.11, 0.22, "triangle", 0.16) // A5
 }
 
+/** Warm tactile wooden draughts disc slide & click */
+export function playDraughtsMove(): void {
+  const ctx = getCtx()
+  if (!ctx) return
+  tone(ctx, 310, 0, 0.07, "triangle", 0.17, 160)
+  noiseBurst(ctx, 0, 0.03, 0.07, 1100)
+}
+
+/** Crisp draughts capture impact (supports multi-jump rafle) */
+export function playDraughtsCapture(count = 1): void {
+  const ctx = getCtx()
+  if (!ctx) return
+  const loops = Math.min(Math.max(1, count), 4)
+  for (let i = 0; i < loops; i++) {
+    const delay = i * 0.085
+    tone(ctx, 380 + i * 40, delay, 0.075, "triangle", 0.18, 140)
+    tone(ctx, 210, delay + 0.015, 0.09, "sine", 0.16, 85)
+    noiseBurst(ctx, delay, 0.04, 0.11, 650)
+  }
+}
+
+/** Royal fanfare when a pawn is crowned King / Dame (C5 -> E5 -> G5) */
+export function playDraughtsKing(): void {
+  const ctx = getCtx()
+  if (!ctx) return
+  const notes = [
+    { f: 523.25, t: 0, d: 0.12 }, // C5
+    { f: 659.25, t: 0.09, d: 0.14 }, // E5
+    { f: 783.99, t: 0.18, d: 0.28 }, // G5
+  ]
+  for (const n of notes) {
+    tone(ctx, n.f, n.t, n.d, "triangle", 0.17)
+    tone(ctx, n.f * 2, n.t, n.d * 0.7, "sine", 0.06)
+  }
+}
+
+/** Subtle tactile selection click */
+export function playDraughtsSelect(): void {
+  const ctx = getCtx()
+  if (!ctx) return
+  tone(ctx, 520, 0, 0.035, "sine", 0.09, 360)
+}
+
 /** Rapid wooden dice rattle (Ludo roll) */
 export function playDice(): void {
   const ctx = getCtx()

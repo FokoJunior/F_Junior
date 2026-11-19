@@ -40,7 +40,16 @@ import GameEndBanner, { type GameEndOutcome } from "@/components/games/game-end-
 import LudoBoard from "@/components/games/ludo-board"
 import { useLanguage } from "@/components/language-provider"
 import { getPlayerId, looksLikeRoomCode, readScore, saveBestScore, setPlayerName } from "@/lib/games"
-import { playCapture, playClick, playDice, playMove, playScore } from "@/lib/game-sound"
+import {
+  playCapture,
+  playClick,
+  playDice,
+  playDraughtsCapture,
+  playDraughtsKing,
+  playDraughtsMove,
+  playMove,
+  playScore,
+} from "@/lib/game-sound"
 import { cn } from "@/lib/utils"
 
 interface DuoArenaProps {
@@ -105,6 +114,7 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
   const rxStartRef = useRef<number>(0)
   const lastWinCountRef = useRef<number>(0)
   const leftRoomRef = useRef(false)
+  const lastDraughtsMoveRef = useRef<string | null>(null)
   const rootRef = useRef<HTMLDivElement | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
 
@@ -245,7 +255,27 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
         )
         if (!res.ok) return
         const data = await res.json()
-        if (data.room) setRoom(data.room as DuoRoom)
+        if (data.room) {
+          const nextRoom = data.room as DuoRoom
+          if (nextRoom.gameType === "draughts" && nextRoom.draughtsState?.lastMove) {
+            const moveKey = `${nextRoom.draughtsState.lastMove.from.join(",")}-${nextRoom.draughtsState.lastMove.to.join(",")}`
+            if (lastDraughtsMoveRef.current !== moveKey) {
+              lastDraughtsMoveRef.current = moveKey
+              const [toR, toC] = nextRoom.draughtsState.lastMove.to
+              const destPiece = nextRoom.draughtsState.board?.[toR]?.[toC]
+              const isKingNow = destPiece === "W" || destPiece === "B"
+              const capCount = nextRoom.draughtsState.lastMove.captures || 0
+              if (isKingNow && (toR === 0 || toR === 9)) {
+                playDraughtsKing()
+              } else if (capCount > 0) {
+                playDraughtsCapture(capCount)
+              } else {
+                playDraughtsMove()
+              }
+            }
+          }
+          setRoom(nextRoom)
+        }
       } catch {}
     }, room?.gameType === "ludo" || room?.gameType === "chess" || room?.gameType === "draughts" || room?.gameType === "connect4" ? 450 : 1000)
     return () => window.clearInterval(id)
@@ -273,7 +303,7 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
     const act = payload.action
     if (act === "ludo_roll") playDice()
     else if (act === "c4_drop") playCapture()
-    else if (act === "move" || act === "chess_move" || act === "ludo_move" || act === "draughts_move") playMove()
+    else if (act === "move" || act === "chess_move" || act === "ludo_move") playMove()
     else if (act === "rps_pick" || act === "quiz_answer" || act === "reaction_submit") playScore()
     else if (act === "rematch") playClick()
     try {
@@ -1580,7 +1610,10 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
           canInteractSide={
             !isSpectator && room.status === "playing" ? (isHost ? draughtsHostColor : draughtsGuestColor) : null
           }
-          onMove={(m) => sendRoomAction({ action: "draughts_move", from: m.from, to: m.to })}
+          onMove={(m) => {
+            lastDraughtsMoveRef.current = `${m.from.join(",")}-${m.to.join(",")}`
+            sendRoomAction({ action: "draughts_move", from: m.from, to: m.to, move: m })
+          }}
           whiteLabel={room.draughtsWhiteSide === "host" ? room.host.name : room.guest?.name || "Blancs"}
           blackLabel={room.draughtsWhiteSide === "host" ? room.guest?.name || "Noirs" : room.host.name}
         />

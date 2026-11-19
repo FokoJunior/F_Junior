@@ -16,7 +16,11 @@ import {
   type DraughtsState,
 } from "@/lib/draughts"
 import { gamesCopy, readScore, saveBestScore } from "@/lib/games"
-import { playCapture, playMove, playScore } from "@/lib/game-sound"
+import {
+  playDraughtsCapture,
+  playDraughtsKing,
+  playDraughtsMove,
+} from "@/lib/game-sound"
 import { tr } from "@/lib/i18n"
 
 type Mode = "easy" | "normal" | "hard" | "pvp"
@@ -67,9 +71,16 @@ export default function DraughtsGame({ initialMode = "normal" }: { initialMode?:
 
   const handleMove = useCallback(
     (move: DraughtsMove) => {
-      if (move.promotes) playScore()
-      else if (move.captures.length > 0) playCapture()
-      else playMove()
+      // If AI played (or board didn't already sound), ensure sound triggers
+      if (mode !== "pvp" && state.turn === "b") {
+        if (move.promotes) {
+          playDraughtsKing()
+        } else if (move.captures.length > 0) {
+          playDraughtsCapture(move.captures.length)
+        } else {
+          playDraughtsMove()
+        }
+      }
 
       setState((prev) => {
         const next = applyDraughtsMove(prev, move)
@@ -81,7 +92,7 @@ export default function DraughtsGame({ initialMode = "normal" }: { initialMode?:
         return next
       })
     },
-    [mode],
+    [mode, state.turn],
   )
 
   // AI turn (Black)

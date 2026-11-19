@@ -13,6 +13,12 @@ import {
   type DraughtsSide,
   type DraughtsState,
 } from "@/lib/draughts"
+import {
+  playDraughtsCapture,
+  playDraughtsKing,
+  playDraughtsMove,
+  playDraughtsSelect,
+} from "@/lib/game-sound"
 import { cn } from "@/lib/utils"
 
 interface DraughtsBoardProps {
@@ -75,6 +81,18 @@ export default function DraughtsBoard({
     const chosenMove = destMap.get(key)
     if (chosenMove) {
       setSelected(null)
+      if (chosenMove.promotes) {
+        playDraughtsKing()
+      } else if (chosenMove.captures.length > 0) {
+        playDraughtsCapture(chosenMove.captures.length)
+      } else {
+        playDraughtsMove()
+      }
+      try {
+        if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+          navigator.vibrate(chosenMove.captures.length > 0 ? 25 : 12)
+        }
+      } catch {}
       onMove(chosenMove)
       return
     }
@@ -84,6 +102,7 @@ export default function DraughtsBoard({
       if (selected && selected[0] === r && selected[1] === c) {
         setSelected(null)
       } else {
+        playDraughtsSelect()
         setSelected([r, c])
       }
       return
