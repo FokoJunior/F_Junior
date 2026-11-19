@@ -12,6 +12,7 @@ import {
   createInitialLudoState,
   type LudoState,
 } from "@/lib/ludo"
+import { pickQuizQuestions as pickBankQuizQuestions } from "@/lib/quiz-bank"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -25,6 +26,9 @@ export interface QuizQuestion {
   q: { fr: string; en: string }
   options: string[]
   answer: number
+  category?: string
+  difficulty?: 1 | 2 | 3
+  explanation?: string
 }
 
 export interface DuoPlayer {
@@ -126,71 +130,15 @@ const TTT_LINES: [number, number, number][] = [
   [2, 4, 6],
 ]
 
-const QUIZ_POOL: QuizQuestion[] = [
-  {
-    q: { fr: "Quel hook React gère un état local dans un composant ?", en: "Which React hook manages local state in a component?" },
-    options: ["useEffect", "useState", "useRef", "useMemo"],
-    answer: 1,
-  },
-  {
-    q: { fr: "Quel code HTTP signifie « Ressource introuvable » ?", en: "Which HTTP status code means 'Not Found'?" },
-    options: ["200", "301", "404", "500"],
-    answer: 2,
-  },
-  {
-    q: { fr: "Quelle commande Git envoie les commits locaux vers le dépôt distant ?", en: "Which Git command sends local commits to a remote repo?" },
-    options: ["git pull", "git push", "git merge", "git fetch"],
-    answer: 1,
-  },
-  {
-    q: { fr: "Quelle propriété CSS active la mise en page Flexbox ?", en: "Which CSS property activates Flexbox layout?" },
-    options: ["position: flex", "display: flex", "layout: flex", "align: flex"],
-    answer: 1,
-  },
-  {
-    q: { fr: "En TypeScript, que signifie le type « unknown » ?", en: "In TypeScript, what does the 'unknown' type represent?" },
-    options: ["Un alias de null", "Un type sûr qui nécessite une vérification", "Un tableau vide", "Une fonction asynchrone"],
-    answer: 1,
-  },
-  {
-    q: { fr: "Quel port TCP est utilisé par défaut par HTTPS ?", en: "Which default TCP port does HTTPS use?" },
-    options: ["22", "80", "443", "8080"],
-    answer: 2,
-  },
-  {
-    q: { fr: "Dans Next.js App Router, quel fichier définit la page 404 ?", en: "In Next.js App Router, which file defines the 404 page?" },
-    options: ["404.tsx", "error.tsx", "not-found.tsx", "missing.tsx"],
-    answer: 2,
-  },
-  {
-    q: { fr: "Quelle structure de données suit le principe LIFO (dernier entré, premier sorti) ?", en: "Which data structure follows LIFO (Last In, First Out)?" },
-    options: ["File (Queue)", "Pile (Stack)", "Arbre binaire", "Table de hachage"],
-    answer: 1,
-  },
-  {
-    q: { fr: "Quelle commande SQL permet de récupérer des lignes d'une table ?", en: "Which SQL command retrieves rows from a table?" },
-    options: ["FETCH", "GET", "SELECT", "READ"],
-    answer: 2,
-  },
-  {
-    q: { fr: "Que signifie l'acronyme API ?", en: "What does the acronym API stand for?" },
-    options: [
-      "Application Programming Interface",
-      "Advanced Protocol Integration",
-      "Automated Process Index",
-      "Active Page Interaction",
-    ],
-    answer: 0,
-  },
-]
-
 function pickQuizQuestions(count = 5): QuizQuestion[] {
-  const copy = [...QUIZ_POOL]
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[copy[i], copy[j]] = [copy[j], copy[i]]
-  }
-  return copy.slice(0, count)
+  return pickBankQuizQuestions(count, "all", "all").map((item) => ({
+    q: { fr: item.q, en: item.q },
+    options: item.options,
+    answer: item.correctIdx,
+    category: item.category,
+    difficulty: item.difficulty,
+    ...(item.explanation ? { explanation: item.explanation } : {}),
+  }))
 }
 
 function evalTtt(board: TttCell[]): { winner: "X" | "O" | "draw" | null; line: number[] | null } {

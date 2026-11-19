@@ -91,9 +91,17 @@ export const UNIFIED_GAME_GROUPS: UnifiedGameGroup[] = [
   },
   {
     key: "quiz",
-    primaryId: "quiz",
+    primaryId: "quiz-solo",
+    soloId: "quiz-solo",
     duoId: "quiz",
-    categories: ["duo"],
+    categories: ["puzzle", "duo"],
+    defaultDifficulty: "all",
+    difficulties: [
+      { value: "all", labelFr: "Mixte (1 100+)", labelEn: "Mixed (1,100+)", subFr: "Tous niveaux", subEn: "All levels" },
+      { value: "1", labelFr: "Facile ★", labelEn: "Easy ★", subFr: "Culture accessible", subEn: "Casual" },
+      { value: "2", labelFr: "Moyen ★★", labelEn: "Medium ★★", subFr: "Intermédiaire", subEn: "Balanced" },
+      { value: "3", labelFr: "Difficile ★★★", labelEn: "Hard ★★★", subFr: "Expert", subEn: "Expert" },
+    ],
   },
   {
     key: "snake",

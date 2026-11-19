@@ -17,6 +17,7 @@ export type GameId =
   | "duo-tictactoe"
   | "rps"
   | "quiz"
+  | "quiz-solo"
   | "duo-reaction"
   | "duo-chess"
   | "duo-ludo"
@@ -1015,22 +1016,79 @@ export const gamesList: GameMeta[] = [
     scoreUnit: "wins",
   },
   {
+    id: "quiz-solo",
+    category: "puzzle",
+    title: {
+      fr: "Quiz Culture & Dev",
+      en: "Culture & Dev Quiz",
+      de: "Kultur- & Dev-Quiz",
+      zh: "综合知识问答",
+    },
+    tagline: {
+      fr: "1 100+ questions · 6 thèmes",
+      en: "1,100+ questions · 6 themes",
+      de: "1.100+ Fragen · 6 Themen",
+      zh: "1100+ 题目 · 6 大主题",
+    },
+    description: {
+      fr: "Testez votre culture générale sur plus de 1 100 questions variées : Afrique, Capitales, Sciences, Histoire, Sport, Cuisine, Maths et Dev & Tech.",
+      en: "Test your knowledge across 1,100+ curated questions: Africa, Capitals, Science, History, Sports, Food, Math, and Dev & Tech.",
+      de: "Teste dein Wissen mit über 1.100 Fragen: Afrika, Hauptstädte, Wissenschaft, Geschichte, Sport, Mathe und Dev & Tech.",
+      zh: "挑战 1100+ 道涵盖非洲、地理、科学、历史、体育、数学与编程的精选问答。",
+    },
+    objective: {
+      fr: "Enchaîner un maximum de bonnes réponses sur 10 questions pour déclencher les bonus de série.",
+      en: "Chain correct answers across 10 questions to trigger streak bonuses.",
+      de: "Beantworte möglichst viele der 10 Fragen richtig für Serien-Boni.",
+      zh: "在 10 道题中连续答对以赢取连胜加分。",
+    },
+    howToPlay: [
+      {
+        fr: "Choisissez un thème (Tous thèmes, Culture & Afrique, Géo, Sciences, Sport ou Dev) et un niveau de difficulté.",
+        en: "Pick a theme (All, Culture & Africa, Geo, Science, Sports, or Dev) and difficulty level.",
+        de: "Wähle ein Thema und einen Schwierigkeitsgrad.",
+        zh: "选择主题和难度等级。",
+      },
+      {
+        fr: "Sélectionnez la bonne réponse parmi les 4 propositions — chaque bonne réponse en série rapporte un bonus.",
+        en: "Pick the right answer out of 4 choices — consecutive streaks award bonus points.",
+        de: "Wähle die richtige Antwort aus 4 Optionen — Serien bringen Bonuspunkte.",
+        zh: "从 4 个选项中选择正确答案，连胜可获得额外积分。",
+      },
+    ],
+    tip: {
+      fr: "Les questions difficiles (★★★) rapportent 30 points de base, plus les bonus de série !",
+      en: "Hard questions (★★★) award 30 base points plus streak bonuses!",
+      de: "Schwere Fragen (★★★) geben 30 Basispunkte plus Serienbonus!",
+      zh: "困难题（★★★）基础分 30 分，加上连胜奖励更高！",
+    },
+    shortcuts: ["Clic", "Toucher"],
+    controls: {
+      fr: "Clic / Toucher",
+      en: "Click / Tap",
+      de: "Klick / Tippen",
+      zh: "点击 / 触控",
+    },
+    scoreKey: "fj_game_best_quiz_solo",
+    scoreUnit: "pts",
+  },
+  {
     id: "quiz",
     category: "duo",
     title: {
-      fr: "Quiz Dev 1v1",
-      en: "Dev Quiz 1v1",
-      de: "Dev-Quiz 1v1",
-      zh: "开发者问答 1v1",
+      fr: "Quiz Culture & Dev 1v1",
+      en: "Culture & Dev Quiz 1v1",
+      de: "Kultur- & Dev-Quiz 1v1",
+      zh: "综合问答 1v1",
     },
     tagline: {
-      fr: "5 questions tech en duel",
-      en: "5 tech trivia questions",
-      de: "5 Tech-Fragen im Duell",
-      zh: "5 道编程问答对决",
+      fr: "1 100+ questions en duel",
+      en: "1,100+ trivia questions",
+      de: "1.100+ Fragen im Duell",
+      zh: "1100+ 题在线对决",
     },
     description: {
-      fr: "Affrontez un ami sur 5 questions aléatoires de développement (React, Next.js, TypeScript, Git, SQL, HTTP) et comparez vos scores en direct.",
+      fr: "Affrontez un ami sur 5 questions aléatoires tirées d'une banque de plus de 1 100 questions (Culture générale, Afrique, Sciences, Sport, Histoire, Dev & Tech).",
       en: "Face off against a friend on 5 random developer questions (React, Next.js, TypeScript, Git, SQL, HTTP) and compare live scores.",
       de: "Tritt gegen einen Freund in 5 zufälligen Entwickler-Fragen an und vergleicht eure Punkte live.",
       zh: "与好友在 5 道随机编程题目（React、Next.js、TS、Git、SQL、HTTP）中实时比拼正确率。",
@@ -1422,6 +1480,7 @@ const SCORE_KEY_TO_GAME: Record<string, GameId> = {
   fj_game_best_duo_tictactoe: "duo-tictactoe",
   fj_game_best_rps: "rps",
   fj_game_best_quiz: "quiz",
+  fj_game_best_quiz_solo: "quiz-solo",
   fj_game_best_duo_reaction: "duo-reaction",
   fj_game_best_duo_chess: "duo-chess",
   fj_game_best_duo_ludo: "duo-ludo",

@@ -60,6 +60,7 @@ import LudoGame from "@/components/games/ludo-game"
 import MemoryGame from "@/components/games/memory-game"
 import MinesweeperGame from "@/components/games/minesweeper-game"
 import PuzzleGame from "@/components/games/puzzle-game"
+import QuizGame from "@/components/games/quiz-game"
 import ReactionGame from "@/components/games/reaction-game"
 import SimonGame from "@/components/games/simon-game"
 import SnakeGame from "@/components/games/snake-game"
@@ -114,6 +115,7 @@ const GAME_ICONS: Record<GameId, LucideIcon> = {
   "duo-tictactoe": Users,
   rps: Hand,
   quiz: HelpCircle,
+  "quiz-solo": HelpCircle,
   "duo-reaction": Zap,
   "duo-chess": Crown,
   "duo-ludo": Dices,
@@ -172,6 +174,7 @@ export default function GamesHub() {
     "duo-tictactoe": null,
     rps: null,
     quiz: null,
+    "quiz-solo": null,
     "duo-reaction": null,
     "duo-chess": null,
     "duo-ludo": null,
@@ -207,6 +210,7 @@ export default function GamesHub() {
       "duo-tictactoe": null,
       rps: null,
       quiz: null,
+      "quiz-solo": null,
       "duo-reaction": null,
       "duo-chess": null,
       "duo-ludo": null,
@@ -810,6 +814,13 @@ export default function GamesHub() {
                       <LudoGame
                         initialMode={
                           (launchConfig.difficulty as "easy" | "normal" | "hard" | "pvp" | undefined) ?? "normal"
+                        }
+                      />
+                    )}
+                    {activeId === "quiz-solo" && (
+                      <QuizGame
+                        initialDifficulty={
+                          (launchConfig.difficulty as "all" | "1" | "2" | "3" | undefined) ?? "all"
                         }
                       />
                     )}

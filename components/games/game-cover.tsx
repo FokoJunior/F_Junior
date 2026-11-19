@@ -373,7 +373,7 @@ export default function GameCover({
           </g>
         )}
 
-        {gameId === "quiz" && (
+        {(gameId === "quiz" || gameId === "quiz-solo") && (
           <g transform="translate(52, 28)">
             <rect width="216" height="124" rx="10" fill="#151d2e" stroke="#2a3954" />
             <text x="18" y="34" fontFamily="monospace" fontSize="11" fill="#60a5fa">

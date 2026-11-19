@@ -124,7 +124,28 @@ export default function ChessGame({ initialMode = "normal" }: { initialMode?: Mo
   useEffect(() => {
     const saved = readScore(SCORE_KEY)
     if (saved !== null) setWins(saved)
+    try {
+      const raw = window.sessionStorage.getItem("fj_active_chess_solo")
+      if (raw) {
+        const parsed = JSON.parse(raw) as { fen?: string; history?: string[]; mode?: Mode }
+        if (parsed.fen && parsed.history && parsed.history.length > 0) {
+          setFen(parsed.fen)
+          setHistory(parsed.history)
+          if (parsed.mode) setMode(parsed.mode)
+        }
+      }
+    } catch {}
   }, [])
+
+  useEffect(() => {
+    try {
+      if (history.length > 0 && !new Chess(fen).isGameOver()) {
+        window.sessionStorage.setItem("fj_active_chess_solo", JSON.stringify({ fen, history, mode }))
+      } else {
+        window.sessionStorage.removeItem("fj_active_chess_solo")
+      }
+    } catch {}
+  }, [fen, history, mode])
 
   const chess = useMemo(() => new Chess(fen), [fen])
   const gameOver = chess.isGameOver()

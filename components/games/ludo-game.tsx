@@ -80,7 +80,31 @@ export default function LudoGame({ initialMode = "normal" }: { initialMode?: Mod
   useEffect(() => {
     const saved = readScore(SCORE_KEY)
     if (saved !== null) setWins(saved)
+    try {
+      const raw = window.sessionStorage.getItem("fj_active_ludo_solo")
+      if (raw) {
+        const parsed = JSON.parse(raw) as { state?: LudoState; mode?: Mode }
+        if (parsed.state && !parsed.state.winner) {
+          setState(parsed.state)
+          if (parsed.mode) setMode(parsed.mode)
+        }
+      }
+    } catch {}
   }, [])
+
+  useEffect(() => {
+    try {
+      const hasStarted =
+        state.dice !== null ||
+        state.hostTokens.some((p) => p !== -1) ||
+        state.guestTokens.some((p) => p !== -1)
+      if (hasStarted && !state.winner) {
+        window.sessionStorage.setItem("fj_active_ludo_solo", JSON.stringify({ state, mode }))
+      } else {
+        window.sessionStorage.removeItem("fj_active_ludo_solo")
+      }
+    } catch {}
+  }, [mode, state])
 
   const restart = useCallback(
     (nextMode: Mode = mode) => {

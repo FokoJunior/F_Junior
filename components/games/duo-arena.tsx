@@ -59,7 +59,7 @@ const DUO_MODES: {
   { id: "connect4", Icon: CircleDot, fr: "Puissance 4", en: "Connect 4", subFr: "Grille 7×6", subEn: "7×6 grid" },
   { id: "tictactoe", Icon: Hash, fr: "Morpion 1v1", en: "Tic-Tac-Toe", subFr: "Grille 3×3", subEn: "3×3 grid" },
   { id: "rps", Icon: Hand, fr: "Chifoumi", en: "Rock Paper Scissors", subFr: "Premier à 3", subEn: "First to 3" },
-  { id: "quiz", Icon: HelpCircle, fr: "Quiz Dev 1v1", en: "Dev Quiz 1v1", subFr: "5 questions", subEn: "5 questions" },
+  { id: "quiz", Icon: HelpCircle, fr: "Quiz Culture & Dev 1v1", en: "Culture & Dev Quiz 1v1", subFr: "1 100+ questions", subEn: "1,100+ questions" },
   { id: "reaction", Icon: Zap, fr: "Duel Réflexe", en: "Reflex Duel", subFr: "3 manches · ms", subEn: "3 rounds · ms" },
   { id: "chess", Icon: Crown, fr: "Échecs 1v1", en: "Chess 1v1", subFr: "8×8 officiel", subEn: "Official 8×8" },
   { id: "ludo", Icon: Dices, fr: "Ludo 1v1", en: "Ludo 1v1", subFr: "Plateau 15×15", subEn: "15×15 board" },
@@ -111,6 +111,48 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
       setJoinName(playerName)
     }
   }, [joinName, playerName])
+
+  // Auto-reconnect seamlessly if the player (or spectator) accidentally refreshed during an active room
+  useEffect(() => {
+    if (!playerId || !initialRoomCode || room) return
+    const cleanCode = initialRoomCode.trim().toUpperCase()
+    if (!cleanCode) return
+    let cancelled = false
+    fetch(`/api/games/rooms?code=${encodeURIComponent(cleanCode)}&playerId=${encodeURIComponent(playerId)}`, {
+      cache: "no-store",
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data?.room) return
+        const fetched = data.room as DuoRoom
+        if (fetched.status === "ended") return
+        const alreadyInRoom =
+          fetched.host.id === playerId ||
+          fetched.guest?.id === playerId ||
+          fetched.spectators.some((s) => s.id === playerId)
+        if (alreadyInRoom) {
+          setRoom(fetched)
+          onRoomChange?.(fetched.code)
+        }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [initialRoomCode, onRoomChange, playerId, room])
+
+  // Warn before accidental refresh / tab close during an active online match
+  useEffect(() => {
+    if (!room || room.status !== "playing") return
+    const isActivePlayer = room.host.id === playerId || room.guest?.id === playerId
+    if (!isActivePlayer) return
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ""
+    }
+    window.addEventListener("beforeunload", onBeforeUnload)
+    return () => window.removeEventListener("beforeunload", onBeforeUnload)
+  }, [playerId, room])
 
   // Smooth 150ms local clock tick for live timers & turn countdown bar
   useEffect(() => {
@@ -1132,10 +1174,24 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
               const currentQ = room.quizQuestions[qIdx]
               return (
                 <div className="w-full rounded-md border border-border bg-background p-5 sm:p-6">
-                  <p className="eyebrow text-primary">
-                    Question {qIdx + 1} / {room.quizQuestions.length}
-                  </p>
-                  <h4 className="mt-2 font-serif text-2xl leading-snug">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="eyebrow text-primary">
+                      Question {qIdx + 1} / {room.quizQuestions.length}
+                    </p>
+                    <div className="flex items-center gap-1.5">
+                      {currentQ.category && (
+                        <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-primary">
+                          {currentQ.category}
+                        </span>
+                      )}
+                      {currentQ.difficulty && (
+                        <span className="font-mono text-[10px] text-amber-500">
+                          {"★".repeat(currentQ.difficulty)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <h4 className="mt-2.5 font-serif text-xl leading-snug sm:text-2xl">
                     {language === "fr" ? currentQ.q.fr : currentQ.q.en}
                   </h4>
                   <div className="mt-5 grid gap-2.5">
