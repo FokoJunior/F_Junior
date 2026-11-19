@@ -84,7 +84,7 @@ export default function AdminOverviewPage() {
       Icon: Mail,
     },
     { label: "Scores Jeux", value: stats?.scores ?? 0, href: "/admin/jeux", Icon: Trophy },
-    { label: "Joueurs uniques", value: stats?.uniquePlayers ?? 0, href: "/admin/jeux", Icon: Users },
+    { label: "Joueurs", value: stats?.uniquePlayers ?? 0, href: "/admin/joueurs", Icon: Users },
     { label: "Médias Blob", value: stats?.blobs ?? 0, href: "/admin/medias", Icon: ImageIcon },
   ]
 

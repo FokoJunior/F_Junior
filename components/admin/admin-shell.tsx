@@ -20,6 +20,7 @@ import {
   Moon,
   ShieldCheck,
   Sun,
+  Users,
   X,
   type LucideIcon,
 } from "lucide-react"
@@ -54,6 +55,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/projets", label: "Projets", Icon: FolderKanban },
   { href: "/admin/blog", label: "Blog", Icon: FileText },
   { href: "/admin/jeux", label: "Jeux & Scores", Icon: Gamepad2 },
+  { href: "/admin/joueurs", label: "Joueurs", Icon: Users },
   { href: "/admin/messages", label: "Messages", Icon: Mail },
   { href: "/admin/medias", label: "Médias Blob", Icon: ImageIcon },
   { href: "/admin/securite", label: "Sécurité", Icon: ShieldCheck },

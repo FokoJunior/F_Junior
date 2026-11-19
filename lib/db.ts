@@ -104,6 +104,19 @@ export async function ensureGamesSchema(): Promise<void> {
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         )
       `
+      await sql`
+        CREATE TABLE IF NOT EXISTS game_players (
+          player_key TEXT PRIMARY KEY,
+          player_name TEXT NOT NULL,
+          ip_hash TEXT,
+          device_hash TEXT,
+          avatar_url TEXT,
+          banned BOOLEAN NOT NULL DEFAULT FALSE,
+          notes TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `
     })().catch((err) => {
       schemaReadyPromise = null
       throw err

@@ -26,6 +26,7 @@ import {
 } from "lucide-react"
 
 import type { DuoGameType, DuoRoom, RpsChoice } from "@/app/api/games/rooms/route"
+import { useConfirm } from "@/components/confirm-provider"
 import { useLanguage } from "@/components/language-provider"
 import { getPlayerId, readScore, saveBestScore, setPlayerName } from "@/lib/games"
 import { cn } from "@/lib/utils"
@@ -81,6 +82,7 @@ function fmtClock(ms: number): string {
 
 export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCode, onRoomChange }: DuoArenaProps) {
   const { language } = useLanguage()
+  const confirm = useConfirm()
   const [playerId, setPlayerId] = useState("")
   const [joinCode, setJoinCode] = useState(initialRoomCode ?? "")
   const [joinName, setJoinName] = useState(playerName || "")
@@ -254,9 +256,17 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
 
   const handleForfeit = async () => {
     if (!room) return
-    if (!window.confirm(language === "fr" ? "Abandonner cette manche ? Votre adversaire sera déclaré vainqueur." : "Forfeit this round? Your opponent will win.")) {
-      return
-    }
+    const ok = await confirm({
+      title: language === "fr" ? "Abandonner cette manche ?" : "Forfeit this round?",
+      description:
+        language === "fr"
+          ? "Votre adversaire sera immédiatement déclaré vainqueur par forfait (+1 victoire)."
+          : "Your opponent will immediately win by forfeit (+1 win).",
+      confirmLabel: language === "fr" ? "Abandonner" : "Forfeit",
+      cancelLabel: language === "fr" ? "Continuer" : "Keep playing",
+      variant: "warning",
+    })
+    if (!ok) return
     await sendRoomAction({ action: "forfeit" })
   }
 
@@ -264,15 +274,21 @@ export default function DuoArena({ gameType, scoreKey, playerName, initialRoomCo
     if (!room) return
     const isPlayer = room.host.id === playerId || room.guest?.id === playerId
     if (isPlayer) {
-      const msg =
-        room.status === "playing"
-          ? language === "fr"
-            ? "Mettre fin à la partie maintenant ? La manche en cours sera attribuée à votre adversaire."
-            : "End the match now? The current round will be awarded to your opponent."
-          : language === "fr"
-            ? "Mettre fin au salon pour tous les joueurs ?"
-            : "End the room for all players?"
-      if (!window.confirm(msg)) return
+      const ok = await confirm({
+        title: language === "fr" ? "Mettre fin à la partie ?" : "End the match?",
+        description:
+          room.status === "playing"
+            ? language === "fr"
+              ? "La manche en cours sera attribuée à votre adversaire et le salon sera clôturé."
+              : "The current round will be awarded to your opponent and the room will close."
+            : language === "fr"
+              ? "Le salon sera fermé pour tous les joueurs et spectateurs."
+              : "The room will be closed for all players and spectators.",
+        confirmLabel: language === "fr" ? "Mettre fin" : "End match",
+        cancelLabel: language === "fr" ? "Annuler" : "Cancel",
+        variant: "danger",
+      })
+      if (!ok) return
       await sendRoomAction({ action: "end_match" })
     } else {
       await sendRoomAction({ action: "end_match" })

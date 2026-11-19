@@ -291,6 +291,30 @@ export async function POST(request: NextRequest) {
         await ensureGamesSchema()
         const sql = getSql()
 
+        // Check ban status & upsert player profile in game_players
+        const playerRows = await sql`
+          SELECT banned
+          FROM game_players
+          WHERE player_key = ${entryId}
+             OR (${deviceHash}::text IS NOT NULL AND device_hash = ${deviceHash})
+          LIMIT 1
+        `
+        if (playerRows.length > 0 && Boolean(playerRows[0].banned)) {
+          return NextResponse.json({ error: "Ce compte joueur est suspendu." }, { status: 403 })
+        }
+
+        await sql`
+          INSERT INTO game_players (player_key, player_name, ip_hash, device_hash, avatar_url, last_seen)
+          VALUES (${entryId}, ${name}, ${ipHash}, ${deviceHash}, ${avatarUrl}, NOW())
+          ON CONFLICT (player_key) DO UPDATE
+          SET
+            player_name = EXCLUDED.player_name,
+            ip_hash = EXCLUDED.ip_hash,
+            device_hash = COALESCE(EXCLUDED.device_hash, game_players.device_hash),
+            avatar_url = COALESCE(EXCLUDED.avatar_url, game_players.avatar_url),
+            last_seen = NOW()
+        `
+
         const existing = await sql`
           SELECT score, player_name, avatar_url
           FROM game_leaderboard

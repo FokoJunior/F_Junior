@@ -5,6 +5,7 @@ import Link from "next/link"
 import { ExternalLink, RefreshCw, Search, Trash2 } from "lucide-react"
 
 import type { AdminRoomRow, AdminScoreRow } from "@/app/api/admin/dashboard/route"
+import { useConfirm } from "@/components/confirm-provider"
 import { formatScore, gamesList, type GameId } from "@/lib/games"
 import { cn } from "@/lib/utils"
 
@@ -22,6 +23,7 @@ function fmtDate(iso: string): string {
 }
 
 export default function AdminGamesPage() {
+  const confirm = useConfirm()
   const [subTab, setSubTab] = useState<"leaderboard" | "rooms">("leaderboard")
   const [scores, setScores] = useState<AdminScoreRow[]>([])
   const [rooms, setRooms] = useState<AdminRoomRow[]>([])
@@ -133,10 +135,14 @@ export default function AdminGamesPage() {
             {gameFilter !== "all" && (
               <button
                 type="button"
-                onClick={() => {
-                  if (window.confirm(`Vider le classement de ${gameMap[gameFilter]?.title.fr} ?`)) {
-                    adminDelete({ type: "game_leaderboard", game: gameFilter })
-                  }
+                onClick={async () => {
+                  const ok = await confirm({
+                    title: `Vider le classement de ${gameMap[gameFilter]?.title.fr} ?`,
+                    description: "Tous les scores enregistrés pour ce jeu seront définitivement effacés.",
+                    confirmLabel: "Vider le classement",
+                    variant: "danger",
+                  })
+                  if (ok) adminDelete({ type: "game_leaderboard", game: gameFilter })
                 }}
                 className="btn btn-outline h-10 px-4 text-xs hover:border-destructive hover:text-destructive"
               >

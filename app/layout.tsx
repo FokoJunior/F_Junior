@@ -5,6 +5,7 @@ import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google"
 
 import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/components/language-provider"
+import { ConfirmProvider } from "@/components/confirm-provider"
 import SiteChrome from "@/components/site-chrome"
 import { Toaster } from "@/components/ui/toaster"
 import CustomCursor from "@/components/motion/custom-cursor"
@@ -98,11 +99,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body id="top" className="grain min-h-screen font-sans">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <LanguageProvider>
-            <SmoothScroll />
-            <ScrollProgress />
-            <CustomCursor />
-            <SiteChrome>{children}</SiteChrome>
-            <Toaster />
+            <ConfirmProvider>
+              <SmoothScroll />
+              <ScrollProgress />
+              <CustomCursor />
+              <SiteChrome>{children}</SiteChrome>
+              <Toaster />
+            </ConfirmProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

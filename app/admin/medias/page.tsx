@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { Check, Copy, ExternalLink, Loader2, RefreshCw, Trash2, Upload } from "lucide-react"
 
+import { useConfirm } from "@/components/confirm-provider"
 import { cn } from "@/lib/utils"
 
 interface BlobItem {
@@ -19,6 +20,7 @@ function fmtBytes(bytes: number): string {
 }
 
 export default function AdminMediaPage() {
+  const confirm = useConfirm()
   const [blobs, setBlobs] = useState<BlobItem[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
@@ -64,7 +66,13 @@ export default function AdminMediaPage() {
   }
 
   const handleDelete = async (url: string) => {
-    if (!window.confirm("Supprimer ce fichier de Vercel Blob ?")) return
+    const ok = await confirm({
+      title: "Supprimer ce média ?",
+      description: "Ce fichier sera définitivement supprimé de Vercel Blob et retiré des profils qui l'utilisent.",
+      confirmLabel: "Supprimer",
+      variant: "danger",
+    })
+    if (!ok) return
     const res = await fetch("/api/admin/media", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },

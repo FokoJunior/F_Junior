@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react"
 import { Eye, EyeOff, Plus, Trash2 } from "lucide-react"
 
+import { useConfirm } from "@/components/confirm-provider"
+
 interface PostRow {
   id: number | null
   slug: string
@@ -15,6 +17,7 @@ interface PostRow {
 }
 
 export default function AdminBlogPage() {
+  const confirm = useConfirm()
   const [dbPosts, setDbPosts] = useState<PostRow[]>([])
   const [staticPosts, setStaticPosts] = useState<PostRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -81,7 +84,13 @@ export default function AdminBlogPage() {
   }
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Supprimer cet article de Neon ?")) return
+    const ok = await confirm({
+      title: "Supprimer cet article ?",
+      description: "Cet article sera définitivement retiré de Neon PostgreSQL.",
+      confirmLabel: "Supprimer",
+      variant: "danger",
+    })
+    if (!ok) return
     const res = await fetch("/api/admin/blog", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },

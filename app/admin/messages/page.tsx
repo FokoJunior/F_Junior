@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { Check, Mail, MailOpen, RefreshCw, Reply, Trash2 } from "lucide-react"
 
+import { useConfirm } from "@/components/confirm-provider"
 import { cn } from "@/lib/utils"
 
 interface ContactMsg {
@@ -30,6 +31,7 @@ function fmtDate(iso: string): string {
 }
 
 export default function AdminMessagesPage() {
+  const confirm = useConfirm()
   const [messages, setMessages] = useState<ContactMsg[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -59,7 +61,13 @@ export default function AdminMessagesPage() {
   }
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Supprimer ce message ?")) return
+    const ok = await confirm({
+      title: "Supprimer ce message ?",
+      description: "Le message sera définitivement supprimé de votre boîte de réception.",
+      confirmLabel: "Supprimer",
+      variant: "danger",
+    })
+    if (!ok) return
     const res = await fetch("/api/admin/messages", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },

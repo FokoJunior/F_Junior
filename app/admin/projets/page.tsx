@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react"
 import { ExternalLink, Loader2, Plus, Search, Trash2, Upload } from "lucide-react"
 
+import { useConfirm } from "@/components/confirm-provider"
+
 interface ProjectRow {
   id: number | null
   slug: string
@@ -18,6 +20,7 @@ interface ProjectRow {
 }
 
 export default function AdminProjectsPage() {
+  const confirm = useConfirm()
   const [dbProjects, setDbProjects] = useState<ProjectRow[]>([])
   const [staticProjects, setStaticProjects] = useState<ProjectRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -98,7 +101,13 @@ export default function AdminProjectsPage() {
   }
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Supprimer ce projet de Neon ?")) return
+    const ok = await confirm({
+      title: "Supprimer ce projet ?",
+      description: "Ce projet sera définitivement supprimé de la base Neon PostgreSQL.",
+      confirmLabel: "Supprimer",
+      variant: "danger",
+    })
+    if (!ok) return
     const res = await fetch("/api/admin/projects", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
