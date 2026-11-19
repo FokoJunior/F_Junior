@@ -14,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/projects`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: `${SITE_URL}/resume`, lastModified: now, changeFrequency: "monthly", priority: 0.9, images: [`${SITE_URL}/portrait.jpg`] },
     { url: `${SITE_URL}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
+    { url: `${SITE_URL}/jeux`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     ...projects.map((p) => {
       const shots = shotsOf(p).map((s) => abs(s.src))
       const cover = coverOf(p)

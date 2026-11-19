@@ -83,14 +83,38 @@ export default function Hero() {
             </span>
             <span className="flex items-baseline gap-[0.18em]">
               <SplitText text="Junior" delay={0.35} animateOnMount className="italic text-primary" />
-              <motion.span
+              <motion.a
+                href="#about"
+                aria-label={t("about")}
                 initial={reduce ? false : { opacity: 0, x: -20, y: -20 }}
                 animate={{ opacity: 1, x: 0, y: 0 }}
                 transition={{ duration: 1, delay: 0.9, ease: [0.2, 0.8, 0.2, 1] }}
-                className="hidden md:block"
+                className="group hidden md:inline-block"
               >
-                <ArrowDownRight aria-hidden strokeWidth={1} className="h-[0.55em] w-[0.55em] shrink-0 text-foreground/80" />
-              </motion.span>
+                <motion.span
+                  className="block"
+                  animate={
+                    reduce
+                      ? undefined
+                      : {
+                          x: [0, 12, 0],
+                          y: [0, 12, 0],
+                        }
+                  }
+                  transition={{
+                    duration: 2.2,
+                    delay: 1.4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <ArrowDownRight
+                    aria-hidden
+                    strokeWidth={1}
+                    className="h-[0.55em] w-[0.55em] shrink-0 text-foreground/80 transition-colors duration-300 group-hover:text-primary"
+                  />
+                </motion.span>
+              </motion.a>
             </span>
           </motion.h1>
 

@@ -23,6 +23,7 @@ const navLinks = [
   { href: "/projects", label: "work" },
   { href: "/resume", label: "resume" },
   { href: "/blog", label: "blog" },
+  { href: "/jeux", label: "games" },
 ]
 
 export function Wordmark({ className }: { className?: string }) {

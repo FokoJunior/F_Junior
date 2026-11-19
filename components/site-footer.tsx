@@ -18,6 +18,7 @@ export default function SiteFooter() {
         { href: "/projects", label: t("work") },
         { href: "/resume", label: t("resume") },
         { href: "/blog", label: t("blog") },
+        { href: "/jeux", label: t("games") },
       ],
     },
     {
@@ -40,8 +41,19 @@ export default function SiteFooter() {
   ]
 
   return (
-    <footer className="no-print relative overflow-hidden border-t border-border">
-      <div className="container grid gap-10 py-16 md:grid-cols-12">
+    <footer className="no-print relative overflow-hidden border-t border-border bg-background">
+      {/* Background image with adaptive light/dark scrim */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <img
+          src="/footer-bg.jpg"
+          alt=""
+          className="h-full w-full object-cover object-right opacity-15 dark:opacity-55"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/70 to-background/40 dark:from-background dark:via-background/60 dark:to-background/30" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/50 to-transparent" />
+      </div>
+
+      <div className="container relative z-10 grid gap-10 py-16 md:grid-cols-12">
         <p className="max-w-xs text-sm leading-relaxed text-muted-foreground md:col-span-4">
           {t("heroLead")}
         </p>
@@ -77,7 +89,7 @@ export default function SiteFooter() {
         ))}
       </div>
 
-      <div className="container">
+      <div className="container relative z-10">
         <p aria-hidden className="select-none pb-[0.14em] text-[21vw] leading-[0.8] tracking-tighter text-foreground lg:text-[19vw] 2xl:text-[16rem]">
           <span className="font-serif tracking-tight">
             <SplitText text="F" />
@@ -87,7 +99,7 @@ export default function SiteFooter() {
         </p>
       </div>
 
-      <div className="container flex flex-col gap-3 border-t border-border py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+      <div className="container relative z-10 flex flex-col gap-3 border-t border-border py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <p>
           © {new Date().getFullYear()} Foko Junior — FOKO TADJUIGE Benoît Junior (F_Junior). {t("allRightsReserved")}
         </p>
